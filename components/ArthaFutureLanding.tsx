@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Image from 'next/image';
 
 export default function ArthaFutureLanding() {
   const [email, setEmail] = useState('');
@@ -8,7 +7,7 @@ export default function ArthaFutureLanding() {
     e.preventDefault();
     // Handle email submission
     console.log('Email submitted:', email);
-    alert('Welcome to Artha Investments! You\'ll receive our latest insights and investment guides.');
+    alert('Welcome to Artha Investments! You&apos;ll receive our latest insights and investment guides.');
     setEmail('');
   };
 
@@ -53,7 +52,7 @@ export default function ArthaFutureLanding() {
       <section className="container mx-auto px-6 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Built for Indian Investors</h2>
-          <p className="text-lg text-gray-600">Whether you're in India or abroad, we've got you covered</p>
+          <p className="text-lg text-gray-600">Whether you&apos;re in India or abroad, we&apos;ve got you covered</p>
         </div>
         
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">

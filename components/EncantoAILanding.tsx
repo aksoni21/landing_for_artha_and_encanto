@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Image from 'next/image';
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function EncantoAILanding() {
