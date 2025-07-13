@@ -70,7 +70,8 @@ export default function EncantoAILanding() {
   const languages = [
     { id: 'spanish', name: 'Spanish', flag: '🇪🇸', description: 'Natural conversations in Spanish' },
     { id: 'german', name: 'German', flag: '🇩🇪', description: 'Practice German with AI tutor' },
-    { id: 'esl', name: 'ESL', flag: '🇺🇸', description: 'Learn English as a Second Language' }
+    { id: 'esl', name: 'ESL', flag: '🇺🇸', description: 'Learn English as a Second Language' },
+    { id: 'korean', name: 'Korean', flag: '🇰🇷', description: 'Learn Korean with honorifics and culture' }
   ];
 
   const features = [
@@ -124,6 +125,12 @@ export default function EncantoAILanding() {
       { speaker: 'AI Tutor', message: 'Hello! I\'m doing great, thank you. How about you? How are you feeling?' },
       { speaker: 'You', message: 'I\'m good, thank you. Can we practice ordering food?' },
       { speaker: 'AI Tutor', message: 'Absolutely! Let\'s practice ordering food at a restaurant. This is a very useful skill!' }
+    ],
+    korean: [
+      { speaker: 'You', message: 'Hello, how are you today?' },
+      { speaker: 'AI Tutor', message: '안녕하세요! 저는 잘 지내고 있습니다, 감사합니다. 당신은 어떠세요?' },
+      { speaker: 'You', message: 'I\'m good, thank you. Can we practice ordering food?' },
+      { speaker: 'AI Tutor', message: '물론입니다! 식당에서 음식을 주문하는 방법을 연습해봅시다.' }
     ]
   };
 
@@ -167,7 +174,7 @@ export default function EncantoAILanding() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400"> Natural Conversations</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Practice Spanish, German, and English with AI tutors in real-time voice conversations. 
+            Practice Spanish, German, Korean, and English with AI tutors in real-time voice conversations. 
             Speak naturally, learn effortlessly, and track your progress.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
