@@ -1,22 +1,7 @@
 {
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/encanto-ai"
-    }
-  ],
   "headers": [
     {
       "source": "/encanto-ai/(.*)",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "index, follow"
-        }
-      ]
-    },
-    {
-      "source": "/artha-future/(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",

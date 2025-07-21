@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
+import Link from 'next/link';
 
 export default function EncantoAILanding() {
   const [email, setEmail] = useState('');
@@ -157,6 +158,7 @@ export default function EncantoAILanding() {
             <a href="#demo" className="text-white hover:text-cyan-300 transition-colors">Demo</a>
             <a href="#languages" className="text-white hover:text-cyan-300 transition-colors">Languages</a>
             <a href="#contact" className="text-white hover:text-cyan-300 transition-colors">Get Started</a>
+            <Link href="/dashboard_ai" className="text-white hover:text-cyan-300 transition-colors">Teacher Login</Link>
           </div>
         </div>
       </nav>
