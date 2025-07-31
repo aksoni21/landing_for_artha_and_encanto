@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/router';
 
 // Define a type for chat messages
 interface ChatMessage {
@@ -31,66 +30,53 @@ interface DemoStudent {
 
 const demoStudents: DemoStudent[] = [
   {
-    name: 'Maria Lopez',
-    id: 'S123',
+    name: 'Aarav Patel',
+    id: 'M101',
     status: 'At Risk',
-    group: 'A1',
+    group: '8A',
     avatar: '',
-    progress: 0.7,
-    aiNext: 'Assign "Travel Conversations" module. Focus on past tense verbs.',
-    aiSummary: 'Maria improved in greetings. Needs more practice with travel vocabulary.',
+    progress: 0.45,
+    aiNext: 'Assign "Linear Equations" review. Focus on solving for x.',
+    aiSummary: 'Aarav struggles with linear equations and needs more practice with word problems.',
     encouragementSent: false,
     reviewAssigned: false,
     lastAssignment: undefined,
   },
   {
-    name: 'Carlos Ruiz',
-    id: 'S126',
+    name: 'Sara Khan',
+    id: 'M102',
     status: 'At Risk',
-    group: 'B1',
+    group: '8B',
     avatar: '',
-    progress: 0.35,
-    aiNext: 'Send encouragement. Assign review on advanced grammar.',
-    aiSummary: 'Carlos missed 2 sessions. Advanced grammar mistakes detected.',
+    progress: 0.55,
+    aiNext: 'Send encouragement. Assign review on geometry basics.',
+    aiSummary: 'Sara missed 2 quizzes. Needs help with geometry and shapes.',
     encouragementSent: false,
     reviewAssigned: false,
     lastAssignment: undefined,
   },
   {
-    name: 'Emily Chen',
-    id: 'S125',
-    status: 'At Risk',
-    group: 'A1',
-    avatar: '',
-    progress: 0.5,
-    aiNext: 'Invite to open-ended conversation session.',
-    aiSummary: 'Emily missed a few sessions. Needs to catch up on assignments.',
-    encouragementSent: false,
-    reviewAssigned: false,
-    lastAssignment: undefined,
-  },
-  {
-    name: 'Priya Singh',
-    id: 'S127',
+    name: 'Rohan Mehta',
+    id: 'M103',
     status: 'Doing Well',
-    group: 'A2',
+    group: '8A',
     avatar: '',
-    progress: 0.95,
-    aiNext: 'Assign advanced conversation practice.',
-    aiSummary: 'Priya is excelling in all areas. Ready for more advanced topics.',
+    progress: 0.88,
+    aiNext: 'Assign advanced algebra practice.',
+    aiSummary: 'Rohan is excelling in algebra and consistently scores above 85%.',
     encouragementSent: false,
     reviewAssigned: false,
     lastAssignment: undefined,
   },
   {
-    name: 'Liam O’Brien',
-    id: 'S128',
+    name: 'Emily Wang',
+    id: 'M104',
     status: 'Doing Well',
-    group: 'B2',
+    group: '8B',
     avatar: '',
-    progress: 0.92,
+    progress: 0.93,
     aiNext: 'Encourage peer mentoring.',
-    aiSummary: 'Liam consistently scores above 90%. Shows leadership in group activities.',
+    aiSummary: 'Emily shows strong understanding of geometry and helps classmates.',
     encouragementSent: false,
     reviewAssigned: false,
     lastAssignment: undefined,
@@ -99,20 +85,20 @@ const demoStudents: DemoStudent[] = [
 
 const proactiveSuggestions = [
   {
-    message: '3 students are at risk of falling behind. Assign review modules?',
-    actions: ['Assign review modules', 'Send Encouragement']
+    message: '2 students are at risk of falling behind in math. Assign review modules?',
+    actions: ['Assign math review', 'Send Encouragement']
   },
   {
-    message: 'Class average quiz score dropped 5% this week. Would you like to view details?',
+    message: 'Class average math quiz score dropped 4% this week. Would you like to view details?',
     actions: ['View Details']
   }
 ];
 
 const aiSampleQuestions = [
-  'Which students are at risk?',
-  'Assign review modules',
-  'How is Maria Lopez doing?',
-  'Show class trends for grammar',
+  'Which students are at risk in math?',
+  'Assign math review',
+  'How is Aarav Patel doing?',
+  'Show class trends for algebra',
 ];
 
 // Dummy student details data
@@ -125,83 +111,70 @@ interface StudentDetails {
   notes: string;
 }
 const studentDetailsData: Record<string, StudentDetails> = {
-  S123: {
-    name: 'Maria Lopez',
-    attendance: '82%',
-    quizzes: [
-      { date: '2025-07-01', score: 65 },
-      { date: '2025-06-24', score: 70 },
-      { date: '2025-06-17', score: 68 },
-    ],
-    strengths: ['Greetings'],
-    weaknesses: ['Travel vocabulary', 'Past tense'],
-    notes: 'Maria has missed a few sessions and needs more practice with travel-related vocabulary.'
-  },
-  S126: {
-    name: 'Carlos Ruiz',
-    attendance: '80%',
+  M101: {
+    name: 'Aarav Patel',
+    attendance: '85%',
     quizzes: [
       { date: '2025-07-01', score: 60 },
       { date: '2025-06-24', score: 65 },
-      { date: '2025-06-17', score: 70 },
+      { date: '2025-06-17', score: 62 },
     ],
-    strengths: ['Listening'],
-    weaknesses: ['Advanced grammar', 'Consistency'],
-    notes: 'Carlos has missed several sessions recently. Needs encouragement and review of advanced grammar.'
+    strengths: ['Multiplication', 'Fractions'],
+    weaknesses: ['Linear equations', 'Word problems'],
+    notes: 'Aarav needs more practice with linear equations and solving word problems.'
   },
-  S125: {
-    name: 'Emily Chen',
+  M102: {
+    name: 'Sara Khan',
     attendance: '78%',
     quizzes: [
-      { date: '2025-07-01', score: 68 },
-      { date: '2025-06-24', score: 72 },
-      { date: '2025-06-17', score: 70 },
+      { date: '2025-07-01', score: 58 },
+      { date: '2025-06-24', score: 62 },
+      { date: '2025-06-17', score: 60 },
     ],
-    strengths: ['Pronunciation'],
-    weaknesses: ['Complex sentence structure', 'Attendance'],
-    notes: 'Emily missed a few sessions and needs to catch up on assignments.'
+    strengths: ['Addition', 'Subtraction'],
+    weaknesses: ['Geometry', 'Shapes'],
+    notes: 'Sara missed two quizzes and needs help with geometry basics.'
   },
-  S127: {
-    name: 'Priya Singh',
-    attendance: '100%',
-    quizzes: [
-      { date: '2025-07-01', score: 98 },
-      { date: '2025-06-24', score: 95 },
-      { date: '2025-06-17', score: 97 },
-    ],
-    strengths: ['Pronunciation', 'Participation', 'Grammar'],
-    weaknesses: [],
-    notes: 'Priya is excelling in all areas and is ready for more advanced topics.'
-  },
-  S128: {
-    name: 'Liam O’Brien',
+  M103: {
+    name: 'Rohan Mehta',
     attendance: '98%',
     quizzes: [
-      { date: '2025-07-01', score: 94 },
-      { date: '2025-06-24', score: 92 },
-      { date: '2025-06-17', score: 93 },
+      { date: '2025-07-01', score: 90 },
+      { date: '2025-06-24', score: 88 },
+      { date: '2025-06-17', score: 87 },
     ],
-    strengths: ['Leadership', 'Grammar', 'Participation'],
+    strengths: ['Algebra', 'Equations'],
     weaknesses: [],
-    notes: 'Liam consistently scores above 90% and shows leadership in group activities.'
+    notes: 'Rohan is excelling in algebra and consistently scores above 85%.'
+  },
+  M104: {
+    name: 'Emily Wang',
+    attendance: '100%',
+    quizzes: [
+      { date: '2025-07-01', score: 95 },
+      { date: '2025-06-24', score: 92 },
+      { date: '2025-06-17', score: 94 },
+    ],
+    strengths: ['Geometry', 'Peer mentoring'],
+    weaknesses: [],
+    notes: 'Emily shows strong understanding of geometry and helps classmates.'
   },
 };
 
 const reviewTopics = [
-  'Past Tense Review',
-  'Travel Vocabulary',
-  'Advanced Grammar',
-  'Attendance Challenge',
-  'Conversation Practice',
+  'Linear Equations',
+  'Geometry Basics',
+  'Word Problems',
+  'Fractions & Decimals',
+  'Algebra Practice',
 ];
 
 // Quiz interface for student quiz data
 interface Quiz { date: string; score: number; }
 
-export default function DashboardAI() {
-  const router = useRouter();
+export default function MathAI() {
   const [chat, setChat] = useState<ChatMessage[]>([
-    { sender: 'ai', text: 'Hi! I am your AI teaching assistant. How can I help you today?' }
+    { sender: 'ai', text: 'Hi! I am your AI math teaching assistant. How can I help you today?' }
   ]);
   const [input, setInput] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
@@ -233,37 +206,6 @@ export default function DashboardAI() {
   const selectedStudent = selectedStudentId ? studentDetailsData[selectedStudentId] : null;
   const [showDataTrail, setShowDataTrail] = useState(false);
 
-  // Check authentication on mount
-  useEffect(() => {
-    const teacherAuth = localStorage.getItem('teacher-auth');
-    if (!teacherAuth) {
-      router.push('/dashboard-login?redirect=' + encodeURIComponent('/dashboard_ai'));
-      return;
-    }
-    
-    try {
-      const authData = JSON.parse(teacherAuth);
-      // Check if login is still valid (within 24 hours)
-      const loginTime = new Date(authData.loginTime);
-      const now = new Date();
-      const hoursSinceLogin = (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
-      
-      if (hoursSinceLogin >= 24) {
-        // Session expired, redirect to login
-        localStorage.removeItem('teacher-auth');
-        localStorage.removeItem('supabase.auth.token');
-        router.push('/dashboard-login?redirect=' + encodeURIComponent('/dashboard_ai'));
-        return;
-      }
-    } catch (e) {
-      // Invalid auth data, redirect to login
-      localStorage.removeItem('teacher-auth');
-      localStorage.removeItem('supabase.auth.token');
-      router.push('/dashboard-login?redirect=' + encodeURIComponent('/dashboard_ai'));
-      return;
-    }
-  }, [router]);
-
   // Scroll chat to bottom on new message
   useEffect(() => {
     if (chatEndRef.current) {
@@ -280,7 +222,7 @@ export default function DashboardAI() {
     setAiLoading(true);
     setAiError(null);
     try {
-      const res = await fetch('/api/ai-assistant', {
+      const res = await fetch('/api/math-ai-assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question })
@@ -554,19 +496,7 @@ export default function DashboardAI() {
       )}
       {/* Main content */}
       <div className="flex-1 p-6 md:p-12">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold text-white">AI-First Teacher Dashboard</h1>
-          <button
-            onClick={() => {
-              localStorage.removeItem('teacher-auth');
-              localStorage.removeItem('supabase.auth.token');
-              router.push('/');
-            }}
-            className="text-cyan-200 hover:text-white text-sm bg-cyan-800/50 px-3 py-1 rounded-lg transition-colors"
-          >
-            Logout
-          </button>
-        </div>
+        <h1 className="text-3xl font-bold text-white mb-4">AI-First Math Teacher Dashboard</h1>
         {/* Proactive AI Suggestion */}
         {showSuggestion && suggestion && atRiskStudents.length > 0 && (
           <div className="relative bg-gradient-to-br from-cyan-900/90 to-cyan-800/80 border-2 border-cyan-400/40 rounded-2xl p-6 mb-8 shadow-lg flex flex-col gap-3 animate-fade-in">
@@ -620,28 +550,6 @@ export default function DashboardAI() {
             </div>
           </div>
         )}
-        {/* Tools Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-cyan-100 mb-4">Learning Tools</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <button
-              onClick={() => router.push('/vocabulary')}
-              className="bg-gradient-to-br from-purple-700/80 to-purple-900/80 border border-purple-400/40 rounded-xl p-6 shadow hover:scale-[1.02] transition-transform text-left"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-3xl">📖</span>
-                <h3 className="text-lg font-bold text-white">Literary Vocabulary</h3>
-              </div>
-              <p className="text-purple-100 text-sm mb-2">
-                AI-powered vocabulary assistance for advanced ESL learners
-              </p>
-              <p className="text-purple-200 text-xs">
-                Context-aware definitions • Etymology • Usage examples
-              </p>
-            </button>
-          </div>
-        </div>
-
         {/* At Risk Students Section */}
         <h2 className="text-xl font-bold text-red-300 mb-2">Students At Risk</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
