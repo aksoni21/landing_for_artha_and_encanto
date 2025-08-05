@@ -36,7 +36,7 @@ const RichExamples: React.FC<RichExamplesProps> = ({ word, examples, source }) =
             {examples.slice(0, 3).map((example, index) => (
               <div key={index} className="bg-white p-3 rounded border border-blue-100">
                 <p className="text-sm text-gray-800 leading-relaxed italic">
-                  "{highlightWord(example, word)}"
+                  &ldquo;{highlightWord(example, word)}&rdquo;
                 </p>
               </div>
             ))}
@@ -50,14 +50,14 @@ const RichExamples: React.FC<RichExamplesProps> = ({ word, examples, source }) =
         ) : (
           <div className="bg-white p-3 rounded border border-blue-100">
             <p className="text-sm text-gray-800 leading-relaxed italic">
-              "The building's high ceilings and <mark className="bg-blue-200 text-blue-900 px-1 rounded">{word}</mark> spaces create an impressive atmosphere."
+              &ldquo;The building&apos;s high ceilings and <mark className="bg-blue-200 text-blue-900 px-1 rounded">{word}</mark> spaces create an impressive atmosphere.&rdquo;
             </p>
             <p className="text-xs text-blue-500 mt-2">📝 Demo example - Real examples would appear here</p>
           </div>
         )}
         
         <div className="text-xs text-blue-600 bg-white p-2 rounded border">
-          <strong>Source:</strong> {source === 'webster' ? 'Merriam-Webster Dictionary' : 'Professional Dictionary'} - 
+          <strong>Source:</strong> {source === 'webster' ? 'Merriam-Webster&apos;s Dictionary' : 'Professional Dictionary'} - 
           Real usage examples from published literature and authoritative sources
         </div>
       </div>

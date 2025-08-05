@@ -8,7 +8,7 @@ interface EnhancedSynonymsProps {
   word: string;
 }
 
-const EnhancedSynonyms: React.FC<EnhancedSynonymsProps> = ({ synonyms, word }) => {
+const EnhancedSynonyms: React.FC<EnhancedSynonymsProps> = ({ synonyms }) => {
   const [activeTab, setActiveTab] = useState<'simple' | 'complex'>('simple');
 
   // Always show as a "Possible Feature" - the component handles empty data gracefully
@@ -137,7 +137,7 @@ const EnhancedSynonyms: React.FC<EnhancedSynonymsProps> = ({ synonyms, word }) =
         )}
         
         <div className="text-xs text-green-600 bg-white p-2 rounded border mt-3">
-          <strong>Webster Thesaurus:</strong> Professional synonyms from Merriam-Webster's Collegiate Thesaurus, 
+          <strong>Webster Thesaurus:</strong> Professional synonyms from Merriam-Webster&apos;s Collegiate Thesaurus, 
           contextually ranked for literary comprehension
         </div>
       </div>

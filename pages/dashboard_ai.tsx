@@ -255,7 +255,7 @@ export default function DashboardAI() {
         router.push('/dashboard-login?redirect=' + encodeURIComponent('/dashboard_ai'));
         return;
       }
-    } catch (e) {
+    } catch {
       // Invalid auth data, redirect to login
       localStorage.removeItem('teacher-auth');
       localStorage.removeItem('supabase.auth.token');

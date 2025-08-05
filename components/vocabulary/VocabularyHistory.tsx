@@ -197,7 +197,7 @@ const VocabularyHistory: React.FC<VocabularyHistoryProps> = ({ history, onWordCl
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h3 className="text-lg font-semibold text-blue-600 hover:text-blue-800">
-                    "{item.word}"
+                    &ldquo;{item.word}&rdquo;
                   </h3>
                   <p className="text-sm text-gray-600">
                     📖 {item.book_title}

@@ -210,12 +210,12 @@ const VocabularyLookupForm: React.FC<VocabularyLookupFormProps> = ({ onLookup, i
   };
 
   // Debounce utility function
-  function debounce<T extends (...args: any[]) => any>(
-    func: T,
+  function debounce<Args extends readonly unknown[]>(
+    func: (...args: Args) => void | Promise<void>,
     delay: number
-  ): (...args: Parameters<T>) => void {
+  ): (...args: Args) => void {
     let timeoutId: NodeJS.Timeout;
-    return (...args: Parameters<T>) => {
+    return (...args: Args) => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => func(...args), delay);
     };

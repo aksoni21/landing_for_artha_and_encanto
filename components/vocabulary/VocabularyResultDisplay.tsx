@@ -47,7 +47,7 @@ const VocabularyResultDisplay: React.FC<VocabularyResultDisplayProps> = ({ resul
           <p className="text-xs font-medium text-gray-600 mb-1">💡 Example:</p>
           {definition.examples.slice(0, 2).map((example, index) => (
             <p key={index} className="text-sm text-gray-600 italic">
-              "{example}"
+              &ldquo;{example}&rdquo;
             </p>
           ))}
         </div>
@@ -197,7 +197,7 @@ const VocabularyResultDisplay: React.FC<VocabularyResultDisplayProps> = ({ resul
             </svg>
           </button>
         )}
-        <h2 className="text-3xl font-bold mb-2">"{result.word}"</h2>
+        <h2 className="text-3xl font-bold mb-2">&ldquo;{result.word}&rdquo;</h2>
         <p className="text-blue-100">
           {result.other_definitions.length + 1} definition{result.other_definitions.length > 0 ? 's' : ''} found
         </p>
@@ -239,7 +239,7 @@ const VocabularyResultDisplay: React.FC<VocabularyResultDisplayProps> = ({ resul
           
           {showAllDefinitions && (
             <div className="mt-4 space-y-3">
-              {result.other_definitions.map((definition, index) => 
+              {result.other_definitions.map((definition) => 
                 renderDefinition(definition)
               )}
             </div>

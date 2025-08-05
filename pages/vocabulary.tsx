@@ -44,7 +44,7 @@ const VocabularyPage: React.FC = () => {
     } else if (activeTab === 'stats' && !stats) {
       loadStats();
     }
-  }, [activeTab]);
+  }, [activeTab, history.length, stats]);
 
   const checkAuth = () => {
     // Check if user is authenticated (check both teacher-auth and supabase token)
@@ -74,7 +74,7 @@ const VocabularyPage: React.FC = () => {
         
         // Use the user ID from auth data, not email
         setUserId(authData.id || authData.user?.id || authData.email);
-      } catch (e) {
+      } catch {
         // Invalid auth data
         localStorage.removeItem('teacher-auth');
         localStorage.removeItem('supabase.auth.token');

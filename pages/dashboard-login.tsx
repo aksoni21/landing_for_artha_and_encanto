@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { authService } from '../services/authService';
 
 export default function DashboardLogin() {
   const [username, setUsername] = useState('');
@@ -27,7 +26,7 @@ export default function DashboardLogin() {
             router.push(redirectTo);
             return;
           }
-        } catch (e) {
+        } catch {
           // Invalid auth data, clear it
           localStorage.removeItem('teacher-auth');
           localStorage.removeItem('supabase.auth.token');
