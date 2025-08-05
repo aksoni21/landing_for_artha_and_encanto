@@ -233,8 +233,12 @@ export default function DashboardAI() {
   const selectedStudent = selectedStudentId ? studentDetailsData[selectedStudentId] : null;
   const [showDataTrail, setShowDataTrail] = useState(false);
 
-  // Check authentication on mount
+  // Check authentication on mount - DISABLED for demo purposes
   useEffect(() => {
+    // Authentication disabled - anyone can access /dashboard_ai directly
+    // Uncomment the code below to re-enable authentication
+    
+    /*
     const teacherAuth = localStorage.getItem('teacher-auth');
     if (!teacherAuth) {
       router.push('/dashboard-login?redirect=' + encodeURIComponent('/dashboard_ai'));
@@ -262,6 +266,7 @@ export default function DashboardAI() {
       router.push('/dashboard-login?redirect=' + encodeURIComponent('/dashboard_ai'));
       return;
     }
+    */
   }, [router]);
 
   // Scroll chat to bottom on new message
@@ -553,7 +558,7 @@ export default function DashboardAI() {
         </div>
       )}
       {/* Main content */}
-      <div className="flex-1 p-6 md:p-12">
+      <div className="flex-1 p-6 md:px-12 md:py-4">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-bold text-white">AI-First Teacher Dashboard</h1>
           <button
@@ -620,27 +625,6 @@ export default function DashboardAI() {
             </div>
           </div>
         )}
-        {/* Tools Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-cyan-100 mb-4">Learning Tools</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <button
-              onClick={() => router.push('/vocabulary')}
-              className="bg-gradient-to-br from-purple-700/80 to-purple-900/80 border border-purple-400/40 rounded-xl p-6 shadow hover:scale-[1.02] transition-transform text-left"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-3xl">📖</span>
-                <h3 className="text-lg font-bold text-white">Literary Vocabulary</h3>
-              </div>
-              <p className="text-purple-100 text-sm mb-2">
-                AI-powered vocabulary assistance for advanced ESL learners
-              </p>
-              <p className="text-purple-200 text-xs">
-                Context-aware definitions • Etymology • Usage examples
-              </p>
-            </button>
-          </div>
-        </div>
 
         {/* At Risk Students Section */}
         <h2 className="text-xl font-bold text-red-300 mb-2">Students At Risk</h2>
