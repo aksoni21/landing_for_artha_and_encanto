@@ -4,7 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 // It can add additional security, caching, or transformations
 
 const BACKEND_URL = process.env.BACKEND_URL;
-console.log('----BACKEND_URL', BACKEND_URL);
+// console.log('----BACKEND_URL', BACKEND_URL);
 console.log('----ALL_ENV_VARS', Object.keys(process.env).filter(key => key.includes('BACKEND')));
 export default async function handler(
   req: NextApiRequest,

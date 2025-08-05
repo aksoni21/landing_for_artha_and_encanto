@@ -153,7 +153,8 @@ class AuthService {
   private async getUserFromDatabase(username: string): Promise<DemoUser | null> {
     try {
       // Query the Python backend to get the real user UUID
-      const response = await fetch('http://localhost:8000/api/auth/user-by-username/' + username);
+      const backendUrl = process.env.BACKEND_URL;
+      const response = await fetch(`${backendUrl}/api/auth/user-by-username/${username}`);
       
       if (response.ok) {
         const userData = await response.json();
