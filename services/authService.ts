@@ -154,6 +154,7 @@ class AuthService {
     try {
       // Query the Python backend to get the real user UUID
       const backendUrl = process.env.BACKEND_URL;
+      console.log('🔗 Attempting to fetch from:', `${backendUrl}/api/auth/user-by-username/${username}`);
       const response = await fetch(`${backendUrl}/api/auth/user-by-username/${username}`);
       
       if (response.ok) {
