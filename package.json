@@ -9,13 +9,21 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/formidable": "^3.4.5",
     "@types/jsonwebtoken": "^9.0.10",
+    "form-data": "^4.0.4",
+    "formidable": "^3.5.4",
+    "framer-motion": "^10.16.4",
     "jsonwebtoken": "^9.0.2",
     "next": "14.2.30",
+    "node-fetch": "^3.3.2",
     "pg": "^8.16.3",
     "react": "^18",
     "react-dom": "^18",
-    "react-hot-toast": "^2.5.2"
+    "react-dropzone": "^14.2.3",
+    "react-hot-toast": "^2.5.2",
+    "recharts": "^2.8.0",
+    "socket.io-client": "^4.7.2"
   },
   "devDependencies": {
     "@types/node": "^20",
