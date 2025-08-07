@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 
 export interface DemoUser {
   id: string; // UUID from database
@@ -49,18 +49,20 @@ class AuthService {
    * Generate a Supabase-compatible JWT token
    */
   generateJWT(user: DemoUser): string {
+    // For demo purposes, bypass jwt library and create simple token
     const now = Math.floor(Date.now() / 1000);
-    const payload: JWTPayload = {
-      sub: user.id, // User UUID from database
-      aud: 'authenticated', // Required by Supabase
-      exp: now + (this.TOKEN_EXPIRY_HOURS * 60 * 60), // 24 hours
+    const payload = {
+      sub: user.id,
       email: user.email,
+      aud: 'authenticated',
       role: 'authenticated',
+      exp: now + (this.TOKEN_EXPIRY_HOURS * 60 * 60),
       iat: now
     };
-
-    // Create unsigned token since Python backend uses verify_signature: False
-    return jwt.sign(payload, '', { algorithm: 'none' });
+    
+    // Create a simple base64-encoded token for demo
+    const payloadBase64 = btoa(JSON.stringify(payload));
+    return `demo.${payloadBase64}.demo`;
   }
 
   /**
@@ -78,7 +80,20 @@ class AuthService {
    */
   verifyToken(token: string): JWTPayload | null {
     try {
-      // Decode unsigned token (algorithm: 'none')
+      // Handle fallback demo tokens
+      if (token.startsWith('demo.') && token.endsWith('.demo')) {
+        const payloadBase64 = token.slice(5, -5); // Remove 'demo.' and '.demo'
+        const payload = JSON.parse(atob(payloadBase64));
+        
+        // Check if token is expired
+        if (payload.exp < Math.floor(Date.now() / 1000)) {
+          return null;
+        }
+        
+        return payload;
+      }
+      
+      // Handle real JWT tokens
       const payload = jwt.decode(token) as JWTPayload;
       
       if (!payload) {
@@ -152,10 +167,10 @@ class AuthService {
    */
   private async getUserFromDatabase(username: string): Promise<DemoUser | null> {
     try {
-      // Query the Python backend to get the real user UUID
-      const backendUrl = process.env.BACKEND_URL;
-      console.log('🔗 Attempting to fetch from:', `${backendUrl}/api/auth/user-by-username/${username}`);
-      const response = await fetch(`${backendUrl}/api/auth/user-by-username/${username}`);
+      // Query via Next.js API proxy to keep backend URL secure
+      const apiUrl = `/api/auth/user-by-username/${username}`;
+      console.log('🔗 Attempting to fetch from:', apiUrl);
+      const response = await fetch(apiUrl);
       
       if (response.ok) {
         const userData = await response.json();
@@ -183,11 +198,11 @@ class AuthService {
       console.error('❌ Database query error:', error);
     }
     
-    // Fallback for demo purposes - use username as ID  
+    // Fallback for demo purposes - use our test user ID  
     if (username === 'ankur8') {
-      console.log('⚠️ Using username as user ID for demo');
+      console.log('⚠️ Using fallback test user ID for demo');
       return {
-        id: 'ankur8', // Use username as ID since DB query failed
+        id: '3c64d808-ff9c-4808-a1a2-84ee7c38183c', // Use our test user ID
         username: 'ankur8',
         email: 'ankur8@encanto.ai',
         name: 'Ankur Soni',
@@ -204,7 +219,7 @@ class AuthService {
   getCurrentUser(): { id: string; username: string; email: string; name: string } | null {
     if (typeof window === 'undefined') return null;
     
-    const token = localStorage.getItem('supabase.auth.token');
+    const token = localStorage.getItem('auth_token');
     if (!token) return null;
     
     const payload = this.verifyToken(token);
@@ -241,7 +256,7 @@ class AuthService {
     if (typeof window === 'undefined') return;
     
     localStorage.removeItem('teacher-auth');
-    localStorage.removeItem('supabase.auth.token');
+    localStorage.removeItem('auth_token');
   }
 }
 

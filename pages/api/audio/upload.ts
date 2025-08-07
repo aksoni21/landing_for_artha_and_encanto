@@ -101,9 +101,24 @@ export default async function handler(
     formDataParts.push(fileBuffer);
     formDataParts.push('\r\n');
     
-    // Add user_id field (generate a proper UUID for now - could be from JWT token later)
-    const crypto = require('crypto');
-    const userId = crypto.randomUUID();
+    // Add user_id field - extract from JWT token or use demo user
+    // Try to get user from Authorization header
+    const authHeader = req.headers.authorization;
+    let userId = '3c64d808-ff9c-4808-a1a2-84ee7c38183c'; // fallback test user
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      // For now, decode JWT manually to extract user ID
+      try {
+        const jwt = require('jsonwebtoken');
+        const payload = jwt.decode(token) as any;
+        if (payload?.sub) {
+          userId = payload.sub; // Use the user ID from JWT token
+        }
+      } catch (error) {
+        console.log('Failed to decode JWT token, using fallback user ID');
+      }
+    }
     formDataParts.push(
       `--${boundary}\r\n` +
       `Content-Disposition: form-data; name="user_id"\r\n\r\n` +

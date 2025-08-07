@@ -55,6 +55,46 @@ const AudioAnalysisPage: React.FC = () => {
   const [historicalData, setHistoricalData] = useState<HistoricalData[]>([]);
   const [timeframe, setTimeframe] = useState<TimeFrame>('month');
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Check authentication status
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      try {
+        const { authService } = await import('../services/authService');
+        const user = authService.getCurrentUser(token);
+        if (user) {
+          setIsLoggedIn(true);
+          setCurrentUser(user);
+          return;
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      }
+    }
+    // Auto-login with demo user for testing
+    await loginDemo();
+  };
+
+  const loginDemo = async () => {
+    try {
+      const { authService } = await import('../services/authService');
+      const result = await authService.login('ankur8', '123456');
+      if (result.success && result.token) {
+        localStorage.setItem('auth_token', result.token);
+        setIsLoggedIn(true);
+        setCurrentUser(result.user);
+      }
+    } catch (error) {
+      console.error('Demo login failed:', error);
+    }
+  };
 
   // Mobile detection
   useEffect(() => {
@@ -68,17 +108,19 @@ const AudioAnalysisPage: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Load historical data (mock for now)
+  // Load historical data when user or timeframe changes
   useEffect(() => {
-    loadHistoricalData();
-  }, [timeframe]);
+    if (currentUser) {
+      loadHistoricalData();
+    }
+  }, [timeframe, currentUser]);
 
   const loadHistoricalData = async () => {
     try {
       const { audioAnalysisService } = await import('../services/audioAnalysisService');
       
-      // In a real app, we'd get the actual user ID
-      const userId = 'current-user'; // Mock user ID
+      // Use actual user ID if logged in, otherwise fallback
+      const userId = currentUser?.id || '3c64d808-ff9c-4808-a1a2-84ee7c38183c';
       
       const history = await audioAnalysisService.getAnalysisHistory(userId, 13);
       setHistoricalData(history);

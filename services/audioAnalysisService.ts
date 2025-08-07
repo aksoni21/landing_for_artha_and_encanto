@@ -34,7 +34,7 @@ interface ComponentScore {
 
 interface AnalysisResult {
   request_id: string;
-  timestamp: string;
+  timestamp?: string;
   overall_result: {
     overall_cefr: string;
     confidence: number;
@@ -43,6 +43,19 @@ interface AnalysisResult {
     recommendations: string[];
     score_distribution: Record<string, number>;
     processing_metadata: Record<string, any>;
+  };
+  transcription?: {
+    full_text: string;
+    word_level_timestamps: any[];
+    confidence_scores: any[];
+    language_detection: { language: string; confidence: number };
+  };
+  analysis_results?: {
+    grammar: any;
+    vocabulary: any;
+    fluency: any;
+    pronunciation: any;
+    discourse: any;
   };
   services_executed: string[];
   execution_summary: {
@@ -57,11 +70,17 @@ interface AnalysisResult {
 
 export class AudioAnalysisService {
   private baseUrl: string;
-  private apiKey?: string;
 
-  constructor(baseUrl: string = '/api/audio', apiKey?: string) {
+  constructor(baseUrl: string = '/api/audio') {
     this.baseUrl = baseUrl;
-    this.apiKey = apiKey;
+  }
+
+  /**
+   * Get auth token from localStorage
+   */
+  private getAuthToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('auth_token');
   }
 
   /**
@@ -77,10 +96,15 @@ export class AudioAnalysisService {
     } = {}
   ): Promise<AnalysisResult> {
     try {
+      console.log('🎤 Starting audio analysis for:', audioFile.name, audioFile.size, 'bytes');
+      
       // Step 1: Upload audio to Python backend
+      console.log('⬆️ Uploading audio file...');
       const uploadResult = await this.uploadAudioToBackend(audioFile, options.language);
+      console.log('✅ Upload successful:', uploadResult);
       
       // Step 2: Wait for processing and get results
+      console.log('⏳ Waiting for analysis completion...');
       return await this.waitForAnalysisCompletion(uploadResult.session_id);
 
     } catch (error) {
@@ -111,7 +135,7 @@ export class AudioAnalysisService {
       method: 'POST',
       body: formData,
       headers: {
-        ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` })
+        ...(this.getAuthToken() && { 'Authorization': `Bearer ${this.getAuthToken()}` })
       }
     });
 
@@ -133,34 +157,44 @@ export class AudioAnalysisService {
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
+        console.log(`🔄 Analysis attempt ${attempt + 1}/${maxAttempts} for session: ${sessionId}`);
+        
         // Call the analyze endpoint which checks status and returns results if complete
         const response = await fetch(`${this.baseUrl}/analyze`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` })
+            ...(this.getAuthToken() && { 'Authorization': `Bearer ${this.getAuthToken()}` })
           },
           body: JSON.stringify({ session_id: sessionId })
         });
 
+        console.log(`📡 API Response: ${response.status} ${response.statusText}`);
+
         if (response.ok) {
           const result = await response.json();
-          // If we get a full result, processing is complete
-          if (result.overall_cefr_level || result.scores) {
+          console.log('✅ Got successful response:', result);
+          // If analysis is complete and we have results, return them
+          if (result.analysis_complete || result.analysis_results || result.scores || result.overall_cefr_level) {
             return this.transformBackendResponse(result);
           }
+          // Continue polling if still processing
+          await new Promise(resolve => setTimeout(resolve, pollInterval));
+          continue;
         } else if (response.status === 202) {
           // Processing still in progress
           const statusInfo = await response.json();
-          console.log(`Analysis in progress: ${statusInfo.message || 'Processing...'}`);
+          console.log(`⏳ Analysis in progress: ${statusInfo.message || 'Processing...'} (attempt ${attempt + 1}/${maxAttempts})`);
           
           // Wait before next poll
           await new Promise(resolve => setTimeout(resolve, pollInterval));
           continue;
         } else {
           // Error occurred
-          const errorData = await response.json().catch(() => ({ error: 'Analysis failed' }));
-          throw new Error(`Analysis failed: ${errorData.error}`);
+          const errorText = await response.text();
+          console.error(`❌ API Error ${response.status}:`, errorText);
+          const errorData = errorText ? JSON.parse(errorText) : { error: 'Analysis failed' };
+          throw new Error(`Analysis failed: ${errorData.error || response.statusText}`);
         }
       } catch (error) {
         if (attempt === maxAttempts - 1) {
@@ -181,12 +215,15 @@ export class AudioAnalysisService {
   private transformBackendResponse(backendResult: any): AnalysisResult {
     return {
       request_id: backendResult.session_id || backendResult.recording_id,
+      timestamp: backendResult.timestamp || new Date().toISOString(),
       overall_result: {
         overall_cefr: backendResult.overall_cefr_level || 'A1',
         confidence: backendResult.confidence || 0.85,
         weighted_average: backendResult.weighted_average || backendResult.scores?.overall || 75,
         component_scores: backendResult.component_scores || this.transformScores(backendResult.scores),
-        recommendations: backendResult.recommendations || backendResult.areas_for_improvement || []
+        recommendations: backendResult.recommendations || backendResult.areas_for_improvement || [],
+        score_distribution: backendResult.score_distribution || {},
+        processing_metadata: backendResult.processing_metadata || {}
       },
       transcription: {
         full_text: backendResult.transcription?.text || '',
@@ -201,14 +238,15 @@ export class AudioAnalysisService {
         pronunciation: this.createComponentResult('pronunciation', backendResult),
         discourse: this.createComponentResult('discourse', backendResult)
       },
-      meta: {
-        processing_time_ms: 5000,
-        services_attempted: 5,
-        services_successful: 5,
-        success_rate: 1.0,
-        performance_metrics: {}
+      services_executed: backendResult.services_executed || ['transcription', 'analysis'],
+      execution_summary: {
+        total_execution_time: backendResult.execution_summary?.total_execution_time || 5.0,
+        services_attempted: backendResult.execution_summary?.services_attempted || 5,
+        services_successful: backendResult.execution_summary?.services_successful || 5,
+        success_rate: backendResult.execution_summary?.success_rate || 1.0,
+        performance_metrics: backendResult.execution_summary?.performance_metrics || {}
       },
-      errors: []
+      errors: backendResult.errors || []
     };
   }
 
@@ -267,7 +305,7 @@ export class AudioAnalysisService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` })
+        ...(this.getAuthToken() && { 'Authorization': `Bearer ${this.getAuthToken()}` })
       },
       body: JSON.stringify(request)
     });
@@ -582,7 +620,7 @@ export class AudioAnalysisService {
 
     const response = await fetch(`${this.baseUrl}/api/analysis/history/${userId}?limit=${limit}`, {
       headers: {
-        ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` })
+        ...(this.getAuthToken() && { 'Authorization': `Bearer ${this.getAuthToken()}` })
       }
     });
 
