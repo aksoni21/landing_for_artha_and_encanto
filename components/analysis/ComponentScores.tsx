@@ -249,7 +249,7 @@ export const ComponentScores: React.FC<ComponentScoresProps> = ({
                     <div className="pt-2 border-t border-gray-100">
                       <div className="text-xs font-semibold text-gray-600 mb-1">Examples</div>
                       <div className="text-xs text-gray-500 italic">
-                        "{score.details.examples[0]}"
+                        &ldquo;{score.details.examples[0]}&rdquo;
                       </div>
                     </div>
                   )}

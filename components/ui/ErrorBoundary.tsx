@@ -144,7 +144,7 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({
         {/* Error Description */}
         <p className="text-gray-600 text-center mb-6">
           We encountered an unexpected error while processing your request. 
-          Don't worry - your data is safe and we're working to fix the issue.
+          Don&apos;t worry - your data is safe and we&apos;re working to fix the issue.
         </p>
 
         {/* Error ID */}
@@ -285,7 +285,7 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({
 
 // Hook for handling errors in functional components
 export const useErrorHandler = () => {
-  return (error: Error, errorInfo?: any) => {
+  return (error: Error, errorInfo?: ErrorInfo) => {
     console.error('Error caught by useErrorHandler:', error, errorInfo);
     
     // You can dispatch to error reporting service here

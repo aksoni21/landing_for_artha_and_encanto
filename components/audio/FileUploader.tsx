@@ -145,6 +145,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     if (file) {
       await processFile(file);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onFileSelect]);
 
   const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({

@@ -323,13 +323,13 @@ export const createError = (type: ErrorType, message: string, options?: Partial<
   ...options,
 });
 
-export const handleNetworkError = (error: any): AppError => {
+export const handleNetworkError = (error: unknown): AppError => {
   if (!navigator.onLine) {
     return createError('network', 'You appear to be offline. Please check your internet connection.');
   }
   
   return createError('network', 'Network request failed. Please try again.', {
-    details: error.message || 'Unknown network error',
+    details: error instanceof Error ? error.message : 'Unknown network error',
     retryable: true
   });
 };
@@ -359,7 +359,7 @@ export const handlePermissionError = (permission: string): AppError => {
   });
 };
 
-export const handleUploadError = (error: any, fileSize?: number, maxSize?: number): AppError => {
+export const handleUploadError = (error: unknown, fileSize?: number, maxSize?: number): AppError => {
   if (fileSize && maxSize && fileSize > maxSize) {
     return createError('upload', 'File is too large for upload.', {
       details: `File size: ${Math.round(fileSize / 1024 / 1024)}MB, Max: ${Math.round(maxSize / 1024 / 1024)}MB`,
@@ -368,7 +368,7 @@ export const handleUploadError = (error: any, fileSize?: number, maxSize?: numbe
   }
   
   return createError('upload', 'File upload failed. Please try again.', {
-    details: error.message || 'Unknown upload error',
+    details: error instanceof Error ? error.message : 'Unknown upload error',
     retryable: true
   });
 };

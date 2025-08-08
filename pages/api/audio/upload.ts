@@ -44,7 +44,7 @@ export default async function handler(
     });
     console.log('🔄 Starting form parsing...');
     
-    const [fields, files] = await new Promise<[any, any]>((resolve, reject) => {
+    const [fields, files] = await new Promise<[Record<string, unknown>, Record<string, FormidableFile | FormidableFile[] | undefined>]>((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
         if (err) {
           console.log('❌ Form parsing error:', err);
@@ -110,12 +110,12 @@ export default async function handler(
       const token = authHeader.substring(7);
       // For now, decode JWT manually to extract user ID
       try {
-        const jwt = require('jsonwebtoken');
-        const payload = jwt.decode(token) as any;
+        const jwt = await import('jsonwebtoken');
+        const payload = jwt.decode(token) as { sub?: string } | null;
         if (payload?.sub) {
           userId = payload.sub; // Use the user ID from JWT token
         }
-      } catch (error) {
+      } catch {
         console.log('Failed to decode JWT token, using fallback user ID');
       }
     }

@@ -102,6 +102,7 @@ const VocabularyLookupForm: React.FC<VocabularyLookupFormProps> = ({ onLookup, i
 
   // Debounced book lookup
   const debouncedBookLookup = useCallback(
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     debounce(async (title: string) => {
       if (!title.trim() || title.length < 3) {
         setBookSuggestions([]);

@@ -44,6 +44,7 @@ const VocabularyPage: React.FC = () => {
     } else if (activeTab === 'stats' && !stats) {
       loadStats();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, history.length, stats]);
 
   const checkAuth = () => {

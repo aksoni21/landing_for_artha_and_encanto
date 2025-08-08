@@ -55,12 +55,13 @@ const AudioAnalysisPage: React.FC = () => {
   const [historicalData, setHistoricalData] = useState<HistoricalData[]>([]);
   const [timeframe, setTimeframe] = useState<TimeFrame>('month');
   const [isMobile, setIsMobile] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ id?: string; email?: string; username?: string; name?: string } | null>(null);
 
   // Check authentication status
   useEffect(() => {
     checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkAuth = async () => {
@@ -68,7 +69,7 @@ const AudioAnalysisPage: React.FC = () => {
     if (token) {
       try {
         const { authService } = await import('../services/authService');
-        const user = authService.getCurrentUser(token);
+        const user = authService.getCurrentUser();
         if (user) {
           setIsLoggedIn(true);
           setCurrentUser(user);
@@ -89,7 +90,9 @@ const AudioAnalysisPage: React.FC = () => {
       if (result.success && result.token) {
         localStorage.setItem('auth_token', result.token);
         setIsLoggedIn(true);
-        setCurrentUser(result.user);
+        if (result.user) {
+          setCurrentUser(result.user);
+        }
       }
     } catch (error) {
       console.error('Demo login failed:', error);
@@ -113,6 +116,7 @@ const AudioAnalysisPage: React.FC = () => {
     if (currentUser) {
       loadHistoricalData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeframe, currentUser]);
 
   const loadHistoricalData = async () => {

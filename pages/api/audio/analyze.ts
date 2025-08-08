@@ -69,7 +69,7 @@ export default async function handler(
         console.log('📋 Analysis results retrieved from results endpoint');
         return res.status(200).json(results);
       }
-    } catch (error) {
+    } catch {
       console.warn('⚠️ Results endpoint failed, trying alternative approach');
     }
     

@@ -33,6 +33,9 @@ interface HistoricalData {
   sessionDuration: number;
 }
 
+type ChartType = 'line' | 'radar' | 'bar' | 'comparison';
+type TimeFrame = 'week' | 'month' | 'quarter' | 'year';
+
 interface ProgressChartsProps {
   historicalData: HistoricalData[];
   currentScores: {
@@ -42,8 +45,8 @@ interface ProgressChartsProps {
     pronunciation: number;
     discourse: number;
   };
-  timeframe: 'week' | 'month' | 'quarter' | 'year';
-  onTimeframeChange: (timeframe: 'week' | 'month' | 'quarter' | 'year') => void;
+  timeframe: TimeFrame;
+  onTimeframeChange: (timeframe: TimeFrame) => void;
   className?: string;
 }
 
@@ -54,7 +57,7 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
   onTimeframeChange,
   className = '',
 }) => {
-  const [activeChart, setActiveChart] = useState<'line' | 'radar' | 'bar' | 'comparison'>('line');
+  const [activeChart, setActiveChart] = useState<ChartType>('line');
 
   const colors = {
     grammar: '#ef4444',
@@ -136,12 +139,12 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
     }
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ color: string; dataKey: string; value: number }>; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
           <p className="font-semibold text-gray-800 mb-2">{`${label}`}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
               {`${entry.dataKey}: ${Math.round(entry.value)}`}
             </p>
@@ -168,7 +171,7 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
             {['line', 'radar', 'bar', 'comparison'].map((type) => (
               <button
                 key={type}
-                onClick={() => setActiveChart(type as any)}
+                onClick={() => setActiveChart(type as ChartType)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
                   activeChart === type
                     ? 'bg-white text-blue-600 shadow-sm'
@@ -185,7 +188,7 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
             {['week', 'month', 'quarter', 'year'].map((period) => (
               <button
                 key={period}
-                onClick={() => onTimeframeChange(period as any)}
+                onClick={() => onTimeframeChange(period as TimeFrame)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
                   timeframe === period
                     ? 'bg-white text-blue-600 shadow-sm'
@@ -429,7 +432,7 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
         >
           <h4 className="font-semibold text-gray-800 mb-3">📊 Key Insights</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            {generateInsights(historicalData, currentScores).map((insight, index) => (
+            {generateInsights(historicalData).map((insight, index) => (
               <div key={index} className="flex items-start gap-2">
                 <span className="text-blue-500 mt-0.5">•</span>
                 <span className="text-gray-600">{insight}</span>
@@ -442,7 +445,7 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
   );
 };
 
-function generateInsights(historicalData: HistoricalData[], currentScores: any): string[] {
+function generateInsights(historicalData: HistoricalData[]): string[] {
   const insights: string[] = [];
   
   if (historicalData.length < 2) {

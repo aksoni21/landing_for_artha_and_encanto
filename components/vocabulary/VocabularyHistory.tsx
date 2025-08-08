@@ -14,6 +14,7 @@ const VocabularyHistory: React.FC<VocabularyHistoryProps> = ({ history, onWordCl
 
   useEffect(() => {
     filterHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [history, searchQuery, selectedFilter]);
 
   const filterHistory = () => {
