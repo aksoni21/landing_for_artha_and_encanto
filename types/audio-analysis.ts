@@ -6,6 +6,14 @@ export interface LatestAnalysisResult {
   session_id: string;
   recording_id: string;
   overall_cefr_level: string;
+  overall_toefl_score?: number; // Optional TOEFL score
+  toefl_section_scores?: { // Optional TOEFL section breakdown
+    reading: number;
+    listening: number;
+    speaking: number;
+    writing: number;
+    total: number;
+  };
   scores: {
     grammar: number;
     vocabulary: number;
@@ -34,6 +42,7 @@ export interface HistoricalData {
   pronunciation: number;
   discourse: number;
   cefrLevel: string;
+  toeflScore?: number; // Optional TOEFL score for historical data
   sessionDuration: number;
 }
 
@@ -88,3 +97,5 @@ export interface ApiErrorResponse {
 }
 
 export type TimeFrame = 'week' | 'month' | 'quarter' | 'year';
+
+export type ScoringSystem = 'CEFR' | 'TOEFL' | 'BOTH';

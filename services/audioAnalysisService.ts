@@ -4,6 +4,7 @@
  */
 
 import { scoreToCefr } from '../utils/cefr';
+import { scoreToToefl, calculateSectionScores } from '../utils/toefl';
 import { getBackendURL } from '../utils/environment';
 import { LatestAnalysisResult, HistoricalData, AnalysisHistoryResponse } from '../types/audio-analysis';
 
@@ -226,7 +227,18 @@ class AudioAnalysisService {
       });
 
       if (response.ok) {
-        return await response.json();
+        const data = await response.json();
+        
+        // Add TOEFL scores if not present
+        if (data && data.scores) {
+          const avgScore = Object.values(data.scores as Record<string, number>)
+            .reduce((sum, score) => sum + score, 0) / Object.keys(data.scores).length;
+          
+          data.overall_toefl_score = scoreToToefl(avgScore);
+          data.toefl_section_scores = calculateSectionScores(data.scores);
+        }
+        
+        return data;
       }
 
       if (response.status === 404) {
@@ -257,17 +269,21 @@ class AudioAnalysisService {
         
         // Transform backend data to frontend format
         if (data.analyses && Array.isArray(data.analyses)) {
-          return data.analyses.map((analysis: any) => ({
-            date: analysis.completed_at || analysis.started_at || new Date().toISOString(),
-            overallScore: analysis.overall_score || 0,
-            grammar: analysis.scores?.grammar || 0,
-            vocabulary: analysis.scores?.vocabulary || 0,
-            fluency: analysis.scores?.fluency || 0,
-            pronunciation: analysis.scores?.pronunciation || 0,
-            discourse: analysis.scores?.discourse || 0,
-            cefrLevel: analysis.cefr_level || 'B1',
-            sessionDuration: analysis.duration_seconds || 180
-          }));
+          return data.analyses.map((analysis: any) => {
+            const overallScore = analysis.overall_score || 0;
+            return {
+              date: analysis.completed_at || analysis.started_at || new Date().toISOString(),
+              overallScore,
+              grammar: analysis.scores?.grammar || 0,
+              vocabulary: analysis.scores?.vocabulary || 0,
+              fluency: analysis.scores?.fluency || 0,
+              pronunciation: analysis.scores?.pronunciation || 0,
+              discourse: analysis.scores?.discourse || 0,
+              cefrLevel: analysis.cefr_level || 'B1',
+              toeflScore: scoreToToefl(overallScore), // Add TOEFL score
+              sessionDuration: analysis.duration_seconds || 180
+            };
+          });
         }
         
         return [];

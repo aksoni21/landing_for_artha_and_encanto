@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/router';
 import { scoreToCefr } from '../../utils/cefr';
-import { LatestAnalysisResult, HistoricalData, ComponentScoreDetail, TimeFrame } from '../../types/audio-analysis';
+import { scoreToToefl, calculateSectionScores } from '../../utils/toefl';
+import { LatestAnalysisResult, HistoricalData, ComponentScoreDetail, TimeFrame, ScoringSystem } from '../../types/audio-analysis';
+import TOEFLScoreIndicator from '../../components/analysis/TOEFLScoreIndicator';
 
 // Import components from parent directory
 import CEFRLevelIndicator from '../../components/analysis/CEFRLevelIndicator';
@@ -25,6 +27,7 @@ const AudioAnalysisResultsPage: React.FC = () => {
   const [error, setError] = useState<AppError | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id?: string; email?: string; username?: string; name?: string } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [scoringSystem, setScoringSystem] = useState<ScoringSystem>('TOEFL'); // Default to TOEFL for North America
 
   // Mobile detection
   useEffect(() => {
@@ -198,14 +201,40 @@ const AudioAnalysisResultsPage: React.FC = () => {
                 </p>
               </div>
               
-              <motion.button
-                onClick={handleNewAnalysis}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                New Analysis
-              </motion.button>
+              <div className="flex items-center gap-4">
+                {/* Scoring System Toggle */}
+                <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setScoringSystem('CEFR')}
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                      scoringSystem === 'CEFR' 
+                        ? 'bg-white text-blue-600 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    CEFR
+                  </button>
+                  <button
+                    onClick={() => setScoringSystem('TOEFL')}
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                      scoringSystem === 'TOEFL' 
+                        ? 'bg-white text-blue-600 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    TOEFL
+                  </button>
+                </div>
+                
+                <motion.button
+                  onClick={handleNewAnalysis}
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  New Analysis
+                </motion.button>
+              </div>
             </div>
           </div>
         </header>
@@ -229,31 +258,41 @@ const AudioAnalysisResultsPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Main Results Grid */}
-              <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 xl:grid-cols-3'} gap-8`}>
-                {/* CEFR Level Indicator */}
-                <div className={isMobile ? 'col-span-1' : 'xl:col-span-1'}>
+              {/* Score Indicator - Full Width */}
+              {scoringSystem === 'TOEFL' ? (
+                <div className="flex justify-center">
+                  <TOEFLScoreIndicator
+                    totalScore={scoreToToefl(Object.values(latestResult.scores).reduce((sum, score) => sum + score, 0) / 5)}
+                    sectionScores={calculateSectionScores(latestResult.scores)}
+                    confidence={0.85}
+                    size="large"
+                    showDetails={true}
+                    animated={true}
+                    className="w-full max-w-4xl"
+                  />
+                </div>
+              ) : (
+                <div className="flex justify-center">
                   <CEFRLevelIndicator
                     currentLevel={latestResult.overall_cefr_level}
                     confidence={0.85}
                     score={Object.values(latestResult.scores).reduce((sum, score) => sum + score, 0) / 5}
                     nextLevel={getNextCEFRLevel(latestResult.overall_cefr_level)}
                     progressToNext={75} // Mock progress
-                    size={isMobile ? 'medium' : 'large'}
+                    size="large"
                     showDetails={true}
                     animated={true}
+                    className="w-full max-w-4xl"
                   />
                 </div>
+              )}
 
-                {/* Component Scores */}
-                <div className={isMobile ? 'col-span-1' : 'xl:col-span-2'}>
-                  <ComponentScores
-                    scores={getComponentScores()}
-                    animated={true}
-                    showDetails={!isMobile}
-                  />
-                </div>
-              </div>
+              {/* Component Scores - Full Width */}
+              <ComponentScores
+                scores={getComponentScores()}
+                animated={true}
+                showDetails={true}
+              />
 
               {/* Progress Charts */}
               <ProgressCharts
