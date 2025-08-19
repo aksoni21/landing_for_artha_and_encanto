@@ -1,17 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// Define a type for chat messages
+// Define types
 interface ChatMessage {
   sender: 'ai' | 'user';
   text: string;
   followup?: string[];
 }
 
-// Extend the student type to include lastAssignment
 interface DemoStudent {
   name: string;
   id: string;
+  email: string;
   status: string;
   group: string;
   avatar: string;
@@ -27,12 +28,23 @@ interface DemoStudent {
     status: string;
     assignedAt: string;
   };
+  avgScore?: number;
+  improvement?: number;
+  feedback?: string;
+  cefr?: string;
 }
+
+const TABS = [
+  { name: 'Overview', key: 'overview' },
+  { name: 'AI Insights', key: 'insights' },
+  { name: 'Assignments', key: 'assignments' },
+];
 
 const demoStudents: DemoStudent[] = [
   {
     name: 'Maria Lopez',
     id: 'S123',
+    email: 'maria@email.com',
     status: 'At Risk',
     group: 'A1',
     avatar: '',
@@ -42,766 +54,761 @@ const demoStudents: DemoStudent[] = [
     encouragementSent: false,
     reviewAssigned: false,
     lastAssignment: undefined,
+    avgScore: 82,
+    improvement: 18,
+    feedback: 'Improved clarity in greetings',
+    cefr: 'A2'
   },
   {
-    name: 'Carlos Ruiz',
-    id: 'S126',
-    status: 'At Risk',
+    name: 'John Smith',
+    id: 'S124',
+    email: 'john@email.com',
+    status: 'Active',
     group: 'B1',
     avatar: '',
-    progress: 0.35,
-    aiNext: 'Send encouragement. Assign review on advanced grammar.',
-    aiSummary: 'Carlos missed 2 sessions. Advanced grammar mistakes detected.',
+    progress: 0.4,
+    aiNext: 'Complete "Daily Routines" module with extra practice.',
+    aiSummary: 'John needs to work on verb tenses and sentence structure.',
     encouragementSent: false,
     reviewAssigned: false,
     lastAssignment: undefined,
+    avgScore: 65,
+    improvement: 5,
+    feedback: 'Needs more practice with verbs',
+    cefr: 'A1'
   },
   {
     name: 'Emily Chen',
     id: 'S125',
-    status: 'At Risk',
-    group: 'A1',
-    avatar: '',
-    progress: 0.5,
-    aiNext: 'Invite to open-ended conversation session.',
-    aiSummary: 'Emily missed a few sessions. Needs to catch up on assignments.',
-    encouragementSent: false,
-    reviewAssigned: false,
-    lastAssignment: undefined,
-  },
-  {
-    name: 'Priya Singh',
-    id: 'S127',
-    status: 'Doing Well',
+    email: 'emily@email.com',
+    status: 'Active',
     group: 'A2',
     avatar: '',
-    progress: 0.95,
-    aiNext: 'Assign advanced conversation practice.',
-    aiSummary: 'Priya is excelling in all areas. Ready for more advanced topics.',
+    progress: 0.75,
+    aiNext: 'Try storytelling prompts for spontaneous speaking.',
+    aiSummary: 'Emily has strong pronunciation. Focus on longer sentences.',
     encouragementSent: false,
     reviewAssigned: false,
     lastAssignment: undefined,
+    avgScore: 78,
+    improvement: 15,
+    feedback: 'Better pronunciation',
+    cefr: 'A2'
   },
   {
-    name: 'Liam O’Brien',
-    id: 'S128',
-    status: 'Doing Well',
-    group: 'B2',
-    avatar: '',
-    progress: 0.92,
-    aiNext: 'Encourage peer mentoring.',
-    aiSummary: 'Liam consistently scores above 90%. Shows leadership in group activities.',
-    encouragementSent: false,
-    reviewAssigned: false,
-    lastAssignment: undefined,
-  },
-];
-
-const proactiveSuggestions = [
-  {
-    message: '3 students are at risk of falling behind. Assign review modules?',
-    actions: ['Assign review modules', 'Send Encouragement']
-  },
-  {
-    message: 'Class average quiz score dropped 5% this week. Would you like to view details?',
-    actions: ['View Details']
-  }
-];
-
-const aiSampleQuestions = [
-  'Which students are at risk?',
-  'Assign review modules',
-  'How is Maria Lopez doing?',
-  'Show class trends for grammar',
-];
-
-// Dummy student details data
-interface StudentDetails {
-  name: string;
-  attendance: string;
-  quizzes: Quiz[];
-  strengths: string[];
-  weaknesses: string[];
-  notes: string;
-}
-const studentDetailsData: Record<string, StudentDetails> = {
-  S123: {
-    name: 'Maria Lopez',
-    attendance: '82%',
-    quizzes: [
-      { date: '2025-07-01', score: 65 },
-      { date: '2025-06-24', score: 70 },
-      { date: '2025-06-17', score: 68 },
-    ],
-    strengths: ['Greetings'],
-    weaknesses: ['Travel vocabulary', 'Past tense'],
-    notes: 'Maria has missed a few sessions and needs more practice with travel-related vocabulary.'
-  },
-  S126: {
     name: 'Carlos Ruiz',
-    attendance: '80%',
-    quizzes: [
-      { date: '2025-07-01', score: 60 },
-      { date: '2025-06-24', score: 65 },
-      { date: '2025-06-17', score: 70 },
-    ],
-    strengths: ['Listening'],
-    weaknesses: ['Advanced grammar', 'Consistency'],
-    notes: 'Carlos has missed several sessions recently. Needs encouragement and review of advanced grammar.'
+    id: 'S126',
+    email: 'carlos@email.com',
+    status: 'At Risk',
+    group: 'B1',
+    avatar: '',
+    progress: 0.5,
+    aiNext: 'Advanced grammar module needed. Address minor errors.',
+    aiSummary: 'Carlos has excellent fluency but needs work on advanced grammar.',
+    encouragementSent: false,
+    reviewAssigned: false,
+    lastAssignment: undefined,
+    avgScore: 90,
+    improvement: 22,
+    feedback: 'Excellent conversational flow',
+    cefr: 'B1'
   },
-  S125: {
-    name: 'Emily Chen',
-    attendance: '78%',
-    quizzes: [
-      { date: '2025-07-01', score: 68 },
-      { date: '2025-06-24', score: 72 },
-      { date: '2025-06-17', score: 70 },
-    ],
-    strengths: ['Pronunciation'],
-    weaknesses: ['Complex sentence structure', 'Attendance'],
-    notes: 'Emily missed a few sessions and needs to catch up on assignments.'
+  {
+    name: 'Sofia Patel',
+    id: 'S127',
+    email: 'sofia@email.com',
+    status: 'Active',
+    group: 'A1',
+    avatar: '',
+    progress: 0.2,
+    aiNext: 'Daily 5-minute practice sessions recommended.',
+    aiSummary: 'Sofia understands basics but needs more speaking practice.',
+    encouragementSent: false,
+    reviewAssigned: false,
+    lastAssignment: undefined,
+    avgScore: 60,
+    improvement: 2,
+    feedback: 'Low participation',
+    cefr: 'A1'
   },
-  S127: {
-    name: 'Priya Singh',
-    attendance: '100%',
-    quizzes: [
-      { date: '2025-07-01', score: 98 },
-      { date: '2025-06-24', score: 95 },
-      { date: '2025-06-17', score: 97 },
-    ],
-    strengths: ['Pronunciation', 'Participation', 'Grammar'],
-    weaknesses: [],
-    notes: 'Priya is excelling in all areas and is ready for more advanced topics.'
+  {
+    name: 'Liam O\'Brien',
+    id: 'S128',
+    email: 'liam@email.com',
+    status: 'Active',
+    group: 'A1',
+    avatar: '',
+    progress: 0.6,
+    aiNext: 'Continue with current curriculum. Good progress.',
+    aiSummary: 'Liam shows consistent improvement in basic conversations.',
+    encouragementSent: false,
+    reviewAssigned: false,
+    lastAssignment: undefined,
+    avgScore: 70,
+    improvement: 10,
+    feedback: 'Good progress',
+    cefr: 'A1'
   },
-  S128: {
-    name: 'Liam O’Brien',
-    attendance: '98%',
-    quizzes: [
-      { date: '2025-07-01', score: 94 },
-      { date: '2025-06-24', score: 92 },
-      { date: '2025-06-17', score: 93 },
-    ],
-    strengths: ['Leadership', 'Grammar', 'Participation'],
-    weaknesses: [],
-    notes: 'Liam consistently scores above 90% and shows leadership in group activities.'
+];
+
+// Pre-defined AI responses
+const aiResponses: Record<string, { answer: string; followup?: string[] }> = {
+  "What students need the most help?": {
+    answer: "Based on recent performance, Sofia Patel (20% progress) and John Smith (40% progress) need the most attention. Sofia requires daily practice encouragement, while John struggles with verb tenses.",
+    followup: ["Show me Sofia's detailed progress", "What exercises would help John?", "Schedule intervention for both"]
   },
+  "Give me a summary of class performance": {
+    answer: "Class average: 52% progress. 2 students at risk (Maria, Carlos), 4 active. Main challenges: verb tenses (60% of class), vocabulary retention (40%). Strengths: pronunciation improving across all students.",
+    followup: ["Show at-risk students", "What are common mistakes?", "Generate weekly report"]
+  },
+  "What assignments should I give this week?": {
+    answer: "Recommended assignments:\n• Maria & Sofia: 'Travel Conversations' with focus on past tense\n• John: 'Daily Routines' with verb conjugation\n• Emily: Advanced storytelling prompts\n• Carlos: Grammar review exercises",
+    followup: ["Assign to all students", "Customize by level", "Create homework schedule"]
+  },
+  "Which students improved the most?": {
+    answer: "Emily Chen shows 15% improvement this month with stronger pronunciation. Maria Lopez improved 8% in conversational skills. Carlos maintains high fluency despite grammar challenges.",
+    followup: ["Show Emily's progress chart", "What helped Maria improve?", "Reward top performers"]
+  }
 };
 
-const reviewTopics = [
-  'Past Tense Review',
-  'Travel Vocabulary',
-  'Advanced Grammar',
-  'Attendance Challenge',
-  'Conversation Practice',
-];
-
-// Quiz interface for student quiz data
-interface Quiz { date: string; score: number; }
-
-export default function DashboardAI() {
+export default function TeacherDashboard() {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [search, setSearch] = useState('');
+  const [students, setStudents] = useState<DemoStudent[]>(demoStudents);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<DemoStudent | null>(null);
+  const [assignmentModal, setAssignmentModal] = useState(false);
+  const [assignmentData, setAssignmentData] = useState({
+    topic: '',
+    due: '',
+    note: ''
+  });
+  const [showAssistant, setShowAssistant] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const chatInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const [chat, setChat] = useState<ChatMessage[]>([
-    { sender: 'ai', text: 'Hi! I am your AI teaching assistant. How can I help you today?' }
-  ]);
-  const [input, setInput] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
-  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Proactive suggestions (show first one for demo)
-  const [suggestionIdx, setSuggestionIdx] = useState(0);
-  const [showSuggestion, setShowSuggestion] = useState(true);
-  const suggestion = proactiveSuggestions[suggestionIdx];
-
-  // Student state
-  const [students, setStudents] = useState(demoStudents);
-
-  // Assignment Modal state
-  const [assignModalStudentId, setAssignModalStudentId] = useState<string | null>(null);
-  const [assignTopic, setAssignTopic] = useState(reviewTopics[0]);
-  const [assignDue, setAssignDue] = useState('');
-  const [assignNote, setAssignNote] = useState('');
-  const [showAssignToast, setShowAssignToast] = useState(false);
-  const [assignToastMsg, setAssignToastMsg] = useState('');
-
-  // Split students into at risk and doing well
-  const atRiskStudents = students.filter(s => s.status === 'At Risk');
-  const doingWellStudents = students.filter(s => s.status === 'Doing Well');
-
-  // Student Details Modal state
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
-  const selectedStudent = selectedStudentId ? studentDetailsData[selectedStudentId] : null;
-  const [showDataTrail, setShowDataTrail] = useState(false);
-
-  // Check authentication on mount - DISABLED for demo purposes
   useEffect(() => {
-    // Authentication disabled - anyone can access /dashboard_ai directly
-    // Uncomment the code below to re-enable authentication
-    
-    /*
-    const teacherAuth = localStorage.getItem('teacher-auth');
-    if (!teacherAuth) {
-      router.push('/dashboard-login?redirect=' + encodeURIComponent('/dashboard_ai'));
-      return;
-    }
-    
-    try {
-      const authData = JSON.parse(teacherAuth);
-      // Check if login is still valid (within 24 hours)
-      const loginTime = new Date(authData.loginTime);
-      const now = new Date();
-      const hoursSinceLogin = (now.getTime() - loginTime.getTime()) / (1000 * 60 * 60);
-      
-      if (hoursSinceLogin >= 24) {
-        // Session expired, redirect to login
-        localStorage.removeItem('teacher-auth');
-        localStorage.removeItem('supabase.auth.token');
-        router.push('/dashboard-login?redirect=' + encodeURIComponent('/dashboard_ai'));
-        return;
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const authed = localStorage.getItem('teacher-auth');
+      if (!authed) {
+        router.replace('/dashboard-login');
       }
-    } catch {
-      // Invalid auth data, redirect to login
-      localStorage.removeItem('teacher-auth');
-      localStorage.removeItem('supabase.auth.token');
-      router.push('/dashboard-login?redirect=' + encodeURIComponent('/dashboard_ai'));
-      return;
     }
-    */
   }, [router]);
 
-  // Scroll chat to bottom on new message
   useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (showAssistant && chatInputRef.current) {
+      setTimeout(() => chatInputRef.current?.focus(), 200);
     }
-  }, [chat]);
+  }, [showAssistant]);
 
-  // Handle chat send
-  const handleSend = async (q?: string) => {
-    const question = q || input.trim();
-    if (!question) return;
-    setChat(c => [...c, { sender: 'user', text: question }]);
-    setInput('');
-    setAiLoading(true);
-    setAiError(null);
-    try {
-      const res = await fetch('/api/ai-assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question })
-      });
-      if (!res.ok) throw new Error((await res.json()).error || 'AI error');
-      const data = await res.json();
-      setChat(c => [...c, { sender: 'ai', text: data.answer, followup: data.followup }]);
-    } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : 'AI failed to respond.';
-      setChat(c => [...c, { sender: 'ai', text: errorMsg }]);
-      setAiError(errorMsg);
-    } finally {
-      setAiLoading(false);
+  // Filter students by search
+  const filteredStudents = students.filter(s =>
+    s.name.toLowerCase().includes(search.toLowerCase()) ||
+    s.id.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleSend = () => {
+    if (!inputValue.trim() && !chatInput.trim()) return;
+
+    const messageText = chatInput || inputValue;
+    const userMessage: ChatMessage = { sender: 'user', text: messageText };
+    setChatMessages(prev => [...prev, userMessage]);
+    setInputValue('');
+    setChatInput('');
+    setLoading(true);
+
+    setTimeout(() => {
+      const response = aiResponses[messageText] || {
+        answer: "I can help you analyze student performance, suggest assignments, and identify who needs help. Try asking: 'What students need the most help?' or 'Give me a summary of class performance'",
+        followup: ["What students need the most help?", "Give me a summary of class performance", "What assignments should I give this week?"]
+      };
+      
+      const aiMessage: ChatMessage = {
+        sender: 'ai',
+        text: response.answer,
+        followup: response.followup
+      };
+      setChatMessages(prev => [...prev, aiMessage]);
+      setLoading(false);
+    }, 1000);
+  };
+
+  const handleFollowup = (question: string) => {
+    setChatInput(question);
+    handleSend();
+  };
+
+  const handleChatSend = () => {
+    if (chatInput.trim()) {
+      handleSend();
     }
   };
 
-  // Handle follow-up suggestion click
-  const handleFollowup = (followup: string) => {
-    handleSend(followup);
+  const handleAssignWork = (student: DemoStudent) => {
+    setSelectedStudent(student);
+    setAssignmentModal(true);
   };
 
-  // Handle proactive suggestion action
-  const handleSuggestion = (action: string) => {
-    setShowSuggestion(false);
-    handleSend(action);
-    setSuggestionIdx(i => (i + 1) % proactiveSuggestions.length);
-    setTimeout(() => setShowSuggestion(true), 2000);
-  };
-
-  // Student quick actions
-  const handleStudentAction = (id: string, action: 'encourage' | 'assignReview') => {
-    setStudents(students => students.map(s =>
-      s.id === id
-        ? {
-            ...s,
-            encouragementSent: action === 'encourage' ? true : s.encouragementSent,
-            reviewAssigned: action === 'assignReview' ? true : s.reviewAssigned,
-          }
-        : s
-    ));
-  };
-
-  // Assignment modal handlers
-  const openAssignModal = (id: string) => {
-    setAssignModalStudentId(id);
-    setAssignTopic(reviewTopics[0]);
-    // Auto-fill due date to one week from now
-    const weekFromNow = new Date();
-    weekFromNow.setDate(weekFromNow.getDate() + 7);
-    const yyyy = weekFromNow.getFullYear();
-    const mm = String(weekFromNow.getMonth() + 1).padStart(2, '0');
-    const dd = String(weekFromNow.getDate()).padStart(2, '0');
-    const defaultDue = `${yyyy}-${mm}-${dd}`;
-    setAssignDue(defaultDue);
-    // Auto-fill note with a default message
-    const studentName = studentDetailsData[id]?.name || 'the student';
-    const topic = reviewTopics[0];
-    setAssignNote(
-      `Hi ${studentName},\n\nPlease complete the "${topic}" assignment by next week. This review will help you strengthen your skills in this area, address recent challenges, and boost your confidence. Completing this will help you make faster progress and be better prepared for upcoming lessons!`
-    );
-  };
-  const closeAssignModal = () => {
-    setAssignModalStudentId(null);
-  };
-  const confirmAssign = () => {
-    if (!assignModalStudentId) return;
-    setStudents(students => students.map(s =>
-      s.id === assignModalStudentId
-        ? { ...s, reviewAssigned: true, lastAssignment: { topic: assignTopic, due: assignDue, note: assignNote, status: 'Assigned', assignedAt: new Date().toISOString() } }
-        : s
-    ));
-    setAssignToastMsg(`Review assigned to ${studentDetailsData[assignModalStudentId].name}.`);
-    setShowAssignToast(true);
-    setTimeout(() => setShowAssignToast(false), 2500);
-    closeAssignModal();
-  };
-
-  // When topic changes, update the note if it hasn't been edited
-  useEffect(() => {
-    if (assignModalStudentId && assignNote.startsWith('Hi ')) {
-      const studentName = studentDetailsData[assignModalStudentId]?.name || 'the student';
-      setAssignNote(
-        `Hi ${studentName},\n\nPlease complete the "${assignTopic}" assignment by next week. This review will help you strengthen your skills in this area, address recent challenges, and boost your confidence. Completing this will help you make faster progress and be better prepared for upcoming lessons!`
-      );
+  const submitAssignment = () => {
+    if (selectedStudent && assignmentData.topic && assignmentData.due) {
+      const newAssignment = {
+        ...assignmentData,
+        status: 'Assigned',
+        assignedAt: new Date().toISOString()
+      };
+      
+      setStudents(prev => prev.map(s => 
+        s.id === selectedStudent.id 
+          ? { ...s, lastAssignment: newAssignment }
+          : s
+      ));
+      
+      setAssignmentModal(false);
+      setAssignmentData({ topic: '', due: '', note: '' });
+      setSelectedStudent(null);
+      alert(`Assignment "${assignmentData.topic}" assigned to ${selectedStudent.name}`);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assignTopic]);
-
-  // Avatar helper
-  const getAvatar = (name: string) => {
-    const initials = name.split(' ').map(n => n[0]).join('');
-    return (
-      <div className="w-10 h-10 rounded-full bg-cyan-700 flex items-center justify-center text-white font-bold text-lg">
-        {initials}
-      </div>
-    );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-cyan-900 to-teal-900 flex flex-col md:flex-row">
-      {/* Assignment Modal */}
-      {assignModalStudentId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-cyan-950 border border-cyan-400/40 rounded-2xl p-8 w-full max-w-md shadow-xl relative animate-fade-in">
-            <button
-              className="absolute top-3 right-3 text-cyan-200 hover:text-cyan-400 text-2xl font-bold"
-              onClick={closeAssignModal}
-              aria-label="Close"
-            >
-              &times;
-            </button>
-            <h2 className="text-xl font-bold text-white mb-4">Assign Review to {studentDetailsData[assignModalStudentId].name}</h2>
-            <div className="mb-3">
-              <label className="block text-cyan-200 text-sm mb-1">Topic</label>
-              <select
-                className="w-full bg-cyan-900/40 border border-cyan-400/30 rounded-lg px-3 py-2 text-white focus:outline-none"
-                value={assignTopic}
-                onChange={e => setAssignTopic(e.target.value)}
-              >
-                {reviewTopics.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">AI Teacher Dashboard</h1>
+              <p className="text-gray-600 mt-1">Monitor and support your students with AI assistance</p>
             </div>
-            <div className="mb-3">
-              <label className="block text-cyan-200 text-sm mb-1">Due Date</label>
-              <input
-                type="date"
-                className="w-full bg-cyan-900/40 border border-cyan-400/30 rounded-lg px-3 py-2 text-white focus:outline-none"
-                value={assignDue}
-                onChange={e => setAssignDue(e.target.value)}
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-cyan-200 text-sm mb-1">Note (optional)</label>
-              <textarea
-                className="w-full bg-cyan-900/40 border border-cyan-400/30 rounded-lg px-3 py-2 text-white focus:outline-none"
-                value={assignNote}
-                onChange={e => setAssignNote(e.target.value)}
-                rows={6}
-              />
-            </div>
-            <div className="flex gap-2 mt-4">
-              <button
-                className="bg-cyan-700 hover:bg-cyan-800 text-white font-semibold px-4 py-2 rounded-lg transition"
-                onClick={confirmAssign}
-                disabled={!assignTopic || !assignDue}
-              >
-                Assign Review
-              </button>
-              <button
-                className="bg-cyan-900 hover:bg-cyan-800 text-cyan-200 font-semibold px-4 py-2 rounded-lg border border-cyan-400/30 transition"
-                onClick={closeAssignModal}
-              >
-                Cancel
-              </button>
-            </div>
-            <div className="text-xs text-cyan-300 mt-2">* Topic and due date required</div>
-          </div>
-        </div>
-      )}
-      {/* Toast/Confirmation */}
-      {showAssignToast && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-cyan-800 text-white px-6 py-3 rounded-xl shadow-lg border border-cyan-400/40 animate-fade-in">
-          {assignToastMsg}
-        </div>
-      )}
-      {/* Student Details Modal */}
-      {selectedStudent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-cyan-950 border border-cyan-400/40 rounded-2xl p-8 w-full max-w-md shadow-xl relative animate-fade-in">
-            <button
-              className="absolute top-3 right-3 text-cyan-200 hover:text-cyan-400 text-2xl font-bold"
-              onClick={() => { setSelectedStudentId(null); setShowDataTrail(false); }}
-              aria-label="Close"
-            >
-              &times;
-            </button>
-            {!showDataTrail ? (
-              <>
-                <h2 className="text-2xl font-bold text-white mb-2">{selectedStudent.name}</h2>
-                <div className="mb-2 text-cyan-200">Attendance: <span className="font-semibold text-cyan-300">{selectedStudent.attendance}</span></div>
-                <div className="mb-2">
-                  <div className="text-cyan-200 font-semibold mb-1">Quiz Scores:</div>
-                  <ul className="text-cyan-100 text-sm space-y-1">
-                    {selectedStudent.quizzes.map((q: Quiz) => (
-                      <li key={q.date}>
-                        {q.date}: <span className="font-semibold text-cyan-300">{q.score}%</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="mb-2">
-                  <div className="text-cyan-200 font-semibold mb-1">Strengths:</div>
-                  <ul className="flex flex-wrap gap-2">
-                    {selectedStudent.strengths.map((s: string) => (
-                      <li key={s} className="bg-green-700/70 text-white px-2 py-1 rounded text-xs">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="mb-2">
-                  <div className="text-cyan-200 font-semibold mb-1">Areas for Improvement:</div>
-                  <ul className="flex flex-wrap gap-2">
-                    {selectedStudent.weaknesses.map((w: string) => (
-                      <li key={w} className="bg-red-700/70 text-white px-2 py-1 rounded text-xs">{w}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="mb-2">
-                  <div className="text-cyan-200 font-semibold mb-1">Notes:</div>
-                  <div className="text-cyan-100 text-sm">{selectedStudent.notes}</div>
-                </div>
-                <button
-                  className="mt-4 bg-cyan-700 hover:bg-cyan-800 text-white font-semibold px-4 py-2 rounded-lg transition"
-                  onClick={() => setShowDataTrail(true)}
-                >
-                  How did the AI get this?
-                </button>
-              </>
-            ) : (
-              <>
-                <h2 className="text-2xl font-bold text-white mb-2">How the AI Generated These Insights</h2>
-                <div className="mb-2 text-cyan-200">The AI analyzed the following data points for <span className="font-semibold text-cyan-300">{selectedStudent.name}</span> to personalize recommendations:</div>
-                <div className="mb-4 text-cyan-100 text-sm">
-                  <span className="font-semibold text-cyan-300">How it works:</span> The AI reviews quiz scores, attendance, and participation to spot strengths. It focuses on repeated errors and slow progress to identify areas for improvement. Recommendations are tailored to each student’s unique learning patterns.
-                </div>
-                <div className="mb-2">
-                  <div className="text-cyan-200 font-semibold mb-1">Attendance:</div>
-                  <div className="text-cyan-100 text-sm mb-2">{selectedStudent.attendance} attendance rate over the last month.</div>
-                </div>
-                <div className="mb-2">
-                  <div className="text-cyan-200 font-semibold mb-1">Quiz Scores Over Time:</div>
-                  <ul className="text-cyan-100 text-sm space-y-1">
-                    {selectedStudent.quizzes.map((q: Quiz) => (
-                      <li key={q.date}>
-                        {q.date}: <span className="font-semibold text-cyan-300">{q.score}%</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="mb-2">
-                  <div className="text-cyan-200 font-semibold mb-1">Strengths Detected:</div>
-                  <div className="text-cyan-100 text-xs mb-1">The AI highlights strengths when a student consistently performs well and makes few mistakes in these areas.</div>
-                  <ul className="flex flex-wrap gap-2">
-                    {selectedStudent.strengths.map((s: string) => (
-                      <li key={s} className="bg-green-700/70 text-white px-2 py-1 rounded text-xs">{s}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="mb-2">
-                  <div className="text-cyan-200 font-semibold mb-1">Areas for Improvement Detected:</div>
-                  <div className="text-cyan-100 text-xs mb-1">The AI focuses on skills where the student makes repeated errors or shows slow progress, so teachers can target support.</div>
-                  <ul className="flex flex-wrap gap-2">
-                    {selectedStudent.weaknesses.map((w: string) => (
-                      <li key={w} className="bg-red-700/70 text-white px-2 py-1 rounded text-xs">{w}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="mb-2">
-                  <div className="text-cyan-200 font-semibold mb-1">AI Notes:</div>
-                  <div className="text-cyan-100 text-sm">{selectedStudent.notes}</div>
-                </div>
-                <button
-                  className="mt-4 bg-cyan-700 hover:bg-cyan-800 text-white font-semibold px-4 py-2 rounded-lg transition"
-                  onClick={() => setShowDataTrail(false)}
-                >
-                  Back to Summary
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-      {/* Main content */}
-      <div className="flex-1 p-6 md:px-12 md:py-4">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold text-white">AI-First Teacher Dashboard</h1>
-          <button
-            onClick={() => {
-              localStorage.removeItem('teacher-auth');
-              localStorage.removeItem('supabase.auth.token');
-              router.push('/');
-            }}
-            className="text-cyan-200 hover:text-white text-sm bg-cyan-800/50 px-3 py-1 rounded-lg transition-colors"
-          >
-            Logout
-          </button>
-        </div>
-        {/* Proactive AI Suggestion */}
-        {showSuggestion && suggestion && atRiskStudents.length > 0 && (
-          <div className="relative bg-gradient-to-br from-cyan-900/90 to-cyan-800/80 border-2 border-cyan-400/40 rounded-2xl p-6 mb-8 shadow-lg flex flex-col gap-3 animate-fade-in">
-            {/* Dismiss X */}
-            <button
-              className="absolute top-3 right-3 text-cyan-300 hover:text-cyan-100 text-lg font-bold focus:outline-none"
-              onClick={() => setShowSuggestion(false)}
-              aria-label="Dismiss"
-            >
-              ×
-            </button>
-            {/* AI Icon and Title */}
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-full bg-cyan-600 flex items-center justify-center shadow">
-                <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="16" cy="16" r="16" fill="#06b6d4" />
-                  <path d="M10 20h8a2 2 0 002-2v-6a2 2 0 00-2-2h-8a2 2 0 00-2 2v6a2 2 0 002 2z" stroke="#fff" strokeWidth="2" strokeLinejoin="round"/>
-                  <path d="M10 20v3l3-3h5" stroke="#fff" strokeWidth="2" strokeLinejoin="round"/>
-                </svg>
+            
+            {/* Quick Stats */}
+            <div className="hidden md:flex items-center gap-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{students.length}</div>
+                <div className="text-sm text-gray-500">Students</div>
               </div>
-              <span className="text-cyan-100 font-bold text-lg">AI Alert</span>
-            </div>
-            {/* Message and At-Risk Students */}
-            <div className="flex flex-col md:flex-row md:items-center md:gap-3">
-              <span className="text-cyan-100 font-medium">
-                {atRiskStudents.length} student{atRiskStudents.length > 1 ? 's' : ''} at risk of falling behind:
-              </span>
-              <div className="flex gap-2 mt-2 md:mt-0">
-                {atRiskStudents.map(s => (
-                  <div key={s.id} className="flex items-center gap-1">
-                    <div className="w-7 h-7 rounded-full bg-cyan-700 flex items-center justify-center text-white font-bold text-xs border-2 border-cyan-400/40">
-                      {s.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <span className="text-cyan-200 text-xs font-semibold">{s.name.split(' ')[0]}</span>
-                  </div>
-                ))}
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600">
+                  {students.filter(s => s.status === 'At Risk').length}
+                </div>
+                <div className="text-sm text-gray-500">At Risk</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {Math.round(students.reduce((acc, s) => acc + s.progress, 0) / students.length * 100)}%
+                </div>
+                <div className="text-sm text-gray-500">Avg Progress</div>
               </div>
             </div>
-            {/* Actions */}
-            <div className="flex flex-wrap gap-2 mt-2">
-              {suggestion.actions.map(a => (
-                <button
-                  key={a}
-                  className="bg-cyan-700 hover:bg-cyan-800 text-cyan-100 font-semibold px-3 py-1 rounded-full text-xs transition border border-cyan-400/30 shadow-sm"
-                  style={{ minWidth: 'auto' }}
-                  onClick={() => handleSuggestion(a)}
-                >
-                  {a}
-                </button>
-              ))}
-            </div>
           </div>
-        )}
+        </div>
+      </header>
 
-        {/* At Risk Students Section */}
-        <h2 className="text-xl font-bold text-red-300 mb-2">Students At Risk</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {atRiskStudents.map(s => (
-            <div
-              key={s.id}
-              className="bg-white/10 border border-white/20 rounded-xl p-6 shadow flex flex-col animate-fade-in cursor-pointer hover:scale-[1.03] transition-transform"
-              onClick={() => setSelectedStudentId(s.id)}
-            >
-              <div className="flex items-center gap-3 mb-2">
-                {getAvatar(s.name)}
-                <div className="text-lg font-bold text-white">{s.name}</div>
-                <div className="text-xs text-cyan-200 bg-cyan-900/60 rounded px-2 py-1 ml-auto">{s.group}</div>
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className={`w-3 h-3 rounded-full bg-red-400`}></div>
-                <div className="text-xs text-cyan-200">{s.status}</div>
-              </div>
-              <div className="w-full bg-cyan-900/40 rounded-full h-2 mb-2">
-                <div className="bg-cyan-400 h-2 rounded-full transition-all" style={{ width: `${Math.round(s.progress * 100)}%` }}></div>
-              </div>
-              <div className="text-cyan-200 text-sm mb-2">{s.aiSummary}</div>
-              <div className="text-white text-sm mb-2"><span className="font-semibold text-cyan-300">Next Step:</span> {s.aiNext}</div>
-              <div className="flex gap-2 mt-auto flex-wrap">
-                <button
-                  className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold px-3 py-1 rounded-lg text-xs transition"
-                  onClick={e => { e.stopPropagation(); handleSend(`How is ${s.name} doing?`); }}
-                >
-                  Ask AI about {s.name}
-                </button>
-                <button
-                  className={`bg-green-700 hover:bg-green-800 text-white font-semibold px-3 py-1 rounded-lg text-xs transition ${s.encouragementSent ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  onClick={e => { e.stopPropagation(); handleStudentAction(s.id, 'encourage'); }}
-                  disabled={s.encouragementSent}
-                >
-                  {s.encouragementSent ? 'Encouragement Sent' : 'Send Encouragement'}
-                </button>
-                <button
-                  className={`bg-blue-700 hover:bg-blue-800 text-white font-semibold px-3 py-1 rounded-lg text-xs transition ${s.reviewAssigned ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  onClick={e => { e.stopPropagation(); openAssignModal(s.id); }}
-                  disabled={s.reviewAssigned}
-                >
-                  {s.reviewAssigned ? 'Review Assigned' : 'Assign Review'}
-                </button>
-              </div>
-              {s.lastAssignment && (
-                <div className="mt-2 text-xs text-cyan-300 bg-cyan-900/40 rounded px-2 py-1">
-                  <span className="font-semibold">Last Assignment:</span> {s.lastAssignment.topic} (Due: {s.lastAssignment.due})
-                  {s.lastAssignment.status === 'Assigned' && <span className="ml-2 text-cyan-200">[Assigned]</span>}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-        {/* Students Doing Well Section */}
-        <h2 className="text-xl font-bold text-green-300 mb-2">Students Doing Well</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {doingWellStudents.map(s => (
-            <div
-              key={s.id}
-              className="bg-white/10 border border-white/20 rounded-xl p-6 shadow flex flex-col animate-fade-in cursor-pointer hover:scale-[1.03] transition-transform"
-              onClick={() => setSelectedStudentId(s.id)}
-            >
-              <div className="flex items-center gap-3 mb-2">
-                {getAvatar(s.name)}
-                <div className="text-lg font-bold text-white">{s.name}</div>
-                <div className="text-xs text-cyan-200 bg-cyan-900/60 rounded px-2 py-1 ml-auto">{s.group}</div>
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className={`w-3 h-3 rounded-full bg-green-400`}></div>
-                <div className="text-xs text-cyan-200">{s.status}</div>
-              </div>
-              <div className="w-full bg-cyan-900/40 rounded-full h-2 mb-2">
-                <div className="bg-cyan-400 h-2 rounded-full transition-all" style={{ width: `${Math.round(s.progress * 100)}%` }}></div>
-              </div>
-              <div className="text-cyan-200 text-sm mb-2">{s.aiSummary}</div>
-              <div className="text-white text-sm mb-2"><span className="font-semibold text-cyan-300">Next Step:</span> {s.aiNext}</div>
-              <div className="flex gap-2 mt-auto flex-wrap">
-                <button
-                  className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold px-3 py-1 rounded-lg text-xs transition"
-                  onClick={e => { e.stopPropagation(); handleSend(`How is ${s.name} doing?`); }}
-                >
-                  Ask AI about {s.name}
-                </button>
-                <button
-                  className={`bg-green-700 hover:bg-green-800 text-white font-semibold px-3 py-1 rounded-lg text-xs transition ${s.encouragementSent ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  onClick={e => { e.stopPropagation(); handleStudentAction(s.id, 'encourage'); }}
-                  disabled={s.encouragementSent}
-                >
-                  {s.encouragementSent ? 'Encouragement Sent' : 'Send Encouragement'}
-                </button>
-                <button
-                  className={`bg-blue-700 hover:bg-blue-800 text-white font-semibold px-3 py-1 rounded-lg text-xs transition ${s.reviewAssigned ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  onClick={e => { e.stopPropagation(); handleStudentAction(s.id, 'assignReview'); }}
-                  disabled={s.reviewAssigned}
-                >
-                  {s.reviewAssigned ? 'Review Assigned' : 'Assign Review'}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      {/* Conversational AI Assistant (always visible) */}
-      <div className="w-full md:w-96 bg-cyan-950/90 border-l border-cyan-400/20 flex flex-col fixed md:static bottom-0 right-0 z-40 h-screen md:h-screen min-h-screen max-h-screen">
-        <div className="flex items-center gap-2 p-4 border-b border-cyan-400/20">
-          <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="16" cy="16" r="16" fill="#06b6d4" />
-            <path d="M10 20h8a2 2 0 002-2v-6a2 2 0 00-2-2h-8a2 2 0 00-2 2v6a2 2 0 002 2z" stroke="#fff" strokeWidth="2" strokeLinejoin="round"/>
-            <path d="M10 20v3l3-3h5" stroke="#fff" strokeWidth="2" strokeLinejoin="round"/>
-          </svg>
-          <span className="text-cyan-100 font-bold">AI Assistant</span>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-cyan-950/80">
-          {chat.map((msg, i) => (
-            <div key={i} className={`flex ${msg.sender === 'ai' ? 'justify-start' : 'justify-end'}`}>
-              <div className={`max-w-xs px-4 py-2 rounded-2xl text-sm ${msg.sender === 'ai' ? 'bg-cyan-800 text-white' : 'bg-cyan-600 text-white'}`}>
-                {msg.text}
-                {msg.sender === 'ai' && msg.followup && (
-                  <div className="mt-2 flex gap-2 flex-wrap">
-                    {msg.followup.map((f: string) => (
-                      <button
-                        key={f}
-                        className="bg-cyan-700 hover:bg-cyan-800 text-cyan-100 px-2 py-1 rounded-full text-xs mt-1"
-                        onClick={() => handleFollowup(f)}
-                        disabled={aiLoading}
-                      >
-                        {f}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-          {aiLoading && (
-            <div className="flex justify-start"><div className="max-w-xs px-4 py-2 rounded-2xl text-sm bg-cyan-800 text-white animate-pulse">Thinking...</div></div>
-          )}
-          {aiError && (
-            <div className="flex justify-start"><div className="max-w-xs px-4 py-2 rounded-2xl text-sm bg-red-700 text-white">{aiError}</div></div>
-          )}
-          <div ref={chatEndRef}></div>
-        </div>
-        <div className="p-4 border-t border-cyan-400/20 bg-cyan-950/90">
-          <div className="flex gap-2 mb-2 flex-wrap">
-            {aiSampleQuestions.map(q => (
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          
+          {/* Navigation Tabs */}
+          <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 mb-8">
+            {TABS.map(tab => (
               <button
-                key={q}
-                className="bg-cyan-800/60 text-cyan-200 px-3 py-1 rounded-full text-xs hover:bg-cyan-700/80 transition border border-cyan-400/20"
-                onClick={() => handleSend(q)}
-                disabled={aiLoading}
+                key={tab.key}
+                className={`relative flex-1 px-6 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  activeTab === tab.key
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-blue-600 hover:bg-white/50'
+                }`}
+                onClick={() => setActiveTab(tab.key)}
               >
-                {q}
+                {tab.name}
+                {activeTab === tab.key && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 bg-white rounded-lg shadow-sm"
+                    style={{ zIndex: -1 }}
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
               </button>
             ))}
           </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              className="flex-1 bg-white/10 border border-cyan-400/30 rounded-lg px-3 py-2 text-white placeholder-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              placeholder="Type your question or command..."
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}
-              disabled={aiLoading}
-            />
-            <button
-              className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold px-4 py-2 rounded-lg transition"
-              onClick={() => handleSend()}
-              disabled={aiLoading || !input.trim()}
-            >
-              Send
-            </button>
-          </div>
+
+          {/* Search Bar - Only show on Overview tab */}
+          {activeTab === 'overview' && (
+            <div className="mb-6">
+              <div className="relative max-w-md">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search students by name or ID..."
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Tab Content */}
+          <AnimatePresence mode="wait">
+            {/* Overview Tab - Simple Student Cards */}
+            {activeTab === 'overview' && (
+              <motion.div
+                key="overview"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredStudents.map(student => (
+                    <motion.div
+                      key={student.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2, delay: 0.1 }}
+                      className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 border border-gray-100 overflow-hidden"
+                    >
+                      <div className="p-6">
+                        {/* Student Header */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold text-lg">
+                                {student.name.split(' ').map(n => n[0]).join('')}
+                              </span>
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-gray-900">{student.name}</h3>
+                              <p className="text-sm text-gray-500">{student.id}</p>
+                            </div>
+                          </div>
+                          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            student.status === 'At Risk' 
+                              ? 'bg-red-100 text-red-800' 
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {student.status}
+                          </div>
+                        </div>
+
+                        {/* Student Details */}
+                        <div className="space-y-2">
+                          <div className="flex items-center text-sm text-gray-600">
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                            </svg>
+                            {student.email}
+                          </div>
+                          <div className="flex items-center text-sm text-gray-600">
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                            </svg>
+                            Class {student.group}
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm font-medium text-gray-700">Progress</span>
+                            <span className="text-sm text-gray-600">{Math.round(student.progress * 100)}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full transition-all duration-500 ${
+                                student.progress >= 0.7 ? 'bg-green-500' :
+                                student.progress >= 0.4 ? 'bg-yellow-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${student.progress * 100}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                          <div className="flex space-x-2">
+                            <button className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors">
+                              View Profile
+                            </button>
+                            <button className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors">
+                              AI Insights
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* AI Insights Tab */}
+            {activeTab === 'insights' && (
+              <motion.div
+                key="insights"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
+              >
+                {/* At Risk Students Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Students Needing Attention</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {students.filter(s => s.status === 'At Risk' || s.progress < 0.5).map(student => (
+                      <div key={student.id} className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{student.name}</h4>
+                            <p className="text-sm text-gray-500">Progress: {Math.round(student.progress * 100)}%</p>
+                          </div>
+                          <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                            Needs Help
+                          </span>
+                        </div>
+                        
+                        <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-200">
+                          <div className="flex items-start gap-2">
+                            <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-blue-900 mb-1">AI Analysis</p>
+                              <p className="text-sm text-blue-700">{student.aiSummary}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                          <p className="text-sm font-medium text-purple-900 mb-1">Recommended Action</p>
+                          <p className="text-sm text-purple-700">{student.aiNext}</p>
+                        </div>
+
+                        <button 
+                          onClick={() => handleAssignWork(student)}
+                          className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                        >
+                          Assign Recommended Work
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Class Performance Summary */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Class Performance Summary</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-600">
+                        {Math.round(students.reduce((acc, s) => acc + s.progress, 0) / students.length * 100)}%
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">Average Progress</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-600">
+                        {students.filter(s => s.progress >= 0.7).length}
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">Performing Well</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-red-600">
+                        {students.filter(s => s.status === 'At Risk').length}
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">Need Support</div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Assignments Tab */}
+            {activeTab === 'assignments' && (
+              <motion.div
+                key="assignments"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900">Student Assignments</h3>
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    + New Assignment
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {students.map(student => (
+                    <div key={student.id} className="bg-white rounded-lg border border-gray-200 p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span className="text-white font-semibold text-sm">
+                              {student.name.split(' ').map(n => n[0]).join('')}
+                            </span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{student.name}</h4>
+                            <p className="text-sm text-gray-500">Class {student.group}</p>
+                          </div>
+                        </div>
+
+                        {student.lastAssignment ? (
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-gray-900">{student.lastAssignment.topic}</p>
+                            <p className="text-xs text-gray-500">Due: {student.lastAssignment.due}</p>
+                          </div>
+                        ) : (
+                          <div className="text-sm text-gray-400">No active assignment</div>
+                        )}
+
+                        <button 
+                          onClick={() => handleAssignWork(student)}
+                          className="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium transition-colors"
+                        >
+                          Assign Work
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
+      </main>
+
+      {/* Floating AI Assistant Chat Bubble Icon - Like dashboard_MVP */}
+      {!showAssistant && (
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-4 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-blue-300"
+          style={{ boxShadow: '0 4px 24px 0 rgba(59, 130, 246, 0.3)' }}
+          onClick={() => setShowAssistant(true)}
+          aria-label="Open AI Assistant"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        </motion.button>
+      )}
+
+      {/* AI Assistant Chat Interface - Minimized like dashboard_MVP */}
+      {showAssistant && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          className="fixed bottom-6 right-6 z-50 w-80 max-w-full"
+        >
+          <div className="bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-1 bg-white/20 rounded-full">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <span className="text-white font-semibold text-sm">AI Assistant</span>
+                </div>
+                <button
+                  className="text-white/80 hover:text-white text-lg font-bold p-1"
+                  onClick={() => setShowAssistant(false)}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            
+            {/* Chat Messages */}
+            <div className="h-[300px] overflow-y-auto p-4 bg-gray-50">
+              {chatMessages.length === 0 && (
+                <div className="text-center py-4">
+                  <p className="text-gray-500 text-sm mb-3">Ask a question about your students</p>
+                  <div className="space-y-2">
+                    {Object.keys(aiResponses).slice(0, 2).map(question => (
+                      <button
+                        key={question}
+                        onClick={() => handleFollowup(question)}
+                        className="block w-full text-left px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {chatMessages.map((msg, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex mb-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[80%] rounded-lg p-3 ${
+                    msg.sender === 'user'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white border border-gray-200'
+                  }`}>
+                    <p className={`text-sm ${msg.sender === 'user' ? 'text-white' : 'text-gray-800'}`}>
+                      {msg.text}
+                    </p>
+                    
+                    {msg.followup && (
+                      <div className="mt-2 space-y-1">
+                        {msg.followup.slice(0, 2).map((q, i) => (
+                          <button
+                            key={i}
+                            onClick={() => handleFollowup(q)}
+                            className="block w-full text-left px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-xs transition-colors"
+                          >
+                            {q}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+              
+              {loading && (
+                <div className="flex justify-start">
+                  <div className="bg-white border border-gray-200 rounded-lg p-3">
+                    <div className="flex space-x-2">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </div>
+            
+            {/* Input */}
+            <div className="p-3 bg-white border-t border-gray-200">
+              <div className="flex gap-2">
+                <input
+                  ref={chatInputRef}
+                  type="text"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  placeholder="Type your question..."
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleChatSend(); }}
+                />
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-2 rounded-lg transition-colors text-sm disabled:opacity-50"
+                  onClick={handleChatSend}
+                  disabled={!chatInput.trim()}
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Assignment Modal */}
+      {assignmentModal && selectedStudent && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Assign Work to {selectedStudent.name}
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Assignment Topic
+                </label>
+                <input
+                  type="text"
+                  value={assignmentData.topic}
+                  onChange={e => setAssignmentData({...assignmentData, topic: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Travel Conversations Module"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Due Date
+                </label>
+                <input
+                  type="date"
+                  value={assignmentData.due}
+                  onChange={e => setAssignmentData({...assignmentData, due: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Additional Notes
+                </label>
+                <textarea
+                  value={assignmentData.note}
+                  onChange={e => setAssignmentData({...assignmentData, note: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="Optional instructions or focus areas..."
+                />
+              </div>
+            </div>
+            
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setAssignmentModal(false);
+                  setAssignmentData({ topic: '', due: '', note: '' });
+                }}
+                className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitAssignment}
+                disabled={!assignmentData.topic || !assignmentData.due}
+                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Assign
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
-} 
+}
