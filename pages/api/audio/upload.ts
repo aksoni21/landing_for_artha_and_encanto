@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { IncomingForm, File as FormidableFile } from 'formidable';
+import { getBackendURL } from '../../../utils/environment';
 import fs from 'fs';
 
 export const config = {
@@ -9,7 +10,7 @@ export const config = {
   },
 };
 
-const BACKEND_URL = process.env.BACKEND_URL;
+const BACKEND_URL = getBackendURL();
 
 export default async function handler(
   req: NextApiRequest,

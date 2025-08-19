@@ -1,8 +1,13 @@
 /**
- * Audio Analysis Service
- * Connects frontend with Phase 5 backend services
+ * Audio Analysis Service - Simplified
+ * Connects frontend with backend audio analysis services
  */
 
+import { scoreToCefr } from '../utils/cefr';
+import { getBackendURL } from '../utils/environment';
+import { LatestAnalysisResult, HistoricalData, AnalysisHistoryResponse } from '../types/audio-analysis';
+
+// Basic interfaces
 interface TranscriptionResult {
   text: string;
   words: Array<{
@@ -68,69 +73,51 @@ interface AnalysisResult {
   errors: string[];
 }
 
-export class AudioAnalysisService {
+class AudioAnalysisService {
   private baseUrl: string;
 
-  constructor(baseUrl: string = '/api/audio') {
-    this.baseUrl = baseUrl;
+  constructor() {
+    // Use the same base URL pattern as other services
+    this.baseUrl = '/api/audio';
   }
 
-  /**
-   * Get auth token from localStorage
-   */
   private getAuthToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('auth_token');
-  }
-
-  /**
-   * Upload and analyze audio file
-   */
-  async analyzeAudio(
-    audioFile: File,
-    options: {
-      language?: string;
-      priority?: 'low' | 'normal' | 'high';
-      services?: string[];
-      userPreferences?: Record<string, any>;
-    } = {}
-  ): Promise<AnalysisResult> {
-    try {
-      console.log('🎤 Starting audio analysis for:', audioFile.name, audioFile.size, 'bytes');
-      
-      // Step 1: Upload audio to Python backend
-      console.log('⬆️ Uploading audio file...');
-      const uploadResult = await this.uploadAudioToBackend(audioFile, options.language);
-      console.log('✅ Upload successful:', uploadResult);
-      
-      // Step 2: Wait for processing and get results
-      console.log('⏳ Waiting for analysis completion...');
-      return await this.waitForAnalysisCompletion(uploadResult.session_id);
-
-    } catch (error) {
-      console.error('Audio analysis failed:', error);
-      throw new Error(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('auth_token');
     }
+    return null;
   }
 
   /**
-   * Upload audio to Python backend for transcription and analysis
+   * Analyze audio file (upload + process)
    */
-  private async uploadAudioToBackend(audioFile: File, language?: string): Promise<{
-    recording_id: string;
-    session_id: string;
-    status: string;
-    message: string;
-    estimated_processing_time: number;
-  }> {
+  async analyzeAudio(file: File, _options?: { priority?: string; services?: string[] }): Promise<AnalysisResult> {
+    // First upload the file
+    const uploadResult = await this.uploadAudio(file);
+    
+    // Then wait for analysis completion
+    if (uploadResult.session_id) {
+      return await this.waitForAnalysisCompletion(uploadResult.session_id);
+    }
+    
+    throw new Error('Failed to start analysis - no session ID returned');
+  }
+
+  /**
+   * Upload audio file for analysis
+   */
+  async uploadAudio(file: File, userId?: string, language?: string): Promise<any> {
     const formData = new FormData();
-    formData.append('audio_file', audioFile);
+    formData.append('audio', file);
+    
+    if (userId) {
+      formData.append('user_id', userId);
+    }
     
     if (language) {
       formData.append('language', language);
     }
 
-    // Upload via API proxy to Python backend
     const response = await fetch(`${this.baseUrl}/upload`, {
       method: 'POST',
       body: formData,
@@ -144,8 +131,7 @@ export class AudioAnalysisService {
       throw new Error(`Audio upload failed: ${errorData.error}`);
     }
 
-    const result = await response.json();
-    return result;
+    return await response.json();
   }
 
   /**
@@ -159,7 +145,6 @@ export class AudioAnalysisService {
       try {
         console.log(`🔄 Analysis attempt ${attempt + 1}/${maxAttempts} for session: ${sessionId}`);
         
-        // Call the analyze endpoint which checks status and returns results if complete
         const response = await fetch(`${this.baseUrl}/analyze`, {
           method: 'POST',
           headers: {
@@ -174,31 +159,29 @@ export class AudioAnalysisService {
         if (response.ok) {
           const result = await response.json();
           console.log('✅ Got successful response:', result);
-          // If analysis is complete and we have results, return them
-          if (result.analysis_complete || result.analysis_results || result.scores || result.overall_cefr_level) {
-            return this.transformBackendResponse(result);
-          }
-          // Continue polling if still processing
-          await new Promise(resolve => setTimeout(resolve, pollInterval));
-          continue;
-        } else if (response.status === 202) {
-          // Processing still in progress
-          const statusInfo = await response.json();
-          console.log(`⏳ Analysis in progress: ${statusInfo.message || 'Processing...'} (attempt ${attempt + 1}/${maxAttempts})`);
           
-          // Wait before next poll
-          await new Promise(resolve => setTimeout(resolve, pollInterval));
-          continue;
-        } else {
-          // Error occurred
-          const errorText = await response.text();
-          console.error(`❌ API Error ${response.status}:`, errorText);
-          const errorData = errorText ? JSON.parse(errorText) : { error: 'Analysis failed' };
-          throw new Error(`Analysis failed: ${errorData.error || response.statusText}`);
+          if (result.analysis_complete || result.analysis_results || result.scores || result.overall_cefr_level) {
+            return result;
+          }
         }
+
+        if (response.status === 404) {
+          throw new Error('Analysis session not found');
+        }
+
+        if (response.status >= 400 && response.status < 500) {
+          const errorData = await response.json().catch(() => ({ error: 'Client error' }));
+          throw new Error(`Client error: ${errorData.error || response.statusText}`);
+        }
+
+        // Wait before next attempt
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        
       } catch (error) {
+        console.error(`Attempt ${attempt + 1} failed:`, error);
+        
         if (attempt === maxAttempts - 1) {
-          throw new Error(`Analysis timeout: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          throw new Error(`Analysis failed after ${maxAttempts} attempts: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
         
         // Wait before retry
@@ -206,101 +189,13 @@ export class AudioAnalysisService {
       }
     }
 
-    throw new Error('Analysis timed out after 5 minutes');
+    throw new Error('Analysis timed out');
   }
 
   /**
-   * Transform backend response to frontend format
+   * Submit audio for analysis and wait for results
    */
-  private transformBackendResponse(backendResult: any): AnalysisResult {
-    return {
-      request_id: backendResult.session_id || backendResult.recording_id,
-      timestamp: backendResult.timestamp || new Date().toISOString(),
-      overall_result: {
-        overall_cefr: backendResult.overall_cefr_level || 'A1',
-        confidence: backendResult.confidence || 0.85,
-        weighted_average: backendResult.weighted_average || backendResult.scores?.overall || 75,
-        component_scores: backendResult.component_scores || this.transformScores(backendResult.scores),
-        recommendations: backendResult.recommendations || backendResult.areas_for_improvement || [],
-        score_distribution: backendResult.score_distribution || {},
-        processing_metadata: backendResult.processing_metadata || {}
-      },
-      transcription: {
-        full_text: backendResult.transcription?.text || '',
-        word_level_timestamps: backendResult.transcription?.word_timestamps || [],
-        confidence_scores: [],
-        language_detection: { language: 'en', confidence: 0.95 }
-      },
-      analysis_results: {
-        grammar: this.createComponentResult('grammar', backendResult),
-        vocabulary: this.createComponentResult('vocabulary', backendResult), 
-        fluency: this.createComponentResult('fluency', backendResult),
-        pronunciation: this.createComponentResult('pronunciation', backendResult),
-        discourse: this.createComponentResult('discourse', backendResult)
-      },
-      services_executed: backendResult.services_executed || ['transcription', 'analysis'],
-      execution_summary: {
-        total_execution_time: backendResult.execution_summary?.total_execution_time || 5.0,
-        services_attempted: backendResult.execution_summary?.services_attempted || 5,
-        services_successful: backendResult.execution_summary?.services_successful || 5,
-        success_rate: backendResult.execution_summary?.success_rate || 1.0,
-        performance_metrics: backendResult.execution_summary?.performance_metrics || {}
-      },
-      errors: backendResult.errors || []
-    };
-  }
-
-  /**
-   * Transform backend scores to frontend format
-   */
-  private transformScores(scores: any): Record<string, any> {
-    if (!scores) return {};
-    
-    return {
-      grammar: { score: scores.grammar || 75, cefr: 'B1', confidence: 0.85 },
-      vocabulary: { score: scores.vocabulary || 78, cefr: 'B1', confidence: 0.82 },
-      fluency: { score: scores.fluency || 68, cefr: 'A2', confidence: 0.88 },
-      pronunciation: { score: scores.pronunciation || 71, cefr: 'B1', confidence: 0.79 },
-      discourse: { score: scores.discourse || 70, cefr: 'B1', confidence: 0.81 }
-    };
-  }
-
-  /**
-   * Create component analysis result
-   */
-  private createComponentResult(component: string, backendResult: any): any {
-    const componentData = backendResult[`${component}_analysis`] || {};
-    const score = backendResult.scores?.[component] || componentData.score || 75;
-    
-    return {
-      cefr_level: this.scoreToCefr(score),
-      score: score,
-      confidence: 0.85,
-      details: componentData.details || {},
-      suggestions: componentData.suggestions || []
-    };
-  }
-
-  /**
-   * Convert numeric score to CEFR level
-   */
-  private scoreToCefr(score: number): string {
-    if (score >= 90) return 'C2';
-    if (score >= 80) return 'C1';
-    if (score >= 70) return 'B2';
-    if (score >= 60) return 'B1';
-    if (score >= 50) return 'A2';
-    return 'A1';
-  }
-
-  /**
-   * Request analysis from Python backend (Phase 5 Service Orchestrator)
-   */
-  private async requestBackendAnalysis(request: any): Promise<AnalysisResult> {
-    // In a real implementation, this would call the Phase 5 service orchestrator
-    // For now, we'll simulate the backend response
-    
-    // Call Python backend via API proxy
+  async submitAnalysis(request: AnalysisRequest): Promise<AnalysisResult> {
     const response = await fetch(`${this.baseUrl}/analyze`, {
       method: 'POST',
       headers: {
@@ -311,12 +206,6 @@ export class AudioAnalysisService {
     });
 
     if (!response.ok) {
-      // Fallback to simulation in development if backend not available
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Python backend not available, falling back to simulation');
-        return this.simulateAnalysisProcess(request);
-      }
-      
       const errorText = await response.text();
       throw new Error(`Backend analysis failed: ${errorText}`);
     }
@@ -324,339 +213,73 @@ export class AudioAnalysisService {
     return await response.json();
   }
 
+
   /**
-   * Simulate the Phase 5 analysis process for development
+   * Get latest analysis results for a user
    */
-  private async simulateAnalysisProcess(request: AnalysisRequest): Promise<AnalysisResult> {
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    const text = request.transcription.text;
-    const wordCount = text.split(' ').length;
-    
-    // Generate realistic scores based on text analysis
-    const grammar = this.simulateGrammarScore(text);
-    const vocabulary = this.simulateVocabularyScore(text, wordCount);
-    const fluency = this.simulateFluencyScore(request.transcription);
-    const pronunciation = this.simulatePronunciationScore();
-    const discourse = this.simulateDiscourseScore(text);
-
-    const componentScores = { grammar, vocabulary, fluency, pronunciation, discourse };
-    const weightedAverage = Object.values(componentScores).reduce((sum, score) => sum + score.score, 0) / 5;
-    const overallCEFR = this.scoreToCAFR(weightedAverage);
-
-    return {
-      request_id: request.request_id,
-      timestamp: new Date().toISOString(),
-      overall_result: {
-        overall_cefr: overallCEFR,
-        confidence: 0.85,
-        weighted_average: Math.round(weightedAverage * 10) / 10,
-        component_scores: componentScores,
-        recommendations: this.generateRecommendations(componentScores, overallCEFR),
-        score_distribution: {
-          grammar: grammar.score,
-          vocabulary: vocabulary.score,
-          fluency: fluency.score,
-          pronunciation: pronunciation.score,
-          discourse: discourse.score,
-          overall: weightedAverage
-        },
-        processing_metadata: {
-          text_length: text.length,
-          word_count: wordCount,
-          processing_time: 2.5,
-          language_detected: request.transcription.language
+  async getLatestResults(userId: string): Promise<LatestAnalysisResult | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/latest/${userId}`, {
+        headers: {
+          ...(this.getAuthToken() && { 'Authorization': `Bearer ${this.getAuthToken()}` })
         }
-      },
-      services_executed: request.services_required || [],
-      execution_summary: {
-        total_execution_time: 2.5,
-        services_attempted: 5,
-        services_successful: 5,
-        success_rate: 1.0,
-        performance_metrics: {
-          fastest_service: 'vocabulary',
-          slowest_service: 'pronunciation',
-          total_retries: 0
-        }
-      },
-      errors: []
-    };
-  }
+      });
 
-  /**
-   * Simulate grammar analysis
-   */
-  private simulateGrammarScore(text: string): ComponentScore {
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim());
-    const words = text.split(' ');
-    
-    // Basic complexity analysis
-    const avgWordsPerSentence = words.length / sentences.length;
-    const hasComplexWords = /\b\w{8,}\b/.test(text);
-    const hasVariedStructure = /\b(although|however|because|since|while|whereas)\b/i.test(text);
-    
-    let score = 50; // Base score
-    
-    if (avgWordsPerSentence > 10) score += 15;
-    if (hasComplexWords) score += 10;
-    if (hasVariedStructure) score += 15;
-    if (sentences.length > 3) score += 10;
-    
-    score = Math.min(Math.max(score, 0), 100);
-    
-    return {
-      score: Math.round(score * 10) / 10,
-      cefr: this.scoreToCAFR(score),
-      confidence: 0.82,
-      features: {
-        complexity_score: score,
-        sentence_count: sentences.length,
-        avg_words_per_sentence: avgWordsPerSentence,
-        has_complex_structures: hasVariedStructure
+      if (response.ok) {
+        return await response.json();
       }
-    };
-  }
 
-  /**
-   * Simulate vocabulary analysis
-   */
-  private simulateVocabularyScore(text: string, wordCount: number): ComponentScore {
-    const words = text.toLowerCase().split(/\W+/).filter(w => w.length > 2);
-    const uniqueWords = new Set(words);
-    const ttr = uniqueWords.size / wordCount;
-    
-    // Check for academic/advanced words
-    const academicWords = ['analysis', 'demonstrate', 'significant', 'comprehensive', 'implement', 'establish'];
-    const academicWordCount = words.filter(word => academicWords.includes(word)).length;
-    
-    let score = 50; // Base score
-    
-    if (ttr > 0.6) score += 20;
-    if (academicWordCount > 0) score += 15;
-    if (uniqueWords.size > 20) score += 10;
-    if (words.some(word => word.length > 8)) score += 5;
-    
-    score = Math.min(Math.max(score, 0), 100);
-    
-    return {
-      score: Math.round(score * 10) / 10,
-      cefr: this.scoreToCAFR(score),
-      confidence: 0.88,
-      features: {
-        type_token_ratio: Math.round(ttr * 1000) / 1000,
-        total_words: wordCount,
-        unique_words: uniqueWords.size,
-        academic_words: academicWordCount
+      if (response.status === 404) {
+        return null; // No results found
       }
-    };
-  }
 
-  /**
-   * Simulate fluency analysis
-   */
-  private simulateFluencyScore(transcription: TranscriptionResult): ComponentScore {
-    const wordCount = transcription.words.length;
-    const duration = transcription.duration;
-    const wpm = duration > 0 ? (wordCount / duration) * 60 : 120;
-    
-    // Simulate pause analysis
-    const pauseCount = Math.floor(Math.random() * 5) + 2;
-    const fillerWords = ['um', 'uh', 'like', 'you know'];
-    const fillerCount = fillerWords.reduce((count, filler) => 
-      count + (transcription.text.toLowerCase().match(new RegExp(filler, 'g')) || []).length, 0
-    );
-    
-    let score = 50; // Base score
-    
-    if (wpm >= 120 && wpm <= 180) score += 20;
-    if (pauseCount < 3) score += 15;
-    if (fillerCount < 2) score += 10;
-    if (wpm > 100) score += 5;
-    
-    score = Math.min(Math.max(score, 0), 100);
-    
-    return {
-      score: Math.round(score * 10) / 10,
-      cefr: this.scoreToCAFR(score),
-      confidence: 0.79,
-      features: {
-        words_per_minute: Math.round(wpm * 10) / 10,
-        pause_count: pauseCount,
-        filler_words: fillerCount,
-        speech_duration: duration
-      }
-    };
-  }
-
-  /**
-   * Simulate pronunciation analysis
-   */
-  private simulatePronunciationScore(): ComponentScore {
-    // Since we can't actually analyze pronunciation without audio processing,
-    // generate a reasonable score
-    const score = 60 + Math.random() * 25; // Random score between 60-85
-    
-    return {
-      score: Math.round(score * 10) / 10,
-      cefr: this.scoreToCAFR(score),
-      confidence: 0.75,
-      features: {
-        overall_accuracy: Math.round(score),
-        rhythm_score: Math.round((score - 5) + Math.random() * 10),
-        intonation_score: Math.round((score - 3) + Math.random() * 8)
-      }
-    };
-  }
-
-  /**
-   * Simulate discourse analysis
-   */
-  private simulateDiscourseScore(text: string): ComponentScore {
-    const discourseMarkers = ['however', 'therefore', 'furthermore', 'moreover', 'nevertheless', 'consequently'];
-    const markerCount = discourseMarkers.reduce((count, marker) => 
-      count + (text.toLowerCase().includes(marker) ? 1 : 0), 0
-    );
-    
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim());
-    const hasLogicalFlow = sentences.length > 2;
-    
-    let score = 50; // Base score
-    
-    if (markerCount > 0) score += 15;
-    if (markerCount > 2) score += 10;
-    if (hasLogicalFlow) score += 15;
-    if (text.length > 200) score += 10;
-    
-    score = Math.min(Math.max(score, 0), 100);
-    
-    return {
-      score: Math.round(score * 10) / 10,
-      cefr: this.scoreToCAFR(score),
-      confidence: 0.86,
-      features: {
-        discourse_markers: markerCount,
-        sentence_count: sentences.length,
-        text_length: text.length,
-        coherence_score: score
-      }
-    };
-  }
-
-  /**
-   * Convert numerical score to CEFR level
-   */
-  private scoreToCAFR(score: number): string {
-    if (score < 25) return 'A1';
-    if (score < 40) return 'A2';
-    if (score < 60) return 'B1';
-    if (score < 80) return 'B2';
-    if (score < 95) return 'C1';
-    return 'C2';
-  }
-
-  /**
-   * Generate personalized recommendations
-   */
-  private generateRecommendations(scores: Record<string, ComponentScore>, overallCEFR: string): string[] {
-    const recommendations: string[] = [];
-    
-    // Find weakest component
-    const sortedScores = Object.entries(scores).sort((a, b) => a[1].score - b[1].score);
-    const weakest = sortedScores[0];
-    
-    // Component-specific recommendations
-    switch (weakest[0]) {
-      case 'grammar':
-        recommendations.push('Focus on sentence structure and grammatical accuracy');
-        recommendations.push('Practice using a variety of tenses and complex sentences');
-        break;
-      case 'vocabulary':
-        recommendations.push('Expand your vocabulary with academic and professional terms');
-        recommendations.push('Practice using synonyms and more sophisticated word choices');
-        break;
-      case 'fluency':
-        recommendations.push('Practice speaking more smoothly with fewer hesitations');
-        recommendations.push('Work on maintaining a steady pace throughout your speech');
-        break;
-      case 'pronunciation':
-        recommendations.push('Focus on clear articulation and natural rhythm');
-        recommendations.push('Practice word stress and sentence intonation patterns');
-        break;
-      case 'discourse':
-        recommendations.push('Use more connecting words and phrases to link your ideas');
-        recommendations.push('Work on organizing your thoughts in a logical sequence');
-        break;
+      throw new Error('Failed to fetch latest results');
+    } catch (error) {
+      console.error('Error fetching latest results:', error);
+      throw error;
     }
-
-    // Level-specific recommendations
-    if (['A1', 'A2'].includes(overallCEFR)) {
-      recommendations.push('Focus on building basic vocabulary and sentence structures');
-    } else if (['B1', 'B2'].includes(overallCEFR)) {
-      recommendations.push('Practice expressing complex ideas and opinions clearly');
-    } else {
-      recommendations.push('Work on nuanced expression and advanced linguistic features');
-    }
-
-    return recommendations.slice(0, 4); // Return top 4 recommendations
   }
 
-  /**
-   * Generate unique request ID
-   */
-  private generateRequestId(): string {
-    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
 
   /**
    * Get analysis history for a user
    */
-  async getAnalysisHistory(userId: string, limit = 10): Promise<any[]> {
-    // In development, return mock data
-    if (this.baseUrl.includes('localhost') || process.env.NODE_ENV === 'development') {
-      return this.generateMockHistory(limit);
-    }
-
-    const response = await fetch(`${this.baseUrl}/api/analysis/history/${userId}?limit=${limit}`, {
-      headers: {
-        ...(this.getAuthToken() && { 'Authorization': `Bearer ${this.getAuthToken()}` })
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch analysis history');
-    }
-
-    return await response.json();
-  }
-
-  /**
-   * Generate mock historical data
-   */
-  private generateMockHistory(limit: number): any[] {
-    const history = [];
-    const now = new Date();
-
-    for (let i = 0; i < limit; i++) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i * 7); // Weekly intervals
-
-      history.push({
-        date: date.toISOString(),
-        overallScore: 65 + Math.random() * 20 + i * 1.5,
-        grammar: 60 + Math.random() * 25 + i * 1.2,
-        vocabulary: 70 + Math.random() * 20 + i * 1.8,
-        fluency: 55 + Math.random() * 30 + i * 2,
-        pronunciation: 65 + Math.random() * 25 + i * 1.5,
-        discourse: 60 + Math.random() * 25 + i * 1.7,
-        cefrLevel: this.scoreToCAFR(65 + i * 1.5),
-        sessionDuration: 180 + Math.random() * 300,
+  async getAnalysisHistory(userId: string, limit = 10): Promise<HistoricalData[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/history/${userId}?limit=${limit}`, {
+        headers: {
+          ...(this.getAuthToken() && { 'Authorization': `Bearer ${this.getAuthToken()}` })
+        }
       });
-    }
 
-    return history.reverse(); // Oldest first
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Transform backend data to frontend format
+        if (data.analyses && Array.isArray(data.analyses)) {
+          return data.analyses.map((analysis: any) => ({
+            date: analysis.completed_at || analysis.started_at || new Date().toISOString(),
+            overallScore: analysis.overall_score || 0,
+            grammar: analysis.scores?.grammar || 0,
+            vocabulary: analysis.scores?.vocabulary || 0,
+            fluency: analysis.scores?.fluency || 0,
+            pronunciation: analysis.scores?.pronunciation || 0,
+            discourse: analysis.scores?.discourse || 0,
+            cefrLevel: analysis.cefr_level || 'B1',
+            sessionDuration: analysis.duration_seconds || 180
+          }));
+        }
+        
+        return [];
+      }
+
+      throw new Error('Failed to fetch analysis history');
+    } catch (error) {
+      console.error('Error fetching analysis history:', error);
+      return [];
+    }
   }
+
 
   /**
    * Check service health
