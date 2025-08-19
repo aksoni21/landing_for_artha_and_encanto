@@ -107,7 +107,7 @@ class AudioAnalysisService {
   /**
    * Upload audio file for analysis
    */
-  async uploadAudio(file: File, userId?: string, language?: string): Promise<any> {
+  async uploadAudio(file: File, userId?: string, language?: string, scoringMode?: string): Promise<any> {
     const formData = new FormData();
     formData.append('audio', file);
     
@@ -117,6 +117,10 @@ class AudioAnalysisService {
     
     if (language) {
       formData.append('language', language);
+    }
+    
+    if (scoringMode) {
+      formData.append('scoring_mode', scoringMode);
     }
 
     const response = await fetch(`${this.baseUrl}/upload`, {
@@ -214,6 +218,32 @@ class AudioAnalysisService {
     return await response.json();
   }
 
+
+  /**
+   * Get enhanced analysis results with TOEFL scoring support
+   */
+  async getEnhancedResults(sessionId: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/results/enhanced/${sessionId}`, {
+        headers: {
+          ...(this.getAuthToken() && { 'Authorization': `Bearer ${this.getAuthToken()}` })
+        }
+      });
+
+      if (response.ok) {
+        return await response.json();
+      }
+
+      if (response.status === 404) {
+        return null; // No results found
+      }
+
+      throw new Error('Failed to fetch enhanced results');
+    } catch (error) {
+      console.error('Error fetching enhanced results:', error);
+      throw error;
+    }
+  }
 
   /**
    * Get latest analysis results for a user

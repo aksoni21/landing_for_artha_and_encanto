@@ -4,15 +4,6 @@
  */
 
 /**
- * Convert a 0-100 percentage score to TOEFL iBT scale (0-120)
- */
-export function scoreToToefl(score: number): number {
-  // Convert 0-100 score to 0-120 TOEFL scale
-  const toeflScore = Math.round((score / 100) * 120);
-  return Math.min(120, Math.max(0, toeflScore));
-}
-
-/**
  * Convert TOEFL score to proficiency level description
  */
 export function toeflToLevel(toeflScore: number): string {
@@ -37,7 +28,7 @@ export function getToeflBand(toeflScore: number): ToeflBand {
 }
 
 /**
- * Convert CEFR level to approximate TOEFL score range
+ * Convert CEFR level to approximate TOEFL score range (for reference only)
  */
 export function cefrToToeflRange(cefr: string): { min: number; max: number } {
   switch (cefr) {
@@ -52,8 +43,41 @@ export function cefrToToeflRange(cefr: string): { min: number; max: number } {
 }
 
 /**
- * Calculate section scores (Reading, Listening, Speaking, Writing)
- * Each section is worth 30 points in TOEFL iBT
+ * Extract TOEFL scores from native scoring result
+ */
+export function extractToeflScores(scoringResult: any): {
+  reading: number;
+  listening: number;
+  speaking: number;
+  writing: number;
+  total: number;
+} | null {
+  if (scoringResult?.toefl_result?.section_scores) {
+    const sections = scoringResult.toefl_result.section_scores;
+    return {
+      reading: sections.reading?.scaled_score || 0,
+      listening: sections.listening?.scaled_score || 0,
+      speaking: sections.speaking?.scaled_score || 0,
+      writing: sections.writing?.scaled_score || 0,
+      total: scoringResult.toefl_result.total_score || 0
+    };
+  }
+  return null;
+}
+
+/**
+ * Legacy function: Convert a 0-100 percentage score to TOEFL iBT scale (0-120)
+ * @deprecated Use native TOEFL scores from backend instead
+ */
+export function scoreToToefl(score: number): number {
+  // Convert 0-100 score to 0-120 TOEFL scale
+  const toeflScore = Math.round((score / 100) * 120);
+  return Math.min(120, Math.max(0, toeflScore));
+}
+
+/**
+ * Legacy function: Calculate section scores from component scores
+ * @deprecated Use native TOEFL scores from backend instead
  */
 export function calculateSectionScores(scores: {
   grammar: number;
