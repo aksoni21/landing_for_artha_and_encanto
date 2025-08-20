@@ -15,13 +15,15 @@ import ErrorHandler, { AppError, createError, handleUploadError } from '../compo
 
 // Types
 interface AnalysisResult {
-  overall_cefr: string;
+  overall_toefl?: number;
+  overall_cefr?: string;
   confidence: number;
   weighted_average: number;
   component_scores: {
     [key: string]: {
       score: number;
-      cefr: string;
+      toefl_score?: number;
+      cefr?: string;
       confidence: number;
     };
   };
@@ -42,6 +44,45 @@ interface HistoricalData {
 
 type AnalysisStep = 'upload' | 'processing' | 'results';
 type TimeFrame = 'week' | 'month' | 'quarter' | 'year';
+
+// Helper function to transform backend scores to component format
+const transformScoresToComponents = (scores: Record<string, any>) => {
+  if (!scores) return {};
+  
+  const result: Record<string, any> = {};
+  
+  Object.entries(scores).forEach(([component, score]) => {
+    if (typeof score === 'number') {
+      // Backend returns simple numeric scores
+      result[component] = {
+        score,
+        toefl_score: Math.round(score * 0.3), // Convert to TOEFL scale (0-30)
+        cefr: scoreToCEFRLevel(score),
+        confidence: 0.8
+      };
+    } else if (typeof score === 'object' && score !== null) {
+      // Backend returns structured score object
+      result[component] = {
+        score: score.score || score.raw_score || 0,
+        toefl_score: score.toefl_score || Math.round((score.score || 0) * 0.3),
+        cefr: score.cefr || score.cefr_level || scoreToCEFRLevel(score.score || 0),
+        confidence: score.confidence || 0.8
+      };
+    }
+  });
+  
+  return result;
+};
+
+// Helper function to convert numeric score to CEFR level
+const scoreToCEFRLevel = (score: number): string => {
+  if (score >= 90) return 'C2';
+  if (score >= 75) return 'C1';
+  if (score >= 60) return 'B2';
+  if (score >= 40) return 'B1';
+  if (score >= 20) return 'A2';
+  return 'A1';
+};
 
 const AudioAnalysisPage: React.FC = () => {
   // State management
@@ -138,45 +179,9 @@ const AudioAnalysisPage: React.FC = () => {
 
   const initializeProcessingSteps = (): ProcessingStep[] => [
     {
-      id: 'transcription',
-      name: 'Speech Recognition',
-      description: 'Converting audio to text using AI',
-      status: 'pending'
-    },
-    {
-      id: 'grammar',
-      name: 'Grammar Analysis',
-      description: 'Analyzing sentence structure and complexity',
-      status: 'pending'
-    },
-    {
-      id: 'vocabulary',
-      name: 'Vocabulary Assessment',
-      description: 'Evaluating word choice and sophistication',
-      status: 'pending'
-    },
-    {
-      id: 'fluency',
-      name: 'Fluency Analysis',
-      description: 'Measuring speech rate and naturalness',
-      status: 'pending'
-    },
-    {
-      id: 'pronunciation',
-      name: 'Pronunciation Check',
-      description: 'Assessing sound accuracy and intonation',
-      status: 'pending'
-    },
-    {
-      id: 'discourse',
-      name: 'Discourse Analysis',
-      description: 'Evaluating organization and coherence',
-      status: 'pending'
-    },
-    {
-      id: 'scoring',
-      name: 'Final Scoring',
-      description: 'Calculating CEFR level and recommendations',
+      id: 'analysis',
+      name: 'Audio Analysis',
+      description: 'Initializing analysis...',
       status: 'pending'
     }
   ];
@@ -203,6 +208,17 @@ const AudioAnalysisPage: React.FC = () => {
       setAudioFile(file);
       setAudioUrl(url);
       toast.success(`File selected: ${file.name}`);
+      
+      // Auto-scroll to preview section after a short delay
+      setTimeout(() => {
+        const previewElement = document.querySelector('[data-preview-section]');
+        if (previewElement) {
+          previewElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }
+      }, 300);
     } catch (error) {
       console.error('Error handling file selection:', error);
       setError(handleUploadError(error));
@@ -220,8 +236,8 @@ const AudioAnalysisPage: React.FC = () => {
       setCurrentStep('processing');
       setProcessingSteps(initializeProcessingSteps());
 
-      // Simulate the analysis process
-      await simulateAnalysisProcess();
+      // Process the analysis
+      await processAnalysis();
       
     } catch (error) {
       console.error('Analysis failed:', error);
@@ -233,52 +249,43 @@ const AudioAnalysisPage: React.FC = () => {
     }
   };
 
-  const simulateAnalysisProcess = async () => {
+  const processAnalysis = async () => {
     try {
       // Import the audio analysis service
       const { audioAnalysisService } = await import('../services/audioAnalysisService');
       
-      const steps = [...processingSteps];
-      
-      // Update transcription step
-      steps[0] = { ...steps[0], status: 'processing', progress: 0 };
-      setProcessingSteps([...steps]);
-      
-      // Simulate transcription progress
-      for (let progress = 0; progress <= 100; progress += 20) {
-        steps[0] = { ...steps[0], progress };
-        setProcessingSteps([...steps]);
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-      
-      steps[0] = { ...steps[0], status: 'completed', progress: 100, duration: 2.1 };
-      setProcessingSteps([...steps]);
+      // Show simple processing state
+      setProcessingSteps([{
+        id: 'analysis',
+        name: 'Audio Analysis',
+        description: 'Processing your audio with AI analysis...',
+        status: 'processing'
+      }]);
 
-      // Call the real analysis service
+      // Call the real analysis service (no simulation)
       const analysisResult = await audioAnalysisService.analyzeAudio(audioFile!, {
         priority: 'normal',
         services: ['grammar', 'vocabulary', 'fluency', 'pronunciation', 'discourse']
       });
 
-      // Update remaining steps based on actual analysis
-      for (let i = 1; i < steps.length; i++) {
-        steps[i] = { 
-          ...steps[i], 
-          status: 'completed',
-          progress: 100,
-          duration: 1 + Math.random() * 2
-        };
-        setProcessingSteps([...steps]);
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
+      // Mark as completed
+      setProcessingSteps([{
+        id: 'analysis',
+        name: 'Audio Analysis',
+        description: 'Analysis completed successfully',
+        status: 'completed',
+        progress: 100
+      }]);
 
       // Convert the service response to our component format
+      // Handle TOEFL backend response structure
       const result: AnalysisResult = {
-        overall_cefr: analysisResult.overall_result.overall_cefr,
-        confidence: analysisResult.overall_result.confidence,
-        weighted_average: analysisResult.overall_result.weighted_average,
-        component_scores: analysisResult.overall_result.component_scores,
-        recommendations: analysisResult.overall_result.recommendations
+        overall_toefl: analysisResult.overall_toefl_score || analysisResult.overall_result?.overall_toefl,
+        overall_cefr: analysisResult.overall_cefr_level || analysisResult.overall_result?.overall_cefr,
+        confidence: analysisResult.confidence || analysisResult.overall_result?.confidence || 0.8,
+        weighted_average: analysisResult.weighted_average || analysisResult.overall_result?.weighted_average || 75,
+        component_scores: transformScoresToComponents(analysisResult.scores || analysisResult.overall_result?.component_scores || {}),
+        recommendations: analysisResult.recommendations || analysisResult.overall_result?.recommendations || ['Continue practicing to improve your English speaking skills.']
       };
 
       setAnalysisResult(result);
@@ -286,20 +293,20 @@ const AudioAnalysisPage: React.FC = () => {
       setCurrentStep('results');
       toast.success('Analysis completed successfully!');
       
+      // Redirect to results page
+      window.location.href = '/audio-analysis/results';
+      
     } catch (error) {
       console.error('Analysis service error:', error);
       
-      // Mark current step as error
-      const steps = [...processingSteps];
-      const currentStepIndex = steps.findIndex(s => s.status === 'processing');
-      if (currentStepIndex >= 0) {
-        steps[currentStepIndex] = {
-          ...steps[currentStepIndex],
-          status: 'error',
-          error: error instanceof Error ? error.message : 'Analysis failed'
-        };
-        setProcessingSteps([...steps]);
-      }
+      // Mark as error
+      setProcessingSteps([{
+        id: 'analysis',
+        name: 'Audio Analysis',
+        description: 'Analysis failed',
+        status: 'error',
+        error: error instanceof Error ? error.message : 'Analysis failed'
+      }]);
       
       throw error; // Re-throw to be handled by the calling function
     }
@@ -336,8 +343,8 @@ const AudioAnalysisPage: React.FC = () => {
     
     return Object.entries(analysisResult.component_scores).map(([component, data]) => ({
       component,
-      score: data.score,
-      cefr: data.cefr,
+      score: data.toefl_score || data.score,
+      cefr: data.cefr || 'B1',
       confidence: data.confidence,
       details: {
         strengths: [`Strong ${component} performance`, `Good understanding of ${component} principles`],
@@ -424,6 +431,7 @@ const AudioAnalysisPage: React.FC = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
+                    data-preview-section
                   >
                     <AudioPreview
                       audioUrl={audioUrl}
@@ -504,13 +512,13 @@ const AudioAnalysisPage: React.FC = () => {
 
                 {/* Main Results Grid */}
                 <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 xl:grid-cols-3'} gap-8`}>
-                  {/* CEFR Level Indicator */}
+                  {/* TOEFL/CEFR Level Indicator */}
                   <div className={isMobile ? 'col-span-1' : 'xl:col-span-1'}>
                     <CEFRLevelIndicator
-                      currentLevel={analysisResult.overall_cefr}
+                      currentLevel={analysisResult.overall_cefr || 'B1'}
                       confidence={analysisResult.confidence}
-                      score={analysisResult.weighted_average}
-                      nextLevel={getNextCEFRLevel(analysisResult.overall_cefr)}
+                      score={analysisResult.overall_toefl || analysisResult.weighted_average}
+                      nextLevel={getNextCEFRLevel(analysisResult.overall_cefr || 'B1')}
                       progressToNext={75} // Mock progress
                       size={isMobile ? 'medium' : 'large'}
                       showDetails={true}
@@ -532,11 +540,11 @@ const AudioAnalysisPage: React.FC = () => {
                 <ProgressCharts
                   historicalData={historicalData}
                   currentScores={{
-                    grammar: analysisResult.component_scores.grammar?.score || 0,
-                    vocabulary: analysisResult.component_scores.vocabulary?.score || 0,
-                    fluency: analysisResult.component_scores.fluency?.score || 0,
-                    pronunciation: analysisResult.component_scores.pronunciation?.score || 0,
-                    discourse: analysisResult.component_scores.discourse?.score || 0,
+                    grammar: analysisResult.component_scores.grammar?.toefl_score || analysisResult.component_scores.grammar?.score || 0,
+                    vocabulary: analysisResult.component_scores.vocabulary?.toefl_score || analysisResult.component_scores.vocabulary?.score || 0,
+                    fluency: analysisResult.component_scores.fluency?.toefl_score || analysisResult.component_scores.fluency?.score || 0,
+                    pronunciation: analysisResult.component_scores.pronunciation?.toefl_score || analysisResult.component_scores.pronunciation?.score || 0,
+                    discourse: analysisResult.component_scores.discourse?.toefl_score || analysisResult.component_scores.discourse?.score || 0,
                   }}
                   timeframe={timeframe}
                   onTimeframeChange={setTimeframe}

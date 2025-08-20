@@ -41,8 +41,10 @@ interface ComponentScore {
 interface AnalysisResult {
   request_id: string;
   timestamp?: string;
-  overall_result: {
-    overall_cefr: string;
+  // Support both nested and flat response structures for TOEFL/CEFR
+  overall_result?: {
+    overall_cefr?: string;
+    overall_toefl?: number;
     confidence: number;
     weighted_average: number;
     component_scores: Record<string, ComponentScore>;
@@ -50,6 +52,12 @@ interface AnalysisResult {
     score_distribution: Record<string, number>;
     processing_metadata: Record<string, any>;
   };
+  // Flat structure from backend
+  overall_cefr_level?: string;
+  overall_toefl_score?: number;
+  scores?: Record<string, number>;
+  recommendations?: string[];
+  confidence?: number;
   transcription?: {
     full_text: string;
     word_level_timestamps: any[];
@@ -93,11 +101,15 @@ class AudioAnalysisService {
    * Analyze audio file (upload + process)
    */
   async analyzeAudio(file: File, _options?: { priority?: string; services?: string[] }): Promise<AnalysisResult> {
+    console.log('🎬 Starting analyzeAudio...');
+    
     // First upload the file
     const uploadResult = await this.uploadAudio(file);
+    console.log('📤 Upload result:', uploadResult);
     
     // Then wait for analysis completion
     if (uploadResult.session_id) {
+      console.log('🔄 Starting polling for session:', uploadResult.session_id);
       return await this.waitForAnalysisCompletion(uploadResult.session_id);
     }
     
@@ -109,19 +121,13 @@ class AudioAnalysisService {
    */
   async uploadAudio(file: File, userId?: string, language?: string, scoringMode?: string): Promise<any> {
     const formData = new FormData();
-    formData.append('audio', file);
+    formData.append('file', file); // Match backend parameter name
     
-    if (userId) {
-      formData.append('user_id', userId);
-    }
-    
-    if (language) {
-      formData.append('language', language);
-    }
-    
-    if (scoringMode) {
-      formData.append('scoring_mode', scoringMode);
-    }
+    // Use demo user ID if none provided
+    formData.append('user_id', userId || 'demo-user-12345');
+    formData.append('language', language || 'en');
+    formData.append('scoring_mode', scoringMode || 'toefl');
+    formData.append('metadata', JSON.stringify({}));
 
     const response = await fetch(`${this.baseUrl}/upload`, {
       method: 'POST',
@@ -143,31 +149,45 @@ class AudioAnalysisService {
    * Wait for analysis completion and return results
    */
   private async waitForAnalysisCompletion(sessionId: string): Promise<AnalysisResult> {
-    const maxAttempts = 30; // Maximum 5 minutes (10 seconds * 30)
-    const pollInterval = 10000; // 10 seconds
+    const maxAttempts = 24; // Maximum 4 minutes with exponential backoff
+    const baseInterval = 2000; // Start with 2 seconds
+    const maxInterval = 15000; // Cap at 15 seconds
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
+        // Exponential backoff: 2s, 4s, 6s, 8s, 10s, 12s, 15s, 15s...
+        const currentInterval = Math.min(baseInterval * (attempt + 1), maxInterval);
+        
         console.log(`🔄 Analysis attempt ${attempt + 1}/${maxAttempts} for session: ${sessionId}`);
         
-        const response = await fetch(`${this.baseUrl}/analyze`, {
-          method: 'POST',
+        // Use GET for status checking (more RESTful)
+        const response = await fetch(`${this.baseUrl}/status/${sessionId}`, {
+          method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
             ...(this.getAuthToken() && { 'Authorization': `Bearer ${this.getAuthToken()}` })
-          },
-          body: JSON.stringify({ session_id: sessionId })
+          }
         });
 
         console.log(`📡 API Response: ${response.status} ${response.statusText}`);
 
         if (response.ok) {
-          const result = await response.json();
-          console.log('✅ Got successful response:', result);
+          const statusResult = await response.json();
+          console.log('✅ Got status response:', statusResult);
           
-          if (result.analysis_complete || result.analysis_results || result.scores || result.overall_cefr_level) {
-            return result;
+          // Check if analysis is completed
+          if (statusResult.status === 'completed') {
+            // Fetch the actual results
+            console.log('🎉 Analysis completed, fetching results...');
+            return await this.getAnalysisResults(sessionId);
           }
+          
+          // Check for failed status
+          if (statusResult.status === 'failed') {
+            throw new Error(statusResult.error_message || 'Analysis failed');
+          }
+          
+          // Still processing - continue polling
+          console.log(`⏳ Status: ${statusResult.status}, Progress: ${statusResult.progress * 100}%`);
         }
 
         if (response.status === 404) {
@@ -179,8 +199,8 @@ class AudioAnalysisService {
           throw new Error(`Client error: ${errorData.error || response.statusText}`);
         }
 
-        // Wait before next attempt
-        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        // Wait before next attempt (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, currentInterval));
         
       } catch (error) {
         console.error(`Attempt ${attempt + 1} failed:`, error);
@@ -189,12 +209,32 @@ class AudioAnalysisService {
           throw new Error(`Analysis failed after ${maxAttempts} attempts: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
         
-        // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        // Wait before retry (exponential backoff)
+        const currentInterval = Math.min(baseInterval * (attempt + 1), maxInterval);
+        await new Promise(resolve => setTimeout(resolve, currentInterval));
       }
     }
 
     throw new Error('Analysis timed out');
+  }
+
+  /**
+   * Get analysis results for a completed session
+   */
+  private async getAnalysisResults(sessionId: string): Promise<AnalysisResult> {
+    const response = await fetch(`${this.baseUrl}/results/${sessionId}`, {
+      method: 'GET',
+      headers: {
+        ...(this.getAuthToken() && { 'Authorization': `Bearer ${this.getAuthToken()}` })
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Failed to get results' }));
+      throw new Error(`Failed to get analysis results: ${errorData.error}`);
+    }
+
+    return await response.json();
   }
 
   /**
