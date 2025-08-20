@@ -8,7 +8,7 @@ export const audioAnalysisConfig = {
   upload: {
     maxFileSizeMB: 50,
     maxDurationMinutes: 15,
-    supportedFormats: ['mp3', 'wav', 'm4a', 'webm', 'ogg', 'mp4'],
+    supportedFormats: ['mp3', 'wav', 'm4a', 'webm', 'ogg'],
     sampleRate: 16000,
     channels: 1,
   },
@@ -39,6 +39,37 @@ export const audioAnalysisConfig = {
     fluency: true,
     pronunciation: true,
     discourse: true,
+    audioQuality: true, // Enable audio quality analysis
+  },
+
+  // Audio quality analysis configuration
+  quality: {
+    thresholds: {
+      clipping: -0.1,    // dB - Audio distortion detected
+      veryQuiet: -40,    // dB - Requires normalization
+      quiet: -25,        // dB - Normalization recommended
+      loud: -8,          // dB - High but acceptable
+      // Optimal range: -25 to -8 dB RMS
+    },
+    normalization: {
+      target: -16,       // LUFS - Integrated loudness target
+      range: 11,         // LU - Loudness range
+      truePeak: -1.5,    // dBTP - True peak limit
+    },
+    scores: {
+      good: 100,
+      loud: 85,
+      quiet: 75,
+      veryQuiet: 40,
+      clipping: 30,
+    }
+  },
+
+  // Real-time visualization settings
+  visualization: {
+    fftSize: 256,
+    smoothingTimeConstant: 0.8,
+    updateInterval: 50, // ms
   },
 
   // CEFR level thresholds (can be adjusted based on testing)

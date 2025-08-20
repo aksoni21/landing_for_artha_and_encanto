@@ -24,8 +24,13 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
   const chunksRef = useRef<Blob[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Use custom hook for audio visualization
-  const { audioLevel, isSupported: isVisualizationSupported, error: visualizationError } = useAudioVisualization(
+  // Use custom hook for audio visualization with quality metrics
+  const { 
+    audioLevel, 
+    qualityMetrics, 
+    isSupported: isVisualizationSupported, 
+    error: visualizationError 
+  } = useAudioVisualization(
     streamRef.current,
     isRecording && !isPaused
   );
@@ -247,21 +252,64 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
         </div>
       </div>
 
-      {/* Audio Level Bar */}
+      {/* Audio Level Bar with Quality Indicator */}
       {isRecording && (
         <div className="mb-6">
+          {/* Audio Level Visual */}
           <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
             <motion.div
-              className="bg-gradient-to-r from-green-400 via-yellow-400 to-red-500 h-full rounded-full"
+              className={`h-full rounded-full ${
+                qualityMetrics.qualityStatus === 'clipping' ? 'bg-red-500' :
+                qualityMetrics.qualityStatus === 'loud' ? 'bg-orange-500' :
+                qualityMetrics.qualityStatus === 'good' ? 'bg-green-500' :
+                qualityMetrics.qualityStatus === 'quiet' ? 'bg-yellow-500' :
+                'bg-red-600'
+              }`}
               style={{ width: `${audioLevel * 100}%` }}
               animate={{ width: `${audioLevel * 100}%` }}
               transition={{ duration: 0.1 }}
             />
           </div>
-          <div className="text-xs text-center text-gray-500 mt-1">
-            Audio Level: {Math.round(audioLevel * 100)}%
+          
+          {/* Quality Status and dB Level */}
+          <div className="flex justify-between items-center mt-2 text-xs">
+            <div className="flex items-center gap-2">
+              <span className={`px-2 py-1 rounded text-white text-xs font-medium ${
+                qualityMetrics.qualityStatus === 'clipping' ? 'bg-red-500' :
+                qualityMetrics.qualityStatus === 'loud' ? 'bg-orange-500' :
+                qualityMetrics.qualityStatus === 'good' ? 'bg-green-500' :
+                qualityMetrics.qualityStatus === 'quiet' ? 'bg-yellow-500' :
+                'bg-red-600'
+              }`}>
+                {qualityMetrics.qualityStatus === 'clipping' ? '🔴 Clipping' :
+                 qualityMetrics.qualityStatus === 'loud' ? '🟠 Loud' :
+                 qualityMetrics.qualityStatus === 'good' ? '🟢 Good' :
+                 qualityMetrics.qualityStatus === 'quiet' ? '🟡 Quiet' :
+                 '🔴 Very Quiet'}
+              </span>
+            </div>
+            <div className="text-gray-600">
+              {qualityMetrics.rmsLevel > -100 ? `${qualityMetrics.rmsLevel.toFixed(0)}dB` : '--'}
+            </div>
           </div>
         </div>
+      )}
+
+      {/* Real-time Quality Recommendation */}
+      {isRecording && qualityMetrics.recommendation && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg"
+        >
+          <div className="flex items-start gap-2 text-blue-700 text-sm">
+            <span className="text-lg">💡</span>
+            <div>
+              <div className="font-medium">Quality Tip:</div>
+              <div>{qualityMetrics.recommendation}</div>
+            </div>
+          </div>
+        </motion.div>
       )}
 
       {/* Control Buttons */}

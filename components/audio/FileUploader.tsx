@@ -3,6 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { audioAnalysisConfig } from '../../config/audio-analysis.config';
+import { audioAnalyzer, AudioAnalysisResult } from '../../utils/audioQualityAnalysis';
 
 interface FileUploaderProps {
   onFileSelect: (file: File, audioUrl: string) => void;
@@ -15,6 +16,7 @@ interface UploadedFile {
   duration: number | null;
   size: string;
   error?: string;
+  qualityAnalysis?: AudioAnalysisResult;
 }
 
 export const FileUploader: React.FC<FileUploaderProps> = ({
@@ -114,11 +116,40 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
       // Create object URL for preview
       const url = URL.createObjectURL(file);
 
+      // Analyze audio quality
+      let qualityAnalysis: AudioAnalysisResult | undefined;
+      try {
+        qualityAnalysis = await audioAnalyzer.analyzeFile(file);
+        
+        // Show quality feedback based on analysis
+        if (qualityAnalysis.qualityStatus === 'good') {
+          toast.success(`✅ Audio quality is good!`);
+        } else if (qualityAnalysis.qualityStatus === 'clipping') {
+          toast.error(`❌ Warning: Audio is clipping. Consider re-recording with lower levels.`, {
+            duration: 6000
+          });
+        } else if (qualityAnalysis.qualityStatus === 'very_quiet') {
+          toast(`⚠️ Audio is very quiet. The system will try to normalize it during processing.`, {
+            icon: '⚠️',
+            duration: 5000
+          });
+        } else if (qualityAnalysis.qualityStatus === 'quiet') {
+          toast(`⚠️ Audio is quiet but should work. Consider re-recording with higher volume for best results.`, {
+            icon: '⚠️',
+            duration: 5000
+          });
+        }
+      } catch (error) {
+        console.warn('Audio quality analysis failed:', error);
+        // Continue without quality analysis - not critical for upload
+      }
+
       const processedFile: UploadedFile = {
         file,
         url,
         duration,
-        size: formatFileSize(file.size)
+        size: formatFileSize(file.size),
+        qualityAnalysis
       };
 
       setUploadedFile(processedFile);
@@ -242,6 +273,91 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
                       <p>Duration: {formatDuration(uploadedFile.duration)}</p>
                     )}
                   </div>
+                  
+                  {/* Smart Quality Status Card */}
+                  {uploadedFile.qualityAnalysis && (
+                    <div className="mt-4 space-y-3">
+                      {/* Main Status Card */}
+                      <div className={`p-4 rounded-lg border-l-4 ${
+                        uploadedFile.qualityAnalysis.qualityStatus === 'good' ? 'bg-green-50 border-green-400' :
+                        uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ? 'bg-red-50 border-red-400' :
+                        'bg-yellow-50 border-yellow-400'
+                      }`}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className={`text-sm font-semibold ${
+                              uploadedFile.qualityAnalysis.qualityStatus === 'good' ? 'text-green-800' :
+                              uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ? 'text-red-800' :
+                              'text-yellow-800'
+                            }`}>
+                              {uploadedFile.qualityAnalysis.qualityStatus === 'good' ? '✨ Perfect Audio Quality' :
+                               uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ? '⚠️ Audio Issue Detected' :
+                               uploadedFile.qualityAnalysis.qualityStatus === 'very_quiet' ? '🔊 Audio Volume Low' :
+                               '🔊 Audio Volume Could Be Better'}
+                            </div>
+                            <div className={`text-xs mt-1 ${
+                              uploadedFile.qualityAnalysis.qualityStatus === 'good' ? 'text-green-700' :
+                              uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ? 'text-red-700' :
+                              'text-yellow-700'
+                            }`}>
+                              {uploadedFile.qualityAnalysis.qualityStatus === 'good' ? 
+                                'Your audio is at optimal levels for analysis' :
+                                uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ?
+                                'Audio distortion detected - may affect results' :
+                                `Audio is ${uploadedFile.qualityAnalysis.qualityStatus.replace('_', ' ')} (${uploadedFile.qualityAnalysis.rmsLevel.toFixed(0)}dB)`}
+                            </div>
+                          </div>
+                          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            uploadedFile.qualityAnalysis.qualityStatus === 'good' ? 'bg-green-100 text-green-800' :
+                            uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {uploadedFile.qualityAnalysis.qualityStatus === 'good' ? 'READY' :
+                             uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ? 'NEEDS ATTENTION' :
+                             'WILL FIX'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Auto-Fix Notice for Quiet Audio */}
+                      {(uploadedFile.qualityAnalysis.qualityStatus === 'very_quiet' || uploadedFile.qualityAnalysis.qualityStatus === 'quiet') && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <div className="flex items-center gap-2 text-blue-800 text-sm font-medium">
+                            <span className="text-base">🤖</span>
+                            AI Auto-Enhancement Enabled
+                          </div>
+                          <div className="text-blue-700 text-xs mt-1">
+                            Don't worry! Our system will automatically boost your audio during processing for optimal analysis results.
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Required for Clipping */}
+                      {uploadedFile.qualityAnalysis.qualityStatus === 'clipping' && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                          <div className="flex items-center gap-2 text-red-800 text-sm font-medium">
+                            <span className="text-base">⚠️</span>
+                            Action Recommended
+                          </div>
+                          <div className="text-red-700 text-xs mt-1">
+                            For best results, consider re-recording with lower input levels to avoid distortion.
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Technical Details (Collapsible) */}
+                      <details className="text-xs text-gray-600">
+                        <summary className="cursor-pointer hover:text-gray-800 font-medium">
+                          📊 Technical Details
+                        </summary>
+                        <div className="mt-2 p-2 bg-gray-50 rounded text-xs space-y-1">
+                          <div>RMS Level: {uploadedFile.qualityAnalysis.rmsLevel.toFixed(1)}dB</div>
+                          <div>Peak Level: {uploadedFile.qualityAnalysis.peakLevel.toFixed(1)}dB</div>
+                          <div>Optimal Range: -25 to -8 dB RMS</div>
+                        </div>
+                      </details>
+                    </div>
+                  )}
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation();
