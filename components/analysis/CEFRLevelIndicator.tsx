@@ -165,14 +165,16 @@ export const CEFRLevelIndicator: React.FC<CEFRLevelIndicatorProps> = ({
               </div>
             </div>
             
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className={`text-2xl font-bold mb-1 ${getConfidenceColor(confidence)}`}>
-                {Math.round(confidence * 100)}%
+            {confidence && (
+              <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <div className={`text-2xl font-bold mb-1 ${getConfidenceColor(confidence)}`}>
+                  {Math.round(confidence * 100)}%
+                </div>
+                <div className={`${sizeClasses.details} text-gray-600`}>
+                  Confidence
+                </div>
               </div>
-              <div className={`${sizeClasses.details} text-gray-600`}>
-                Confidence
-              </div>
-            </div>
+            )}
           </motion.div>
 
           {/* CEFR Level Progress Bar */}

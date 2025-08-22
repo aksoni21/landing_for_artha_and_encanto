@@ -5,7 +5,7 @@ interface ComponentScore {
   component: string;
   score: number;
   cefr: string;
-  confidence: number;
+  confidence?: number; // Optional - only show when real confidence data exists
   details?: {
     strengths?: string[];
     improvements?: string[];
@@ -190,7 +190,7 @@ export const ComponentScores: React.FC<ComponentScoresProps> = ({
                 </div>
                 <div className="text-center p-2 bg-gray-50 rounded-lg">
                   <div className="text-sm font-bold text-gray-800">
-                    {Math.round(score.confidence * 100)}%
+                    {score.confidence ? `${Math.round(score.confidence * 100)}%` : 'N/A'}
                   </div>
                   <div className="text-xs text-gray-500">Confidence</div>
                 </div>

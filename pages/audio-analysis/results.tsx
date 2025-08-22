@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/router';
-import { scoreToCefr } from '../../utils/cefr';
-import { scoreToToefl, calculateSectionScores } from '../../utils/toefl';
+// Removed scoreToCefr import - now using real CEFR from backend
+import { scoreToToefl, calculateSectionScores, extractToeflScores } from '../../utils/toefl';
 import { LatestAnalysisResult, HistoricalData, ComponentScoreDetail, TimeFrame, ScoringSystem } from '../../types/audio-analysis';
 import TOEFLScoreIndicator from '../../components/analysis/TOEFLScoreIndicator';
 
@@ -138,17 +138,24 @@ const AudioAnalysisResultsPage: React.FC = () => {
   const getComponentScores = (): ComponentScoreDetail[] => {
     if (!latestResult) return [];
     
-    return Object.entries(latestResult.scores).map(([component, score]) => ({
-      component,
-      score: score,
-      cefr: scoreToCefr(score),
-      confidence: 0.85, // Default confidence
-      details: {
-        strengths: latestResult.strengths.filter(s => s.toLowerCase().includes(component)),
-        improvements: latestResult.areas_for_improvement.filter(i => i.toLowerCase().includes(component)),
-        examples: [`Example ${component} usage in your speech`]
-      }
-    }));
+    return Object.entries(latestResult.scores).map(([component, score]) => {
+      // Only use real confidence data - no fake fallbacks
+      const componentKey = component as keyof typeof latestResult.component_confidences;
+      const realConfidence = latestResult.component_confidences?.[componentKey] || 
+                             latestResult.overall_confidence;
+      
+      return {
+        component,
+        score: score,
+        cefr: latestResult.overall_cefr_level, // Use real CEFR from backend, not calculated from score
+        confidence: realConfidence,
+        details: {
+          strengths: latestResult.strengths.filter(s => s.toLowerCase().includes(component)),
+          improvements: latestResult.areas_for_improvement.filter(i => i.toLowerCase().includes(component)),
+          examples: [] // Remove fake examples - use real examples from backend when available
+        }
+      };
+    });
   };
 
 
@@ -262,9 +269,25 @@ const AudioAnalysisResultsPage: React.FC = () => {
               {scoringSystem === 'TOEFL' ? (
                 <div className="flex justify-center">
                   <TOEFLScoreIndicator
-                    totalScore={scoreToToefl(Object.values(latestResult.scores).reduce((sum, score) => sum + score, 0) / 5)}
-                    sectionScores={calculateSectionScores(latestResult.scores)}
-                    confidence={0.85}
+                    totalScore={(() => {
+                      // Try to get real TOEFL scores from backend first
+                      const realToeflScores = extractToeflScores(latestResult.scoring_result);
+                      if (realToeflScores) {
+                        return realToeflScores.total;
+                      }
+                      // Fallback to legacy calculation only if no real TOEFL data
+                      return scoreToToefl(Object.values(latestResult.scores).reduce((sum, score) => sum + score, 0) / 5);
+                    })()}
+                    sectionScores={(() => {
+                      // Try to get real TOEFL section scores from backend first
+                      const realToeflScores = extractToeflScores(latestResult.scoring_result);
+                      if (realToeflScores) {
+                        return realToeflScores;
+                      }
+                      // Fallback to legacy calculation only if no real TOEFL data
+                      return calculateSectionScores(latestResult.scores);
+                    })()}
+                    confidence={latestResult.overall_confidence}
                     size="large"
                     showDetails={true}
                     animated={true}
@@ -275,10 +298,10 @@ const AudioAnalysisResultsPage: React.FC = () => {
                 <div className="flex justify-center">
                   <CEFRLevelIndicator
                     currentLevel={latestResult.overall_cefr_level}
-                    confidence={0.85}
+                    confidence={latestResult.overall_confidence}
                     score={Object.values(latestResult.scores).reduce((sum, score) => sum + score, 0) / 5}
                     nextLevel={getNextCEFRLevel(latestResult.overall_cefr_level)}
-                    progressToNext={75} // Mock progress
+                    progressToNext={latestResult.progress_to_next}
                     size="large"
                     showDetails={true}
                     animated={true}

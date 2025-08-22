@@ -25,12 +25,24 @@ export interface LatestAnalysisResult {
     text: string;
     word_count: number;
     duration_seconds: number;
+    confidence_score?: number; // Transcription confidence
   };
   strengths: string[];
   areas_for_improvement: string[];
   recommendations: string[];
   detailed_feedback: string;
   completed_at: string;
+  // New confidence-related fields
+  overall_confidence?: number; // Overall analysis confidence (0-1)
+  component_confidences?: { // Component-specific confidence scores
+    grammar?: number;
+    vocabulary?: number;
+    fluency?: number;
+    pronunciation?: number;
+    discourse?: number;
+  };
+  scoring_result?: any; // Full scoring result object from backend
+  progress_to_next?: number; // Progress to next CEFR level (0-100)
 }
 
 export interface HistoricalData {
@@ -50,7 +62,7 @@ export interface ComponentScoreDetail {
   component: string;
   score: number;
   cefr: string;
-  confidence: number;
+  confidence?: number; // Optional - only present if real confidence data exists
   details: {
     strengths: string[];
     improvements: string[];
