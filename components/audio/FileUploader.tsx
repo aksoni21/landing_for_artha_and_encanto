@@ -16,7 +16,7 @@ interface UploadedFile {
   duration: number | null;
   size: string;
   error?: string;
-  qualityAnalysis?: AudioAnalysisResult;
+  analysis?: AudioAnalysisResult;
 }
 
 export const FileUploader: React.FC<FileUploaderProps> = ({
@@ -99,63 +99,61 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         return;
       }
 
-      // Get audio duration
+      // Get audio duration and analyze quality
       let duration: number | null = null;
+      let analysis: AudioAnalysisResult | undefined = undefined;
+      
       try {
-        duration = await getAudioDuration(file);
+        // Analyze audio quality
+        analysis = await audioAnalyzer.analyzeFile(file);
+        duration = analysis.duration;
         
         // Check duration limit
         if (duration > audioAnalysisConfig.upload.maxDurationMinutes * 60) {
           throw new Error(`Duration exceeds ${audioAnalysisConfig.upload.maxDurationMinutes} minute limit`);
         }
       } catch (error) {
-        console.warn('Could not get audio duration:', error);
-        // Continue without duration - not critical
+        console.warn('Could not analyze audio:', error);
+        
+        // Fallback: try to get just duration
+        try {
+          duration = await getAudioDuration(file);
+        } catch (durationError) {
+          console.warn('Could not get audio duration:', durationError);
+        }
       }
 
       // Create object URL for preview
       const url = URL.createObjectURL(file);
-
-      // Analyze audio quality
-      let qualityAnalysis: AudioAnalysisResult | undefined;
-      try {
-        qualityAnalysis = await audioAnalyzer.analyzeFile(file);
-        
-        // Show quality feedback based on analysis
-        if (qualityAnalysis.qualityStatus === 'good') {
-          toast.success(`✅ Audio quality is good!`);
-        } else if (qualityAnalysis.qualityStatus === 'clipping') {
-          toast.error(`❌ Warning: Audio is clipping. Consider re-recording with lower levels.`, {
-            duration: 6000
-          });
-        } else if (qualityAnalysis.qualityStatus === 'very_quiet') {
-          toast(`⚠️ Audio is very quiet. The system will try to normalize it during processing.`, {
-            icon: '⚠️',
-            duration: 5000
-          });
-        } else if (qualityAnalysis.qualityStatus === 'quiet') {
-          toast(`⚠️ Audio is quiet but should work. Consider re-recording with higher volume for best results.`, {
-            icon: '⚠️',
-            duration: 5000
-          });
-        }
-      } catch (error) {
-        console.warn('Audio quality analysis failed:', error);
-        // Continue without quality analysis - not critical for upload
-      }
 
       const processedFile: UploadedFile = {
         file,
         url,
         duration,
         size: formatFileSize(file.size),
-        qualityAnalysis
+        analysis
       };
 
       setUploadedFile(processedFile);
       onFileSelect(file, url);
       
-      toast.success(`File uploaded: ${file.name}`);
+      // Show appropriate toast based on audio quality
+      if (analysis) {
+        if (analysis.qualityStatus === 'good') {
+          toast.success(`File uploaded: ${file.name}. Audio quality is good!`);
+        } else if (analysis.qualityStatus === 'clipping') {
+          toast.error(`File uploaded: ${file.name}. Warning: Audio is clipping.`);
+        } else if (analysis.qualityStatus === 'very_quiet') {
+          toast(`File uploaded: ${file.name}. Warning: Audio is very quiet.`, {
+            icon: '⚠️',
+            duration: 4000
+          });
+        } else {
+          toast.success(`File uploaded: ${file.name}`);
+        }
+      } else {
+        toast.success(`File uploaded: ${file.name}`);
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setUploadedFile({
@@ -272,92 +270,46 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
                     {uploadedFile.duration && (
                       <p>Duration: {formatDuration(uploadedFile.duration)}</p>
                     )}
-                  </div>
-                  
-                  {/* Smart Quality Status Card */}
-                  {uploadedFile.qualityAnalysis && (
-                    <div className="mt-4 space-y-3">
-                      {/* Main Status Card */}
-                      <div className={`p-4 rounded-lg border-l-4 ${
-                        uploadedFile.qualityAnalysis.qualityStatus === 'good' ? 'bg-green-50 border-green-400' :
-                        uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ? 'bg-red-50 border-red-400' :
-                        'bg-yellow-50 border-yellow-400'
-                      }`}>
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className={`text-sm font-semibold ${
-                              uploadedFile.qualityAnalysis.qualityStatus === 'good' ? 'text-green-800' :
-                              uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ? 'text-red-800' :
-                              'text-yellow-800'
-                            }`}>
-                              {uploadedFile.qualityAnalysis.qualityStatus === 'good' ? '✨ Perfect Audio Quality' :
-                               uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ? '⚠️ Audio Issue Detected' :
-                               uploadedFile.qualityAnalysis.qualityStatus === 'very_quiet' ? '🔊 Audio Volume Low' :
-                               '🔊 Audio Volume Could Be Better'}
-                            </div>
-                            <div className={`text-xs mt-1 ${
-                              uploadedFile.qualityAnalysis.qualityStatus === 'good' ? 'text-green-700' :
-                              uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ? 'text-red-700' :
-                              'text-yellow-700'
-                            }`}>
-                              {uploadedFile.qualityAnalysis.qualityStatus === 'good' ? 
-                                'Your audio is at optimal levels for analysis' :
-                                uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ?
-                                'Audio distortion detected - may affect results' :
-                                `Audio is ${uploadedFile.qualityAnalysis.qualityStatus.replace('_', ' ')} (${uploadedFile.qualityAnalysis.rmsLevel.toFixed(0)}dB)`}
-                            </div>
-                          </div>
-                          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            uploadedFile.qualityAnalysis.qualityStatus === 'good' ? 'bg-green-100 text-green-800' :
-                            uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ? 'bg-red-100 text-red-800' :
-                            'bg-yellow-100 text-yellow-800'
+                    
+                    {/* Audio Quality Information */}
+                    {uploadedFile.analysis && (
+                      <div className="mt-3 p-3 rounded-lg border border-gray-200 bg-gray-50">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-medium text-gray-700">Audio Quality</span>
+                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            uploadedFile.analysis.qualityStatus === 'good' ? 'bg-green-100 text-green-700' :
+                            uploadedFile.analysis.qualityStatus === 'quiet' ? 'bg-yellow-100 text-yellow-700' :
+                            uploadedFile.analysis.qualityStatus === 'very_quiet' ? 'bg-red-100 text-red-700' :
+                            uploadedFile.analysis.qualityStatus === 'loud' ? 'bg-orange-100 text-orange-700' :
+                            'bg-red-100 text-red-700'
                           }`}>
-                            {uploadedFile.qualityAnalysis.qualityStatus === 'good' ? 'READY' :
-                             uploadedFile.qualityAnalysis.qualityStatus === 'clipping' ? 'NEEDS ATTENTION' :
-                             'WILL FIX'}
+                            {uploadedFile.analysis.qualityStatus === 'good' ? 'Good' :
+                             uploadedFile.analysis.qualityStatus === 'quiet' ? 'Quiet' :
+                             uploadedFile.analysis.qualityStatus === 'very_quiet' ? 'Very Quiet' :
+                             uploadedFile.analysis.qualityStatus === 'loud' ? 'Loud' :
+                             'Clipping'}
+                          </span>
+                        </div>
+                        
+                        <div className="text-xs text-gray-600 space-y-1">
+                          <div className="flex justify-between">
+                            <span>RMS Level:</span>
+                            <span className="font-mono">{uploadedFile.analysis.rmsLevel.toFixed(1)}dB</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Peak Level:</span>
+                            <span className="font-mono">{uploadedFile.analysis.peakLevel.toFixed(1)}dB</span>
                           </div>
                         </div>
+                        
+                        {uploadedFile.analysis.recommendation && (
+                          <div className="mt-2 text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200">
+                            💡 {uploadedFile.analysis.recommendation.replace(/'/g, '&apos;')}
+                          </div>
+                        )}
                       </div>
-
-                      {/* Auto-Fix Notice for Quiet Audio */}
-                      {(uploadedFile.qualityAnalysis.qualityStatus === 'very_quiet' || uploadedFile.qualityAnalysis.qualityStatus === 'quiet') && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                          <div className="flex items-center gap-2 text-blue-800 text-sm font-medium">
-                            <span className="text-base">🤖</span>
-                            AI Auto-Enhancement Enabled
-                          </div>
-                          <div className="text-blue-700 text-xs mt-1">
-                            Don't worry! Our system will automatically boost your audio during processing for optimal analysis results.
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Action Required for Clipping */}
-                      {uploadedFile.qualityAnalysis.qualityStatus === 'clipping' && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                          <div className="flex items-center gap-2 text-red-800 text-sm font-medium">
-                            <span className="text-base">⚠️</span>
-                            Action Recommended
-                          </div>
-                          <div className="text-red-700 text-xs mt-1">
-                            For best results, consider re-recording with lower input levels to avoid distortion.
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Technical Details (Collapsible) */}
-                      <details className="text-xs text-gray-600">
-                        <summary className="cursor-pointer hover:text-gray-800 font-medium">
-                          📊 Technical Details
-                        </summary>
-                        <div className="mt-2 p-2 bg-gray-50 rounded text-xs space-y-1">
-                          <div>RMS Level: {uploadedFile.qualityAnalysis.rmsLevel.toFixed(1)}dB</div>
-                          <div>Peak Level: {uploadedFile.qualityAnalysis.peakLevel.toFixed(1)}dB</div>
-                          <div>Optimal Range: -25 to -8 dB RMS</div>
-                        </div>
-                      </details>
-                    </div>
-                  )}
+                    )}
+                  </div>
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation();

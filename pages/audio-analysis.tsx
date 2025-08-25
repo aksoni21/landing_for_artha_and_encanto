@@ -46,10 +46,10 @@ type AnalysisStep = 'upload' | 'processing' | 'results';
 type TimeFrame = 'week' | 'month' | 'quarter' | 'year';
 
 // Helper function to transform backend scores to component format
-const transformScoresToComponents = (scores: Record<string, any>) => {
+const transformScoresToComponents = (scores: Record<string, unknown>) => {
   if (!scores) return {};
   
-  const result: Record<string, any> = {};
+  const result: Record<string, { score: number; toefl_score: number; cefr: string; confidence: number }> = {};
   
   Object.entries(scores).forEach(([component, score]) => {
     if (typeof score === 'number') {
@@ -58,15 +58,16 @@ const transformScoresToComponents = (scores: Record<string, any>) => {
         score,
         toefl_score: Math.round(score * 0.3), // Convert to TOEFL scale (0-30)
         cefr: scoreToCEFRLevel(score),
-        confidence: 0.8
+        confidence: 1.0
       };
     } else if (typeof score === 'object' && score !== null) {
       // Backend returns structured score object
+      const scoreObj = score as Record<string, unknown>;
       result[component] = {
-        score: score.score || score.raw_score || 0,
-        toefl_score: score.toefl_score || Math.round((score.score || 0) * 0.3),
-        cefr: score.cefr || score.cefr_level || scoreToCEFRLevel(score.score || 0),
-        confidence: score.confidence || 0.8
+        score: (scoreObj.score as number) || (scoreObj.raw_score as number) || 0,
+        toefl_score: (scoreObj.toefl_score as number) || Math.round(((scoreObj.score as number) || 0) * 0.3),
+        cefr: (scoreObj.cefr as string) || (scoreObj.cefr_level as string) || scoreToCEFRLevel((scoreObj.score as number) || 0),
+        confidence: (scoreObj.confidence as number) || 1.0
       };
     }
   });
@@ -266,7 +267,22 @@ const AudioAnalysisPage: React.FC = () => {
       const analysisResult = await audioAnalysisService.analyzeAudio(audioFile!, {
         priority: 'normal',
         services: ['grammar', 'vocabulary', 'fluency', 'pronunciation', 'discourse']
-      });
+      }) as unknown as {
+        overall_toefl_score?: number;
+        overall_cefr_level?: string;
+        confidence?: number;
+        weighted_average?: number;
+        scores?: Record<string, unknown>;
+        recommendations?: string[];
+        overall_result?: {
+          overall_toefl?: number;
+          overall_cefr?: string;
+          confidence?: number;
+          weighted_average?: number;
+          component_scores?: Record<string, unknown>;
+          recommendations?: string[];
+        };
+      };
 
       // Mark as completed
       setProcessingSteps([{
@@ -282,10 +298,10 @@ const AudioAnalysisPage: React.FC = () => {
       const result: AnalysisResult = {
         overall_toefl: analysisResult.overall_toefl_score || analysisResult.overall_result?.overall_toefl,
         overall_cefr: analysisResult.overall_cefr_level || analysisResult.overall_result?.overall_cefr,
-        confidence: analysisResult.confidence || analysisResult.overall_result?.confidence || 0.8,
-        weighted_average: analysisResult.weighted_average || analysisResult.overall_result?.weighted_average || 75,
+        confidence: analysisResult.confidence || analysisResult.overall_result?.confidence || 0,
+        weighted_average: analysisResult.weighted_average || analysisResult.overall_result?.weighted_average || 0,
         component_scores: transformScoresToComponents(analysisResult.scores || analysisResult.overall_result?.component_scores || {}),
-        recommendations: analysisResult.recommendations || analysisResult.overall_result?.recommendations || ['Continue practicing to improve your English speaking skills.']
+        recommendations: analysisResult.recommendations || analysisResult.overall_result?.recommendations || []
       };
 
       setAnalysisResult(result);
@@ -344,12 +360,12 @@ const AudioAnalysisPage: React.FC = () => {
     return Object.entries(analysisResult.component_scores).map(([component, data]) => ({
       component,
       score: data.toefl_score || data.score,
-      cefr: data.cefr || 'B1',
+      cefr: data.cefr || '',
       confidence: data.confidence,
       details: {
-        strengths: [`Strong ${component} performance`, `Good understanding of ${component} principles`],
-        improvements: [`Practice more ${component} exercises`, `Focus on advanced ${component} concepts`],
-        examples: [`Example ${component} usage in your speech`]
+        strengths: [],
+        improvements: [],
+        examples: []
       }
     }));
   };

@@ -296,7 +296,7 @@ export const ComponentScores: React.FC<ComponentScoresProps> = ({
           
           <div>
             <div className="text-lg font-bold text-blue-600">
-              {Math.round(scores.reduce((sum, s) => sum + s.confidence, 0) / scores.length * 100)}%
+              {Math.round(scores.reduce((sum, s) => sum + (s.confidence || 0), 0) / scores.length * 100)}%
             </div>
             <div className="text-xs text-gray-600">Avg Confidence</div>
           </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/router';
 // Removed scoreToCefr import - now using real CEFR from backend
-import { scoreToToefl, calculateSectionScores, extractToeflScores } from '../../utils/toefl';
+import { calculateSectionScores, extractToeflScores } from '../../utils/toefl';
 import { LatestAnalysisResult, HistoricalData, ComponentScoreDetail, TimeFrame, ScoringSystem } from '../../types/audio-analysis';
 import TOEFLScoreIndicator from '../../components/analysis/TOEFLScoreIndicator';
 
@@ -26,20 +26,7 @@ const AudioAnalysisResultsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<AppError | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id?: string; email?: string; username?: string; name?: string } | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
   const [scoringSystem, setScoringSystem] = useState<ScoringSystem>('TOEFL'); // Default to TOEFL for North America
-
-  // Mobile detection
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Check authentication and load data
   useEffect(() => {
@@ -275,8 +262,8 @@ const AudioAnalysisResultsPage: React.FC = () => {
                       if (realToeflScores) {
                         return realToeflScores.total;
                       }
-                      // Fallback to legacy calculation only if no real TOEFL data
-                      return scoreToToefl(Object.values(latestResult.scores).reduce((sum, score) => sum + score, 0) / 5);
+                      // Fallback to average score calculation
+                      return Math.round(Object.values(latestResult.scores).reduce((sum, score) => sum + score, 0) / 5);
                     })()}
                     sectionScores={(() => {
                       // Try to get real TOEFL section scores from backend first
@@ -298,7 +285,7 @@ const AudioAnalysisResultsPage: React.FC = () => {
                 <div className="flex justify-center">
                   <CEFRLevelIndicator
                     currentLevel={latestResult.overall_cefr_level}
-                    confidence={latestResult.overall_confidence}
+                    confidence={latestResult.overall_confidence || 0}
                     score={Object.values(latestResult.scores).reduce((sum, score) => sum + score, 0) / 5}
                     nextLevel={getNextCEFRLevel(latestResult.overall_cefr_level)}
                     progressToNext={latestResult.progress_to_next}
