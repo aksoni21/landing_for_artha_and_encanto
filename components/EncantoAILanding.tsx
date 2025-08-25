@@ -155,32 +155,6 @@ export default function EncantoAILanding() {
     }
   ];
 
-  const conversationExample = {
-    spanish: [
-      { speaker: 'You', message: 'Hello, how are you today?' },
-      { speaker: 'AI Tutor', message: '¡Hola! Estoy muy bien, gracias. ¿Y tú? ¿Cómo estás?' },
-      { speaker: 'You', message: 'I\'m good, thank you. Can we practice ordering food?' },
-      { speaker: 'AI Tutor', message: '¡Por supuesto! Vamos a practicar cómo pedir comida en un restaurante.' }
-    ],
-    german: [
-      { speaker: 'You', message: 'Hello, how are you today?' },
-      { speaker: 'AI Tutor', message: 'Hallo! Mir geht es sehr gut, danke. Und dir? Wie geht es dir?' },
-      { speaker: 'You', message: 'I\'m good, thank you. Can we practice ordering food?' },
-      { speaker: 'AI Tutor', message: 'Natürlich! Lass uns üben, wie man Essen in einem Restaurant bestellt.' }
-    ],
-    esl: [
-      { speaker: 'You', message: 'Hello, how are you today?' },
-      { speaker: 'AI Tutor', message: 'Hello! I\'m doing great, thank you. How about you? How are you feeling?' },
-      { speaker: 'You', message: 'I\'m good, thank you. Can we practice ordering food?' },
-      { speaker: 'AI Tutor', message: 'Absolutely! Let\'s practice ordering food at a restaurant. This is a very useful skill!' }
-    ],
-    korean: [
-      { speaker: 'You', message: 'Hello, how are you today?' },
-      { speaker: 'AI Tutor', message: '안녕하세요! 저는 잘 지내고 있습니다, 감사합니다. 당신은 어떠세요?' },
-      { speaker: 'You', message: 'I\'m good, thank you. Can we practice ordering food?' },
-      { speaker: 'AI Tutor', message: '물론입니다! 식당에서 음식을 주문하는 방법을 연습해봅시다.' }
-    ]
-  };
 
   const useCases = [
     {
@@ -455,92 +429,7 @@ export default function EncantoAILanding() {
         </div>
       </section>
 
-      {/* Interactive Demo Section */}
-      <section id="demo" className="container mx-auto px-6 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-white mb-4">See It In Action</h2>
-          <p className="text-xl text-gray-300">Experience a real conversation with our AI tutor</p>
-        </div>
-        
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-white font-medium">Live Conversation</span>
-              </div>
-              <div className="text-gray-400 text-sm">
-                🌍 Multi-language Support
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              {conversationExample['spanish' as keyof typeof conversationExample].map((msg, index) => (
-                <motion.div
-                  key={index}
-                  className={`flex ${msg.speaker === 'You' ? 'justify-end' : 'justify-start'}`}
-                  initial={{ opacity: 0, x: msg.speaker === 'You' ? 20 : -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.3 }}
-                >
-                  <div
-                    className={`max-w-xs md:max-w-md px-4 py-3 rounded-2xl ${
-                      msg.speaker === 'You'
-                        ? 'bg-gradient-to-r from-emerald-600 to-cyan-600 text-white'
-                        : 'bg-white/20 text-white'
-                    }`}
-                  >
-                    <div className="text-xs opacity-75 mb-1">{msg.speaker}</div>
-                    <div>{msg.message}</div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-            
-            <div className="mt-6 text-center">
-              <div className="inline-flex items-center space-x-3 bg-black/30 rounded-full px-4 py-2 border border-white/10">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
-                <span className="text-white text-sm">Voice Recording Active</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Languages Section */}
-      <section id="languages" className="container mx-auto px-6 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-white mb-4">Available Languages</h2>
-          <p className="text-xl text-gray-300">Start with these languages, more coming soon</p>
-        </div>
-        
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-          {languages.map((lang, index) => (
-            <motion.div 
-              key={lang.id} 
-              className="bg-white/10 backdrop-blur-sm rounded-xl p-8 text-center hover:bg-white/15 transition-all duration-300"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-            >
-              <div className="text-6xl mb-4">{lang.flag}</div>
-              <h3 className="text-2xl font-semibold text-white mb-4">{lang.name}</h3>
-              <p className="text-gray-300 mb-6">{lang.description}</p>
-              <div className="space-y-2 text-left">
-                {['Native-level conversations', 'Grammar corrections', 'Cultural context', 'TOEFL/CEFR scoring'].map((feature, i) => (
-                  <div key={i} className="flex items-center space-x-2 text-sm text-gray-300">
-                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
 
       {/* Social Proof Section */}
       <section className="container mx-auto px-6 py-20">
@@ -654,7 +543,7 @@ export default function EncantoAILanding() {
 
       {/* Footer */}
       <footer className="container mx-auto px-6 py-12 border-t border-white/20">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
+        <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div>
             <h3 className="text-white text-lg font-semibold mb-4">Encanto AI</h3>
             <p className="text-gray-400 text-sm">
@@ -668,15 +557,6 @@ export default function EncantoAILanding() {
               <li><a href="https://apps.apple.com/us/app/encanto-ai/id6747835824" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">iOS App Store</a></li>
               <li><Link href="/audio-analysis" className="hover:text-white transition-colors">Audio Analysis</Link></li>
               <li><Link href="/vocabulary" className="hover:text-white transition-colors">Vocabulary Tools</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Languages</h4>
-            <ul className="space-y-2 text-gray-400 text-sm">
-              <li><a href="#" className="hover:text-white transition-colors">Spanish</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">German</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">English (ESL)</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Korean</a></li>
             </ul>
           </div>
           <div>
