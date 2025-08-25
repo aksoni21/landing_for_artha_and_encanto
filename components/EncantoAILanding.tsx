@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export default function EncantoAILanding() {
   const [email, setEmail] = useState('');
@@ -666,8 +666,8 @@ export default function EncantoAILanding() {
             <ul className="space-y-2 text-gray-400 text-sm">
               <li><a href="http://localhost:3000/dashboard_ai" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Web Application</a></li>
               <li><a href="https://apps.apple.com/us/app/encanto-ai/id6747835824" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">iOS App Store</a></li>
-              <li><a href="/audio-analysis" className="hover:text-white transition-colors">Audio Analysis</a></li>
-              <li><a href="/vocabulary" className="hover:text-white transition-colors">Vocabulary Tools</a></li>
+              <li><Link href="/audio-analysis" className="hover:text-white transition-colors">Audio Analysis</Link></li>
+              <li><Link href="/vocabulary" className="hover:text-white transition-colors">Vocabulary Tools</Link></li>
             </ul>
           </div>
           <div>
