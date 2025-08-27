@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import { GetServerSideProps } from 'next';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
@@ -12,7 +11,6 @@ import { getPartnerConfig, isValidPartner, PartnerConfig, colorMap } from '../..
 import AudioRecorder from '../../components/audio/AudioRecorder';
 import FileUploader from '../../components/audio/FileUploader';
 import AudioPreview from '../../components/audio/AudioPreview';
-import CEFRLevelIndicator from '../../components/analysis/CEFRLevelIndicator';
 import ComponentScores from '../../components/analysis/ComponentScores';
 import ProcessingStatus, { ProcessingStep } from '../../components/analysis/ProcessingStatus';
 import ErrorBoundary from '../../components/ui/ErrorBoundary';
@@ -42,7 +40,6 @@ interface PartnerPageProps {
 }
 
 const DynamicPartnerPage: React.FC<PartnerPageProps> = ({ partnerConfig }) => {
-  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<AnalysisStep>('welcome');
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioUrl, setAudioUrl] = useState<string>('');
@@ -52,13 +49,30 @@ const DynamicPartnerPage: React.FC<PartnerPageProps> = ({ partnerConfig }) => {
   const [error, setError] = useState<AppError | null>(null);
   const [hasStartedDemo, setHasStartedDemo] = useState(false);
 
+  // Get color classes and displayName (moved before early return)
+  const colors = partnerConfig ? colorMap[partnerConfig.primaryColor] || colorMap['blue'] : colorMap['blue'];
+  // Use displayName in header to avoid unused variable warning
+  const displayName = partnerConfig && partnerConfig.fullName.length > 25 
+    ? partnerConfig.name 
+    : partnerConfig?.fullName || '';
+
+  // Track page visit (moved before early return)
+  useEffect(() => {
+    if (!partnerConfig) return;
+    
+    console.log(`${partnerConfig.name} Partner page visited`);
+    console.log('Partner config:', partnerConfig);
+    console.log('Colors being used:', colors);
+    trackPartnerVisit(partnerConfig.id);
+  }, [partnerConfig, colors]);
+
   // If no valid partner config, show 404
   if (!partnerConfig) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Partner Not Found</h1>
-          <p className="text-lg text-gray-600 mb-8">This partner page doesn't exist or is not active.</p>
+          <p className="text-lg text-gray-600 mb-8">This partner page doesn&apos;t exist or is not active.</p>
           <Link href="/" className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             Return Home
           </Link>
@@ -66,23 +80,6 @@ const DynamicPartnerPage: React.FC<PartnerPageProps> = ({ partnerConfig }) => {
       </div>
     );
   }
-
-  // Get color classes based on partner config with fallback
-  const colors = colorMap[partnerConfig.primaryColor] || colorMap['blue'];
-  
-  // Handle long partner names for display
-  const displayName = partnerConfig.fullName.length > 25 
-    ? partnerConfig.name 
-    : partnerConfig.fullName;
-
-  // Track page visit
-  useEffect(() => {
-    console.log(`${partnerConfig.name} Partner page visited`);
-    console.log('Partner config:', partnerConfig);
-    console.log('Colors being used:', colors);
-    // Add analytics tracking here - can send to your backend
-    trackPartnerVisit(partnerConfig.id);
-  }, [partnerConfig, colors]);
 
   const trackPartnerVisit = async (partnerId: string) => {
     try {
@@ -227,7 +224,7 @@ const DynamicPartnerPage: React.FC<PartnerPageProps> = ({ partnerConfig }) => {
                 <span className="text-gray-400">×</span>
                 <div>
                   <h1 className={`text-xl font-bold ${colors.primaryText}`}>
-                    {partnerConfig.fullName}
+                    {displayName}
                   </h1>
                   <p className="text-xs text-gray-500">Exclusive Partner Demo</p>
                 </div>
@@ -394,8 +391,8 @@ const DynamicPartnerPage: React.FC<PartnerPageProps> = ({ partnerConfig }) => {
                 <div className={`${colors.lightBg} rounded-xl p-6 border ${colors.primaryBorder}`}>
                   <h3 className={`font-semibold ${colors.primaryText} mb-2`}>Sample Speaking Prompt:</h3>
                   <p className="text-gray-800 italic">
-                    "Some people prefer to live in a small town. Others prefer to live in a big city. 
-                    Which place would you prefer to live in? Use specific reasons and examples to support your answer."
+                    &ldquo;Some people prefer to live in a small town. Others prefer to live in a big city. 
+                    Which place would you prefer to live in? Use specific reasons and examples to support your answer.&rdquo;
                   </p>
                   <p className={`text-sm ${colors.primaryText} opacity-80 mt-2`}>
                     Students should speak for 45-60 seconds
@@ -438,7 +435,7 @@ const DynamicPartnerPage: React.FC<PartnerPageProps> = ({ partnerConfig }) => {
                     Instant Analysis Complete!
                   </h2>
                   <p className="text-lg text-gray-600 mb-6">
-                    Here's what every {partnerConfig.name} student would receive automatically
+                    Here&apos;s what every {partnerConfig.name} student would receive automatically
                   </p>
                 </div>
 
@@ -447,16 +444,15 @@ const DynamicPartnerPage: React.FC<PartnerPageProps> = ({ partnerConfig }) => {
                   {/* TOEFL Score */}
                   <div className="xl:col-span-1">
                     <TOEFLScoreIndicator
-                      score={analysisResult.overall_toefl || 0}
-                      maxScore={120}
-                      components={[
-                        { name: 'Speaking', score: 22, maxScore: 30 },
-                        { name: 'Grammar', score: 24, maxScore: 30 },
-                        { name: 'Vocabulary', score: 21, maxScore: 30 },
-                        { name: 'Fluency', score: 20, maxScore: 30 }
-                      ]}
-                      targetScore={90}
-                      previousScore={82}
+                      totalScore={analysisResult.overall_toefl || 0}
+                      sectionScores={{
+                        reading: 22,
+                        listening: 24, 
+                        speaking: 21,
+                        writing: 20
+                      }}
+                      confidence={analysisResult.confidence}
+                      size="large"
                       animated={true}
                     />
                   </div>
@@ -513,7 +509,7 @@ const DynamicPartnerPage: React.FC<PartnerPageProps> = ({ partnerConfig }) => {
                   >
                     <div className="text-4xl mb-4">💬</div>
                     <p className="text-xl italic text-gray-700 mb-4">
-                      "{partnerConfig.testimonial.quote}"
+                      &ldquo;{partnerConfig.testimonial.quote}&rdquo;
                     </p>
                     <p className="font-semibold text-gray-900">{partnerConfig.testimonial.author}</p>
                     <p className="text-gray-600">{partnerConfig.testimonial.role}</p>
@@ -552,7 +548,7 @@ const DynamicPartnerPage: React.FC<PartnerPageProps> = ({ partnerConfig }) => {
                   transition={{ delay: 0.5 }}
                 >
                   <h3 className="text-2xl font-bold mb-4">
-                    Ready to Transform {partnerConfig.name}'s ESL Program?
+                    Ready to Transform {partnerConfig.name}&apos;s ESL Program?
                   </h3>
                   <p className="text-lg mb-6">
                     Join 200+ schools already using Encanto AI to accelerate student success
