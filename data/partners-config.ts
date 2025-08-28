@@ -111,6 +111,32 @@ export const partnersConfig: Record<string, PartnerConfig> = {
     isActive: true
   },
   
+  'broward-esol': {
+    id: 'broward-esol',
+    name: 'Broward ESOL',
+    fullName: 'Broward County School District ESOL',
+    location: 'Fort Lauderdale, FL',
+    primaryColor: 'blue',
+    secondaryColor: 'green',
+    studentCount: '40,000+',
+    metrics: {
+      timeSaved: '50 hrs/week',
+      availability: '24/7',
+      improvement: '2x Faster'
+    },
+    focusAreas: ['WIDA ACCESS Prep', 'K-12 ELL Support', 'Speaking Assessment', 'Progress Monitoring'],
+    calendarLink: 'https://calendly.com/encanto-ai/broward-demo',
+    contactEmail: 'anthony@encanto.ai',
+    customMessage: 'Supporting Florida\'s most diverse school district with scalable ESOL solutions!',
+    features: [
+      'WIDA-aligned speaking assessment',
+      'District-wide progress tracking',
+      'Automated score predictions',
+      'Teacher workload reduction'
+    ],
+    isActive: true
+  },
+
   // Template for new partners
   template: {
     id: 'template',

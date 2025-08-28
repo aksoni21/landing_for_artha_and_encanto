@@ -611,20 +611,43 @@ const DynamicPartnerPage: React.FC<PartnerPageProps> = ({ partnerConfig }) => {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { partner } = context.params as { partner: string };
   
-  // Check if partner exists and is active
-  if (!isValidPartner(partner)) {
-    return {
-      props: {
-        partnerConfig: null
+  console.log(`🔎 [Partner Page SSR] Looking for partner: ${partner}`);
+  
+  // First, try to get from static config (existing partners)
+  let partnerConfig = getPartnerConfig(partner);
+  
+  if (partnerConfig) {
+    console.log(`✅ [Partner Page SSR] Found in static config: ${partner}`);
+  }
+  
+  // If not found in static config, try fetching from backend API
+  if (!partnerConfig) {
+    console.log(`🌐 [Partner Page SSR] Not in static config, trying backend API...`);
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    const apiUrl = `${backendUrl}/api/partners/${partner}`;
+    console.log(`📍 [Partner Page SSR] Backend API URL: ${apiUrl}`);
+    
+    try {
+      const response = await fetch(apiUrl);
+      console.log(`📡 [Partner Page SSR] API Response Status: ${response.status}`);
+      
+      if (response.ok) {
+        partnerConfig = await response.json();
+        console.log(`✅ [Partner Page SSR] Found in database: ${partner}`);
+      } else {
+        const errorText = await response.text();
+        console.log(`❌ [Partner Page SSR] API Error: ${errorText}`);
       }
-    };
+    } catch (error) {
+      console.error('❌ [Partner Page SSR] Could not fetch partner from API:', error);
+    }
   }
 
-  const partnerConfig = getPartnerConfig(partner);
-
+  console.log(`📦 [Partner Page SSR] Final result: ${partnerConfig ? 'Found' : 'Not found'}`);
+  
   return {
     props: {
-      partnerConfig
+      partnerConfig: partnerConfig || null
     }
   };
 };
