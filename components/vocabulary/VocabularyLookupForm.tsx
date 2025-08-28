@@ -134,7 +134,7 @@ const VocabularyLookupForm: React.FC<VocabularyLookupFormProps> = ({ onLookup, i
         setIsLookingUpBook(false);
       }
     }, 500),
-    [setBookSuggestions, setShowSuggestions, setIsLookingUpBook, setLookupError, bookLookupService]
+    [bookLookupService]
   );
 
   // Handle book title change with auto-lookup
