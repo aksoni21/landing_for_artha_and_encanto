@@ -2,6 +2,18 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { BookMetadata } from '../../services/vocabularyService';
 import { bookLookupService, BookInfo } from '../../services/bookLookupService';
 
+// Debounce utility function
+function debounce<Args extends readonly unknown[]>(
+  func: (...args: Args) => void | Promise<void>,
+  delay: number
+): (...args: Args) => void {
+  let timeoutId: NodeJS.Timeout;
+  return (...args: Args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+}
+
 interface VocabularyLookupFormProps {
   onLookup: (word: string, paragraph: string, bookMetadata: BookMetadata) => void;
   isLoading?: boolean;
@@ -101,8 +113,8 @@ const VocabularyLookupForm: React.FC<VocabularyLookupFormProps> = ({ onLookup, i
   };
 
   // Debounced book lookup
-  const debouncedBookLookup = useCallback(
-    debounce(async (title: string) => {
+  const debouncedBookLookup = useCallback((title: string) => {
+    const debouncedFunction = debounce(async (title: string) => {
       if (!title.trim() || title.length < 3) {
         setBookSuggestions([]);
         setShowSuggestions(false);
@@ -133,9 +145,10 @@ const VocabularyLookupForm: React.FC<VocabularyLookupFormProps> = ({ onLookup, i
       } finally {
         setIsLookingUpBook(false);
       }
-    }, 500),
-    [bookLookupService]
-  );
+    }, 500);
+    
+    debouncedFunction(title);
+  }, [setBookSuggestions, setShowSuggestions, setIsLookingUpBook, setLookupError]);
 
   // Handle book title change with auto-lookup
   const handleBookTitleChange = (value: string) => {
@@ -209,17 +222,6 @@ const VocabularyLookupForm: React.FC<VocabularyLookupFormProps> = ({ onLookup, i
     return contextExamples[genre as keyof typeof contextExamples] || contextExamples.default;
   };
 
-  // Debounce utility function
-  function debounce<Args extends readonly unknown[]>(
-    func: (...args: Args) => void | Promise<void>,
-    delay: number
-  ): (...args: Args) => void {
-    let timeoutId: NodeJS.Timeout;
-    return (...args: Args) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => func(...args), delay);
-    };
-  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

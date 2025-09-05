@@ -174,7 +174,7 @@ export default function ContactLinks() {
               About Speak Encanto
             </h2>
             <p className="text-gray-600 text-center leading-relaxed">
-              We're revolutionizing language learning with AI-powered conversation partners that provide 
+              We&apos;re revolutionizing language learning with AI-powered conversation partners that provide 
               personalized speaking practice for students and intelligent teaching assistance for educators. 
               Perfect for ESOL classrooms and language learning environments.
             </p>
