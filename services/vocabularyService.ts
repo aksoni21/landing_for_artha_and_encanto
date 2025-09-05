@@ -1,6 +1,8 @@
 // Vocabulary Service for Desktop/Web
 // Interfaces and API communication for literary vocabulary lookups
 
+import { getBackendURL } from '../utils/environment';
+
 export interface BookMetadata {
   title: string;
   author: string;
@@ -72,8 +74,8 @@ class VocabularyService {
   private readonly baseUrl: string;
 
   constructor() {
-    // Use Next.js API routes for frontend, or Python backend URL if specified
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    // Use the standard backend URL utility
+    this.baseUrl = getBackendURL();
   }
 
   /**
@@ -81,30 +83,33 @@ class VocabularyService {
    */
   private getAuthToken(): string | null {
     if (typeof window !== 'undefined') {
-      // Check for teacher auth first, then supabase token
-      const teacherAuth = localStorage.getItem('teacher-auth');
+      // Check for auth tokens in order of priority
+      const authToken = localStorage.getItem('auth_token');
       const supabaseToken = localStorage.getItem('supabase.auth.token');
+      const teacherAuth = localStorage.getItem('teacher-auth');
       
       // Return whichever token exists
-      return supabaseToken || (teacherAuth ? 'demo-teacher-token' : null);
+      return authToken || supabaseToken || (teacherAuth ? 'demo-teacher-token' : null);
     }
     return null;
   }
 
   /**
-   * Get authentication headers
+   * Get headers for vocabulary requests (authentication optional for story reading)
    */
-  private getAuthHeaders(): HeadersInit {
+  private getHeaders(): HeadersInit {
     const token = this.getAuthToken();
     
-    if (!token) {
-      throw new Error('No authentication token found. Please log in.');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add auth header only if token exists (optional for story reading)
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    };
+    return headers;
   }
 
   /**
@@ -114,10 +119,10 @@ class VocabularyService {
     try {
       console.log('📚 Looking up word:', request.word);
       
-      const headers = this.getAuthHeaders();
+      const headers = this.getHeaders();
       console.log('🔑 Sending headers:', headers);
       
-      const response = await fetch(`${this.baseUrl}/api/vocabulary`, {
+      const response = await fetch(`${this.baseUrl}/api/vocabulary/lookup`, {
         method: 'POST',
         headers,
         body: JSON.stringify(request),
@@ -145,7 +150,7 @@ class VocabularyService {
     try {
       console.log('📖 Fetching vocabulary history for user:', userId);
       
-      const headers = this.getAuthHeaders();
+      const headers = this.getHeaders();
       
       const response = await fetch(`${this.baseUrl}/api/vocabulary/history/${userId}?limit=${limit}`, {
         method: 'GET',
@@ -178,7 +183,7 @@ class VocabularyService {
     try {
       console.log('📊 Fetching vocabulary stats for user:', userId);
       
-      const headers = this.getAuthHeaders();
+      const headers = this.getHeaders();
       
       const response = await fetch(`${this.baseUrl}/api/vocabulary/stats/${userId}`, {
         method: 'GET',

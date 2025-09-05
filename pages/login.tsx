@@ -62,8 +62,9 @@ export default function DashboardLogin() {
           loginTime: new Date().toISOString()
         }));
         localStorage.setItem('supabase.auth.token', result.token);
+        localStorage.setItem('auth_token', result.token);
         
-        const redirectTo = router.query.redirect as string || '/dashboard_ai';
+        const redirectTo = router.query.redirect as string || '/stories';
         router.push(redirectTo);
       } else {
         setError(result.error || 'Login failed. Please try again.');
@@ -79,7 +80,7 @@ export default function DashboardLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-xl shadow max-w-md w-full">
-        <h1 className="text-2xl font-bold mb-4">Teacher Login</h1>
+        <h1 className="text-2xl font-bold mb-4">Login</h1>
         
         {/* Demo Credentials Info */}
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">

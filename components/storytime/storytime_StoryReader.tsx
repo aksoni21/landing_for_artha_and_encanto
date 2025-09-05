@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Story, StorySession } from '../../services/storytime_storyService';
 import storyService from '../../services/storytime_storyService';
+import VocabularyPopup from './VocabularyPopup';
+import vocabularyService, { VocabularyResult } from '../../services/vocabularyService';
 
 interface StoryReaderProps {
   story: Story;
@@ -38,6 +40,9 @@ const StoryReader: React.FC<StoryReaderProps> = ({
   const [highlightedWord, setHighlightedWord] = useState<string | null>(null);
   const [isReading, setIsReading] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [vocabularyResult, setVocabularyResult] = useState<VocabularyResult | null>(null);
+  const [showVocabularyPopup, setShowVocabularyPopup] = useState(false);
+  const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | undefined>(undefined);
   
   const contentRef = useRef<HTMLDivElement>(null);
   const startTimeRef = useRef<Date | null>(null);
@@ -46,6 +51,22 @@ const StoryReader: React.FC<StoryReaderProps> = ({
   // Start a reading session when component mounts
   useEffect(() => {
     const startSession = async () => {
+      // Skip session creation if no user is logged in
+      if (!userId) {
+        console.log('📖 No user logged in, skipping session creation for story reading');
+        setIsReading(true);
+        startTimeRef.current = new Date();
+        
+        // Start tracking time for anonymous reading
+        intervalRef.current = setInterval(() => {
+          if (startTimeRef.current) {
+            const elapsed = Math.floor((new Date().getTime() - startTimeRef.current.getTime()) / 1000);
+            setElapsedTime(elapsed);
+          }
+        }, 1000);
+        return;
+      }
+
       try {
         const session = await storyService.createSession(
           story.id,
@@ -66,6 +87,15 @@ const StoryReader: React.FC<StoryReaderProps> = ({
         }, 1000);
       } catch (error) {
         console.error('Failed to start reading session:', error);
+        // Fall back to anonymous reading
+        setIsReading(true);
+        startTimeRef.current = new Date();
+        intervalRef.current = setInterval(() => {
+          if (startTimeRef.current) {
+            const elapsed = Math.floor((new Date().getTime() - startTimeRef.current.getTime()) / 1000);
+            setElapsedTime(elapsed);
+          }
+        }, 1000);
       }
     };
 
@@ -76,7 +106,7 @@ const StoryReader: React.FC<StoryReaderProps> = ({
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      if (currentSession && startTimeRef.current) {
+      if (currentSession && startTimeRef.current && userId) {
         const finalTime = Math.floor((new Date().getTime() - startTimeRef.current.getTime()) / 1000);
         updateSessionProgress(readingProgress, finalTime, false);
       }
@@ -129,29 +159,64 @@ const StoryReader: React.FC<StoryReaderProps> = ({
   // Save progress every 30 seconds
   useEffect(() => {
     const saveInterval = setInterval(() => {
-      if (isReading && currentSession) {
+      if (isReading && currentSession && userId) {
         updateSessionProgress(readingProgress, elapsedTime, false);
       }
     }, 30000);
 
     return () => clearInterval(saveInterval);
-  }, [readingProgress, elapsedTime, isReading, currentSession, updateSessionProgress]);
+  }, [readingProgress, elapsedTime, isReading, currentSession, updateSessionProgress, userId]);
 
   // Handle word clicks for vocabulary lookup
-  const handleWordClick = (event: React.MouseEvent) => {
+  const handleWordClick = async (event: React.MouseEvent) => {
     const target = event.target as HTMLElement;
     if (target.classList.contains('story-word')) {
       const word = target.textContent || '';
       const sentence = target.getAttribute('data-sentence') || '';
+      
+      // Store click position for popup positioning
+      setClickPosition({ x: event.clientX, y: event.clientY });
       setHighlightedWord(word);
       
-      if (onWordClick) {
-        onWordClick(word, sentence);
+      try {
+        // Show loading state
+        setVocabularyResult(null);
+        setShowVocabularyPopup(true);
+        
+        // Perform vocabulary lookup
+        const result = await vocabularyService.lookupWord({
+          word,
+          paragraph: sentence,
+          book_metadata: {
+            title: story.title,
+            author: story.author || 'Unknown',
+            year: new Date().getFullYear().toString(),
+            genre: story.genre || 'Fiction'
+          },
+          user_id: userId
+        });
+        
+        setVocabularyResult(result);
+        
+        // Also call the original callback if provided
+        if (onWordClick) {
+          onWordClick(word, sentence);
+        }
+      } catch (error) {
+        console.error('Vocabulary lookup failed:', error);
+        setShowVocabularyPopup(false);
       }
 
       // Remove highlight after 2 seconds
       setTimeout(() => setHighlightedWord(null), 2000);
     }
+  };
+
+  // Close vocabulary popup
+  const closeVocabularyPopup = () => {
+    setShowVocabularyPopup(false);
+    setVocabularyResult(null);
+    setClickPosition(undefined);
   };
 
   // Process story content to make words clickable
@@ -197,10 +262,10 @@ const StoryReader: React.FC<StoryReaderProps> = ({
 
   // Complete the reading session
   const completeReading = async () => {
-    if (currentSession) {
+    if (currentSession && userId) {
       await updateSessionProgress(100, elapsedTime, true);
-      setIsReading(false);
     }
+    setIsReading(false);
   };
 
   return (
@@ -209,7 +274,7 @@ const StoryReader: React.FC<StoryReaderProps> = ({
       <div className="reading-controls bg-white shadow-md rounded-lg p-4 mb-4 flex items-center justify-between">
         <div className="font-controls flex items-center gap-4">
           <label className="flex items-center gap-2">
-            <span className="text-sm font-medium">Font Size:</span>
+            <span className="text-sm font-medium text-blue-900">Font Size:</span>
             <input
               type="range"
               min="14"
@@ -218,15 +283,15 @@ const StoryReader: React.FC<StoryReaderProps> = ({
               onChange={(e) => setFontSize(Number(e.target.value))}
               className="w-24"
             />
-            <span className="text-sm">{fontSize}px</span>
+            <span className="text-sm text-blue-900">{fontSize}px</span>
           </label>
-          
+              
           <label className="flex items-center gap-2">
-            <span className="text-sm font-medium">Line Spacing:</span>
+            <span className="text-sm font-medium text-blue-900">Line Spacing:</span>
             <select
               value={lineHeight}
               onChange={(e) => setLineHeight(Number(e.target.value))}
-              className="border rounded px-2 py-1"
+              className="border rounded px-2 py-1 text-blue-500"  
             >
               <option value={1.4}>Tight</option>
               <option value={1.6}>Normal</option>
@@ -238,11 +303,11 @@ const StoryReader: React.FC<StoryReaderProps> = ({
 
         <div className="reading-stats flex items-center gap-4">
           <div className="text-sm">
-            <span className="font-medium">Progress:</span>{' '}
+            <span className="font-medium text-blue-900">Progress:</span>{' '}
             <span className="text-blue-600">{readingProgress}%</span>
           </div>
           <div className="text-sm">
-            <span className="font-medium">Time:</span>{' '}
+            <span className="font-medium text-blue-900">Time:</span>{' '}
             <span className="text-blue-600">{formatTime(elapsedTime)}</span>
           </div>
           {readingProgress === 100 && (
@@ -266,19 +331,20 @@ const StoryReader: React.FC<StoryReaderProps> = ({
 
       {/* Story Content */}
       <div className="story-content-wrapper bg-white shadow-lg rounded-lg p-8">
-        <h1 className="text-3xl font-bold mb-2">{story.title}</h1>
+        <h1 className="text-3xl font-bold mb-2 text-blue-900">{story.title}</h1>
         {story.author && (
           <p className="text-gray-600 mb-6">By {story.author}</p>
         )}
         
         <div
           ref={contentRef}
-          className="story-content prose max-w-none"
+          className="story-content prose prose-lg max-w-none prose-gray"
           style={{
             fontSize: `${fontSize}px`,
             lineHeight: lineHeight,
             maxHeight: '600px',
-            overflowY: 'auto'
+            overflowY: 'auto',
+            color: '#1f2937' // Ensure dark gray text
           }}
         >
           {processContent(story.content)}
@@ -296,11 +362,24 @@ const StoryReader: React.FC<StoryReaderProps> = ({
         </ul>
       </div>
 
+      {/* Vocabulary Popup */}
+      <VocabularyPopup
+        result={vocabularyResult}
+        isOpen={showVocabularyPopup}
+        onClose={closeVocabularyPopup}
+        position={clickPosition}
+      />
+
       <style jsx>{`
+        .story-word {
+          color: #1f2937 !important;
+        }
+        
         .story-word:hover {
           background-color: #fef3c7;
           border-radius: 2px;
           padding: 0 2px;
+          color: #1f2937 !important;
         }
         
         .story-word.highlighted {
@@ -308,10 +387,12 @@ const StoryReader: React.FC<StoryReaderProps> = ({
           border-radius: 2px;
           padding: 0 2px;
           font-weight: 600;
+          color: #1f2937 !important;
         }
         
         .sentence {
           display: inline;
+          color: #1f2937 !important;
         }
         
         .story-content::-webkit-scrollbar {

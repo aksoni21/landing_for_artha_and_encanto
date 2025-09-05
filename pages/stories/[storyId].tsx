@@ -12,7 +12,7 @@ import PeerReview from '../../components/storytime/storytime_PeerReview';
 import StoryAssessment from '../../components/storytime/storytime_StoryAssessment';
 import storyService, { Story, StoryVocabulary } from '../../services/storytime_storyService';
 import vocabularyService from '../../services/vocabularyService';
-import authService from '../../services/authService';
+import { authService } from '../../services/authService';
 
 type TabType = 'read' | 'listen' | 'speak' | 'write' | 'assess' | 'review' | 'vocabulary' | 'progress';
 
@@ -42,7 +42,7 @@ const StoryDetailPage: React.FC = () => {
     if (storyId && typeof storyId === 'string') {
       loadStoryData(storyId);
     }
-  }, [storyId]);
+  }, [storyId, userId]); // Also reload when userId changes
 
   const loadStoryData = async (id: string) => {
     setLoading(true);
@@ -61,9 +61,14 @@ const StoryDetailPage: React.FC = () => {
       const vocabData = await storyService.getStoryVocabulary(id, userId);
       setVocabulary(vocabData);
 
-      // Load user progress
-      const progressData = await storyService.getUserStoryProgress(userId, id);
-      setUserProgress(progressData);
+      // Load user progress only if user is logged in
+      if (userId) {
+        const progressData = await storyService.getUserStoryProgress(userId, id);
+        setUserProgress(progressData);
+      } else {
+        console.log('No user logged in, skipping progress load');
+        setUserProgress(null);
+      }
     } catch (err) {
       setError('Failed to load story. Please try again.');
       console.error('Error loading story:', err);
@@ -276,9 +281,9 @@ const StoryDetailPage: React.FC = () => {
               skills_progress: { reading: 0, listening: 0, speaking: 0, writing: 0 },
               sessions_count: 0
             }}
-            userId={userId}
+            userId={userId || ''}
             onProgressUpdate={handleProgressUpdate}
-            onWordClick={handleWordLookup}
+            onWordClick={(word, sentence) => console.log('Word clicked:', word, sentence)}
           />
         )}
 
