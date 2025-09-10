@@ -341,7 +341,7 @@ export default function ContactLinks() {
             ) : (
               <div className="text-center">
                 <div className="text-green-600 text-4xl mb-4">✓</div>
-                <p className="text-gray-600">Thanks! I'll be in touch soon.</p>
+                <p className="text-gray-600">Thanks! I&apos;ll be in touch soon.</p>
               </div>
             )}
           </div>

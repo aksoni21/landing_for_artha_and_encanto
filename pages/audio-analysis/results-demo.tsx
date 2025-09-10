@@ -318,7 +318,12 @@ const AudioAnalysisResultsDemoPage: React.FC = () => {
               <div className="flex justify-center">
                 <TOEFLScoreIndicator
                   totalScore={demoResult.scoring_result.toefl.total}
-                  sectionScores={demoResult.scoring_result.toefl.sections}
+                  sectionScores={{
+                    reading: 22,
+                    listening: 22,
+                    speaking: demoResult.scoring_result.toefl.speaking,
+                    writing: 22
+                  }}
                   confidence={demoResult.overall_confidence}
                   size="large"
                   showDetails={true}
