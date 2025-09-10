@@ -208,7 +208,7 @@ export default function EncantoAILanding() {
               <a href="#demo" className="text-gray-300 hover:text-emerald-400 transition-colors">Demo</a>
               <a href="#use-cases" className="text-gray-300 hover:text-emerald-400 transition-colors">Use Cases</a>
               <a href="#languages" className="text-gray-300 hover:text-emerald-400 transition-colors">Languages</a>
-              <Link href="/dashboard_ai" className="text-gray-300 hover:text-emerald-400 transition-colors">Teacher Login</Link>
+              <Link href="/teacher-stories" className="text-gray-300 hover:text-emerald-400 transition-colors">Teacher Login</Link>
             </div>
           </div>
         </div>
@@ -308,7 +308,7 @@ export default function EncantoAILanding() {
           >
             {activeTab === 'web' ? (
               <a 
-                href="http://localhost:3000/dashboard_ai" 
+                href="http://localhost:3000/teacher-stories" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="bg-gradient-to-r from-emerald-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-medium hover:from-emerald-700 hover:to-cyan-700 transition-all duration-300 shadow-lg transform hover:scale-105 inline-block text-center"
@@ -553,7 +553,7 @@ export default function EncantoAILanding() {
           <div>
             <h4 className="text-white font-semibold mb-4">Platform</h4>
             <ul className="space-y-2 text-gray-400 text-sm">
-              <li><a href="http://localhost:3000/dashboard_ai" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Web Application</a></li>
+              <li><a href="http://localhost:3000/teacher-stories" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Web Application</a></li>
               <li><a href="https://apps.apple.com/us/app/encanto-ai/id6747835824" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">iOS App Store</a></li>
               <li><Link href="/audio-analysis" className="hover:text-white transition-colors">Audio Analysis</Link></li>
               <li><Link href="/vocabulary" className="hover:text-white transition-colors">Vocabulary Tools</Link></li>

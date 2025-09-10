@@ -195,14 +195,7 @@ export default function TeacherDashboard() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const authed = localStorage.getItem('teacher-auth');
-      if (!authed) {
-        router.replace('/dashboard-login');
-      }
-    }
-  }, [router]);
+  // Removed authentication check since this dashboard uses sample data for demo purposes
 
   useEffect(() => {
     if (showAssistant && chatInputRef.current) {

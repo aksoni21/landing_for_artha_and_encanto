@@ -80,7 +80,7 @@ export default function ContactLinks() {
           {/* Hero Section */}
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Speak Encanto
+              Encanto AI
             </h1>
             <p className="text-xl text-gray-600 mb-2">
               AI speaking partners for students, AI assistant for teachers
