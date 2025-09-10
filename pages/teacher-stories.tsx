@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useState, useRef, useEffect, useCallback } from 'react';
+// import { useRouter } from 'next/router'; // Removed unused import
 import { motion, AnimatePresence } from 'framer-motion';
 import { teacherService } from '../services/teacherService';
 
@@ -18,6 +18,31 @@ interface StoryMetrics {
   audio_url?: string;
   content?: string;
   created_at?: string;
+}
+
+interface StoryData {
+  id: string;
+  title: string;
+  difficulty?: string;
+  genre?: string;
+  description?: string;
+  audio_url?: string;
+  content?: string;
+  created_at?: string;
+  vocabulary_count?: number;
+  estimated_duration?: number;
+}
+
+interface AnalysisData {
+  date: string;
+  overallScore: number;
+  grammar: number;
+  vocabulary: number;
+  fluency: number;
+  pronunciation: number;
+  discourse?: number;
+  sessionDuration: number;
+  cefrLevel?: string;
 }
 
 interface StudentStoryData {
@@ -119,24 +144,9 @@ export default function TeacherStoriesDashboard() {
   
   const chatInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  // const router = useRouter(); // Removed unused router
 
-  // Load real data from APIs
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages]);
-
-  useEffect(() => {
-    if (showAssistant && chatInputRef.current) {
-      setTimeout(() => chatInputRef.current?.focus(), 200);
-    }
-  }, [showAssistant]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     setDataLoading(true);
     setError(null);
     
@@ -147,7 +157,7 @@ export default function TeacherStoriesDashboard() {
       
       if (storiesResponse.data && Array.isArray(storiesResponse.data)) {
         const transformedStories = await Promise.all(
-          storiesResponse.data.map(async (story: any) => {
+          storiesResponse.data.map(async (story: StoryData) => {
             // Get story statistics
             let completionRate = 0;
             let avgScore = 0;
@@ -160,7 +170,7 @@ export default function TeacherStoriesDashboard() {
                 avgScore = storyStats.data.avg_score || 0;
                 strugglingStudents = storyStats.data.struggling_students || 0;
               }
-            } catch (error) {
+            } catch {
               console.log(`⚠️ No stats found for story ${story.title}`);
             }
             
@@ -202,7 +212,7 @@ export default function TeacherStoriesDashboard() {
             console.log(`📊 Analysis for ${userSummary.user_id}:`, analysisHistory);
             
             if (analysisHistory.data && analysisHistory.data.length > 0) {
-            const recentAnalyses = analysisHistory.data.map((analysis: any) => ({
+            const recentAnalyses = analysisHistory.data.map((analysis: AnalysisData) => ({
               date: analysis.date,
               overallScore: analysis.overallScore,
               grammar: analysis.grammar,
@@ -216,7 +226,7 @@ export default function TeacherStoriesDashboard() {
 
             // Calculate metrics from real data
             const avgScore = Math.round(
-              recentAnalyses.reduce((acc: number, analysis: any) => acc + analysis.overallScore, 0) / recentAnalyses.length
+              recentAnalyses.reduce((acc: number, analysis: AnalysisData) => acc + analysis.overallScore, 0) / recentAnalyses.length
             );
             
             const latestAnalysis = recentAnalyses[0];
@@ -228,7 +238,7 @@ export default function TeacherStoriesDashboard() {
             else if (avgScore < 65) status = 'At Risk';
             
             // Generate AI insights based on performance
-            const generateAIInsight = (analysis: any, trend: number) => {
+            const generateAIInsight = (analysis: AnalysisData) => {
               if (analysis.overallScore >= 85) {
                 return `Excellent performance across all areas. Ready for advanced content.`;
               } else if (analysis.overallScore >= 70) {
@@ -247,7 +257,7 @@ export default function TeacherStoriesDashboard() {
             
             const student: StudentStoryData = {
               id: userSummary.user_id,
-              name: userSummary.user_id.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+              name: userSummary.user_id.replace(/[-_]/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
               email: `${userSummary.user_id}@email.com`,
               username: userSummary.user_id,
               avatar: '',
@@ -259,7 +269,7 @@ export default function TeacherStoriesDashboard() {
               pronunciationTrend: previousAnalysis ? latestAnalysis.pronunciation - previousAnalysis.pronunciation : 0,
               fluencyTrend: previousAnalysis ? latestAnalysis.fluency - previousAnalysis.fluency : 0,
               vocabularyGrowth: recentAnalyses.length * 3, // Estimated
-              recentStories: recentAnalyses.slice(0, 3).map((analysis, index) => ({
+              recentStories: recentAnalyses.slice(0, 3).map((analysis: AnalysisData, index: number) => ({
                 title: `Session ${index + 1}`,
                 completedAt: analysis.date,
                 score: analysis.overallScore,
@@ -268,7 +278,7 @@ export default function TeacherStoriesDashboard() {
               recentAnalyses,
               strugglingWith,
               recommendedStories: [], // Could be populated from story recommendations API
-              aiInsight: generateAIInsight(latestAnalysis, avgScore),
+              aiInsight: generateAIInsight(latestAnalysis),
               nextAction: avgScore >= 85 ? 'Introduce advanced content' : avgScore >= 70 ? 'Continue current level with targeted practice' : 'Focus on foundational skills'
             };
             
@@ -295,7 +305,22 @@ export default function TeacherStoriesDashboard() {
     } finally {
       setDataLoading(false);
     }
-  };
+  }, []);
+
+  // Load real data from APIs
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
+
+  useEffect(() => {
+    if (showAssistant && chatInputRef.current) {
+      setTimeout(() => chatInputRef.current?.focus(), 200);
+    }
+  }, [showAssistant]);
 
   const filteredStudents = students.filter(s =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -958,7 +983,7 @@ export default function TeacherStoriesDashboard() {
             <div className="h-[300px] overflow-y-auto p-4 bg-gray-50">
               {chatMessages.length === 0 && (
                 <div className="text-center py-4">
-                  <p className="text-gray-500 text-sm mb-3">Ask about your students' story progress</p>
+                  <p className="text-gray-500 text-sm mb-3">Ask about your students&apos; story progress</p>
                   <div className="space-y-2">
                     {Object.keys(storyAIResponses).slice(0, 2).map(question => (
                       <button

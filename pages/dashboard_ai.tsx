@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/router';
+// import { useRouter } from 'next/router'; // Removed unused import
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Define types
@@ -189,7 +189,7 @@ export default function TeacherDashboard() {
   const [chatInput, setChatInput] = useState('');
   const chatInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  // const router = useRouter(); // Removed unused router
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
