@@ -7,6 +7,7 @@ export default function EncantoAILanding() {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('web');
+  const [showDemo, setShowDemo] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,9 +206,9 @@ export default function EncantoAILanding() {
             </motion.div>
             <div className="hidden md:flex space-x-8">
               <a href="#features" className="text-gray-300 hover:text-emerald-400 transition-colors">Platform</a>
-              <a href="#demo" className="text-gray-300 hover:text-emerald-400 transition-colors">Demo</a>
+              {/* <a href="#demo" className="text-gray-300 hover:text-emerald-400 transition-colors">Demo</a> */}
               <a href="#use-cases" className="text-gray-300 hover:text-emerald-400 transition-colors">Use Cases</a>
-              <a href="#languages" className="text-gray-300 hover:text-emerald-400 transition-colors">Languages</a>
+              {/* <a href="#languages" className="text-gray-300 hover:text-emerald-400 transition-colors">Languages</a> */}
               <Link href="/teacher-stories" className="text-gray-300 hover:text-emerald-400 transition-colors">Teacher Login</Link>
             </div>
           </div>
@@ -308,7 +309,7 @@ export default function EncantoAILanding() {
           >
             {activeTab === 'web' ? (
               <a 
-                href="http://localhost:3000/teacher-stories" 
+                href="https://www.encantospeak.com/dashboard_ai" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="bg-gradient-to-r from-emerald-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-medium hover:from-emerald-700 hover:to-cyan-700 transition-all duration-300 shadow-lg transform hover:scale-105 inline-block text-center"
@@ -325,7 +326,10 @@ export default function EncantoAILanding() {
                 Download App
               </a>
             )}
-            <button className="border border-white/30 text-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-white/10 hover:border-white/50 transition-all duration-300">
+            <button 
+              onClick={() => setShowDemo(true)}
+              className="border border-white/30 text-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-white/10 hover:border-white/50 transition-all duration-300"
+            >
               Watch Demo
             </button>
           </motion.div>
@@ -573,6 +577,39 @@ export default function EncantoAILanding() {
           <p>&copy; 2024 Encanto AI. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* Demo Modal */}
+      {showDemo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-4xl mx-4">
+            <div className="bg-black/40 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold text-white">
+                  {activeTab === 'web' ? 'Teacher Dashboard Demo' : 'Student Mobile App Demo'}
+                </h3>
+                <button 
+                  onClick={() => setShowDemo(false)}
+                  className="text-gray-400 hover:text-white text-2xl transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className={`relative rounded-lg overflow-hidden ${activeTab === 'web' ? 'aspect-video' : 'aspect-[9/16] max-w-sm mx-auto'}`}>
+                <video
+                  width="100%"
+                  height="100%"
+                  controls
+                  autoPlay
+                  className="absolute inset-0 object-contain"
+                >
+                  <source src={activeTab === 'web' ? "/FinalWeb.mp4" : "/AppMusic.mp4"} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
