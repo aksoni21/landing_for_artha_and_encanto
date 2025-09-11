@@ -602,7 +602,7 @@ export default function EncantoAILanding() {
                   autoPlay
                   className="absolute inset-0 object-contain"
                 >
-                  <source src={activeTab === 'web' ? "/FinalWeb.mp4" : "/AppMusic.mp4"} type="video/mp4" />
+                  <source src={activeTab === 'web' ? "/FinalWeb_compressed.mp4" : "/AppMusic_compressed.mp4"} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
               </div>
