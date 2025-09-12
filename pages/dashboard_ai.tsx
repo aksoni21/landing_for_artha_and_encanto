@@ -188,7 +188,7 @@ export default function TeacherDashboard() {
   const [showAssistant, setShowAssistant] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [showProfile, setShowProfile] = useState(false);
-  const [showInsights, setShowInsights] = useState<string | null>(null);
+  const [showInsights, setShowInsights] = useState(false);
   const chatInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // const router = useRouter(); // Removed unused router
@@ -197,20 +197,6 @@ export default function TeacherDashboard() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
-  // Close insights popover when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showInsights) {
-        const target = event.target as HTMLElement;
-        if (!target.closest('.insights-popover-container')) {
-          setShowInsights(null);
-        }
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showInsights]);
 
   // Removed authentication check since this dashboard uses sample data for demo purposes
 
@@ -463,91 +449,15 @@ export default function TeacherDashboard() {
                             >
                               View Profile
                             </button>
-                            <div className="flex-1 relative insights-popover-container">
-                              <button 
-                                onClick={() => {
-                                  setShowInsights(showInsights === student.id ? null : student.id);
-                                }}
-                                className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
-                              >
-                                AI Insights
-                              </button>
-                              
-                              {/* AI Insights Popover */}
-                              {showInsights === student.id && (
-                                <div className="absolute top-full left-0 right-0 mt-2 z-50">
-                                  <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm">
-                                    {/* Arrow pointer */}
-                                    <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white border-l border-t border-gray-200 rotate-45"></div>
-                                    
-                                    <div className="space-y-3">
-                                      {/* Key Focus Area */}
-                                      <div className="flex items-start space-x-2">
-                                        <span className="text-lg">🎯</span>
-                                        <div>
-                                          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Focus Area</div>
-                                          <div className="text-sm text-gray-800">
-                                            {student.status === 'At Risk' ? 'Grammar fundamentals & confidence building' :
-                                             student.status === 'Struggling' ? 'Speaking fluency & pronunciation' :
-                                             student.status === 'On Track' ? 'Advanced vocabulary expansion' :
-                                             'Complex sentence structures'}
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      {/* Progress Trend */}
-                                      <div className="flex items-start space-x-2">
-                                        <span className="text-lg">
-                                          {student.improvement && student.improvement > 0 ? '📈' : 
-                                           student.improvement && student.improvement < 0 ? '📉' : '📊'}
-                                        </span>
-                                        <div>
-                                          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Trend</div>
-                                          <div className="text-sm text-gray-800">
-                                            {student.improvement && student.improvement > 0 ? `+${student.improvement}% improvement` :
-                                             student.improvement && student.improvement < 0 ? `${student.improvement}% decline` :
-                                             'Steady progress'}
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      {/* Quick Recommendation */}
-                                      <div className="flex items-start space-x-2">
-                                        <span className="text-lg">💡</span>
-                                        <div>
-                                          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Recommendation</div>
-                                          <div className="text-sm text-gray-800">{student.aiNext}</div>
-                                        </div>
-                                      </div>
-
-                                      {/* Immediate Action */}
-                                      <div className="flex items-start space-x-2">
-                                        <span className="text-lg">⚡</span>
-                                        <div>
-                                          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Next Action</div>
-                                          <div className="text-sm text-gray-800">
-                                            {student.encouragementSent ? 'Schedule 1-on-1 session' :
-                                             student.reviewAssigned ? 'Review submitted work' :
-                                             'Send encouragement message'}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    {/* Quick Action Button */}
-                                    <button 
-                                      onClick={() => {
-                                        setShowInsights(null);
-                                        // Add quick action logic here
-                                      }}
-                                      className="w-full mt-3 pt-3 border-t border-gray-100 text-center text-xs font-medium text-blue-600 hover:text-blue-700"
-                                    >
-                                      Take Action →
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+                            <button 
+                              onClick={() => {
+                                setSelectedStudent(student);
+                                setShowInsights(true);
+                              }}
+                              className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+                            >
+                              AI Insights
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -1080,6 +990,182 @@ export default function TeacherDashboard() {
                   </div>
                 </div>
               </div>
+              </motion.div>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* AI Insights Modal */}
+      <AnimatePresence>
+        {showInsights && selectedStudent && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen px-4">
+              <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setShowInsights(false)}></div>
+              
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden"
+              >
+                {/* Modal Header */}
+                <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4 text-white">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                        <span className="text-lg">🤖</span>
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold">AI Insights</h2>
+                        <p className="text-purple-100">{selectedStudent.name} • {selectedStudent.id}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowInsights(false)}
+                      className="text-white/80 hover:text-white text-2xl font-bold"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+
+                {/* Modal Content */}
+                <div className="p-6 overflow-y-auto max-h-[70vh]">
+                  <div className="space-y-6">
+                    
+                    {/* Student Status Overview */}
+                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900">Current Status Analysis</h3>
+                        <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          selectedStudent.status === 'At Risk' ? 'bg-red-100 text-red-800' :
+                          selectedStudent.status === 'On Track' ? 'bg-green-100 text-green-800' :
+                          selectedStudent.status === 'Excelling' ? 'bg-blue-100 text-blue-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {selectedStudent.status}
+                        </div>
+                      </div>
+                      
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <span className="text-2xl">🎯</span>
+                            <h4 className="font-semibold text-purple-900">Primary Focus Area</h4>
+                          </div>
+                          <p className="text-gray-700">
+                            {selectedStudent.status === 'At Risk' ? 'Grammar fundamentals & confidence building' :
+                             selectedStudent.status === 'Struggling' ? 'Speaking fluency & pronunciation' :
+                             selectedStudent.status === 'On Track' ? 'Advanced vocabulary expansion' :
+                             'Complex sentence structures & academic language'}
+                          </p>
+                        </div>
+
+                        <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <span className="text-2xl">
+                              {selectedStudent.improvement && selectedStudent.improvement > 0 ? '📈' : 
+                               selectedStudent.improvement && selectedStudent.improvement < 0 ? '📉' : '📊'}
+                            </span>
+                            <h4 className="font-semibold text-purple-900">Progress Trend</h4>
+                          </div>
+                          <p className="text-gray-700">
+                            {selectedStudent.improvement && selectedStudent.improvement > 0 ? 
+                              `Improving steadily (+${selectedStudent.improvement}% this month)` :
+                             selectedStudent.improvement && selectedStudent.improvement < 0 ? 
+                              `Needs attention (${selectedStudent.improvement}% decline)` :
+                             'Maintaining steady progress'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* AI Recommendations */}
+                    <div className="bg-white rounded-lg border-2 border-purple-100 p-4">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <span className="text-2xl">💡</span>
+                        <h3 className="text-lg font-semibold text-gray-900">AI Recommendations</h3>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="bg-purple-50 rounded-lg p-3">
+                          <h4 className="font-medium text-purple-900 mb-2">Immediate Action</h4>
+                          <p className="text-gray-700">{selectedStudent.aiNext}</p>
+                        </div>
+                        
+                        <div className="bg-purple-50 rounded-lg p-3">
+                          <h4 className="font-medium text-purple-900 mb-2">Overall Assessment</h4>
+                          <p className="text-gray-700">{selectedStudent.aiSummary}</p>
+                        </div>
+
+                        {selectedStudent.feedback && (
+                          <div className="bg-purple-50 rounded-lg p-3">
+                            <h4 className="font-medium text-purple-900 mb-2">Latest AI Feedback</h4>
+                            <p className="text-gray-700">{selectedStudent.feedback}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Actionable Next Steps */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <span className="text-2xl">⚡</span>
+                        <h3 className="text-lg font-semibold text-gray-900">Recommended Actions</h3>
+                      </div>
+                      
+                      <div className="grid md:grid-cols-2 gap-3">
+                        <div className="bg-white rounded-lg p-3">
+                          <h4 className="font-medium text-gray-900 mb-2">Immediate (Today)</h4>
+                          <p className="text-sm text-gray-600 mb-3">
+                            {selectedStudent.encouragementSent ? 'Review submitted assignments and provide feedback' :
+                             selectedStudent.reviewAssigned ? 'Follow up on pending review tasks' :
+                             'Send personalized encouragement message'}
+                          </p>
+                          <button className="w-full bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg px-3 py-2 text-sm font-medium transition-colors">
+                            Take Action
+                          </button>
+                        </div>
+
+                        <div className="bg-white rounded-lg p-3">
+                          <h4 className="font-medium text-gray-900 mb-2">This Week</h4>
+                          <p className="text-sm text-gray-600 mb-3">
+                            {selectedStudent.status === 'At Risk' ? 'Schedule one-on-one support session' :
+                             'Assign targeted practice exercises'}
+                          </p>
+                          <button className="w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg px-3 py-2 text-sm font-medium transition-colors">
+                            Schedule
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Learning Analytics Summary */}
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <span className="text-2xl">📊</span>
+                        <h3 className="text-lg font-semibold text-gray-900">Learning Analytics</h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-blue-600">{selectedStudent.progress}%</div>
+                          <div className="text-xs text-gray-500">Overall Progress</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-600">{selectedStudent.avgScore || 'N/A'}</div>
+                          <div className="text-xs text-gray-500">Average Score</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-purple-600">{selectedStudent.cefr || 'A1'}</div>
+                          <div className="text-xs text-gray-500">CEFR Level</div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
               </motion.div>
             </div>
           </div>

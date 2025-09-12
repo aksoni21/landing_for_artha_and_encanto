@@ -240,8 +240,8 @@ export default function EncantoAILanding() {
           >
             {activeTab === 'web' ? (
               <a 
-                // href="https://www.encantospeak.com/dashboard_ai" 
-                href="http://localhost:3000/dashboard_ai"
+                href="https://www.encantospeak.com/dashboard_ai" 
+                // href="http://localhost:3000/dashboard_ai"
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="bg-gradient-to-r from-emerald-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-medium hover:from-emerald-700 hover:to-cyan-700 transition-all duration-300 shadow-lg transform hover:scale-105 inline-block text-center"
