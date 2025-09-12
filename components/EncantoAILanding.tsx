@@ -238,17 +238,23 @@ export default function EncantoAILanding() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            {activeTab === 'web' ? (
-              <a 
-                href="https://www.encantospeak.com/dashboard_ai" 
-                // href="http://localhost:3000/dashboard_ai"
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="bg-gradient-to-r from-emerald-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-medium hover:from-emerald-700 hover:to-cyan-700 transition-all duration-300 shadow-lg transform hover:scale-105 inline-block text-center"
-              >
-                Try Dashboard
-              </a>
-            ) : (
+              {activeTab === 'web' ? (
+                <>
+                <Link 
+                  // href="https://www.encantospeak.com/dashboard_ai" 
+                  href="/dashboard_ai"
+                  className="bg-gradient-to-r from-emerald-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-medium hover:from-emerald-700 hover:to-cyan-700 transition-all duration-300 shadow-lg transform hover:scale-105 inline-block text-center"
+                >
+                  Try Dashboard
+                </Link>
+                <Link 
+                  href="/audio-analysis/results-demo"
+                  className="bg-gradient-to-r from-purple-600 to-pink-400 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg transform hover:scale-105 inline-block text-center"
+                >
+                  See TOEFL Analysis
+                </Link>
+                </>
+              ) : (
               <a 
                 href="https://apps.apple.com/us/app/encanto-ai/id6747835824" 
                 target="_blank" 
@@ -258,12 +264,15 @@ export default function EncantoAILanding() {
                 Download App
               </a>
             )}
-            <button 
-              onClick={() => setShowDemo(true)}
-              className="border border-white/30 text-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-white/10 hover:border-white/50 transition-all duration-300"
-            >
-              Watch Demo
-            </button>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowDemo(true)}
+                className="border border-white/30 text-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-white/10 hover:border-white/50 transition-all duration-300"
+              >
+                Watch Demo
+              </button>
+              
+            </div>
           </motion.div>
           
           {/* Language Ticker */}

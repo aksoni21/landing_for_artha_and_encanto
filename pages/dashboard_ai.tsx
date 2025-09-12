@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 // import { useRouter } from 'next/router'; // Removed unused import
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Define types
@@ -284,6 +285,17 @@ export default function TeacherDashboard() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">AI Teacher Dashboard</h1>
               <p className="text-gray-600 mt-1">Monitor and support your students with AI assistance</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link 
+                href="/" 
+                className="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Home
+              </Link>
             </div>
             
             {/* Quick Stats */}
