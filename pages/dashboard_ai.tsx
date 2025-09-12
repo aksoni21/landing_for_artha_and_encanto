@@ -187,6 +187,8 @@ export default function TeacherDashboard() {
   });
   const [showAssistant, setShowAssistant] = useState(false);
   const [chatInput, setChatInput] = useState('');
+  const [showProfile, setShowProfile] = useState(false);
+  const [showInsights, setShowInsights] = useState<string | null>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // const router = useRouter(); // Removed unused router
@@ -194,6 +196,21 @@ export default function TeacherDashboard() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
+
+  // Close insights popover when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showInsights) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.insights-popover-container')) {
+          setShowInsights(null);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showInsights]);
 
   // Removed authentication check since this dashboard uses sample data for demo purposes
 
@@ -435,12 +452,102 @@ export default function TeacherDashboard() {
                         {/* Action Buttons */}
                         <div className="mt-4 pt-4 border-t border-gray-100">
                           <div className="flex space-x-2">
-                            <button className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors">
+                            <button 
+                              onClick={() => {
+                                console.log('View Profile clicked for:', student.name);
+                                setSelectedStudent(student);
+                                setShowProfile(true);
+                                console.log('showProfile set to true');
+                              }}
+                              className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+                            >
                               View Profile
                             </button>
-                            <button className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors">
-                              AI Insights
-                            </button>
+                            <div className="flex-1 relative insights-popover-container">
+                              <button 
+                                onClick={() => {
+                                  setShowInsights(showInsights === student.id ? null : student.id);
+                                }}
+                                className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+                              >
+                                AI Insights
+                              </button>
+                              
+                              {/* AI Insights Popover */}
+                              {showInsights === student.id && (
+                                <div className="absolute top-full left-0 right-0 mt-2 z-50">
+                                  <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm">
+                                    {/* Arrow pointer */}
+                                    <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white border-l border-t border-gray-200 rotate-45"></div>
+                                    
+                                    <div className="space-y-3">
+                                      {/* Key Focus Area */}
+                                      <div className="flex items-start space-x-2">
+                                        <span className="text-lg">🎯</span>
+                                        <div>
+                                          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Focus Area</div>
+                                          <div className="text-sm text-gray-800">
+                                            {student.status === 'At Risk' ? 'Grammar fundamentals & confidence building' :
+                                             student.status === 'Struggling' ? 'Speaking fluency & pronunciation' :
+                                             student.status === 'On Track' ? 'Advanced vocabulary expansion' :
+                                             'Complex sentence structures'}
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* Progress Trend */}
+                                      <div className="flex items-start space-x-2">
+                                        <span className="text-lg">
+                                          {student.improvement && student.improvement > 0 ? '📈' : 
+                                           student.improvement && student.improvement < 0 ? '📉' : '📊'}
+                                        </span>
+                                        <div>
+                                          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Trend</div>
+                                          <div className="text-sm text-gray-800">
+                                            {student.improvement && student.improvement > 0 ? `+${student.improvement}% improvement` :
+                                             student.improvement && student.improvement < 0 ? `${student.improvement}% decline` :
+                                             'Steady progress'}
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* Quick Recommendation */}
+                                      <div className="flex items-start space-x-2">
+                                        <span className="text-lg">💡</span>
+                                        <div>
+                                          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Recommendation</div>
+                                          <div className="text-sm text-gray-800">{student.aiNext}</div>
+                                        </div>
+                                      </div>
+
+                                      {/* Immediate Action */}
+                                      <div className="flex items-start space-x-2">
+                                        <span className="text-lg">⚡</span>
+                                        <div>
+                                          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Next Action</div>
+                                          <div className="text-sm text-gray-800">
+                                            {student.encouragementSent ? 'Schedule 1-on-1 session' :
+                                             student.reviewAssigned ? 'Review submitted work' :
+                                             'Send encouragement message'}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Quick Action Button */}
+                                    <button 
+                                      onClick={() => {
+                                        setShowInsights(null);
+                                        // Add quick action logic here
+                                      }}
+                                      className="w-full mt-3 pt-3 border-t border-gray-100 text-center text-xs font-medium text-blue-600 hover:text-blue-700"
+                                    >
+                                      Take Action →
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -802,6 +909,182 @@ export default function TeacherDashboard() {
           </motion.div>
         </div>
       )}
+
+      {/* Student Profile Modal */}
+      <AnimatePresence>
+        {showProfile && selectedStudent && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen px-4">
+              <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setShowProfile(false)}></div>
+              
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="relative bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+              >
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                      <span className="text-xl font-semibold">{selectedStudent.name[0]}</span>
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">{selectedStudent.name}</h2>
+                      <p className="text-blue-100">{selectedStudent.email} • {selectedStudent.id}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowProfile(false)}
+                    className="text-white/80 hover:text-white text-2xl font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 overflow-y-auto max-h-[70vh]">
+                <div className="grid md:grid-cols-2 gap-6">
+                  
+                  {/* Left Column - Progress & Stats */}
+                  <div className="space-y-6">
+                    {/* Progress Overview */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Learning Progress</h3>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm text-gray-600">Overall Progress</span>
+                            <span className="text-sm font-medium text-gray-900">{selectedStudent.progress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${selectedStudent.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-center p-3 bg-white rounded-lg">
+                            <div className="text-2xl font-bold text-blue-600">{selectedStudent.avgScore || 'N/A'}</div>
+                            <div className="text-xs text-gray-500">Avg Score</div>
+                          </div>
+                          <div className="text-center p-3 bg-white rounded-lg">
+                            <div className="text-2xl font-bold text-green-600">{selectedStudent.cefr || 'A1'}</div>
+                            <div className="text-xs text-gray-500">CEFR Level</div>
+                          </div>
+                        </div>
+
+                        <div className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
+                          selectedStudent.status === 'At Risk' ? 'bg-red-100 text-red-800' :
+                          selectedStudent.status === 'On Track' ? 'bg-green-100 text-green-800' :
+                          selectedStudent.status === 'Excelling' ? 'bg-blue-100 text-blue-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {selectedStudent.status}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Recent Activity */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                      
+                      {selectedStudent.lastAssignment ? (
+                        <div className="space-y-3">
+                          <div className="bg-white p-3 rounded-lg">
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-medium text-gray-900">{selectedStudent.lastAssignment.topic}</h4>
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                selectedStudent.lastAssignment.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                selectedStudent.lastAssignment.status === 'in-progress' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {selectedStudent.lastAssignment.status}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-2">{selectedStudent.lastAssignment.note}</p>
+                            <div className="text-xs text-gray-500">
+                              Due: {selectedStudent.lastAssignment.due} • Assigned: {selectedStudent.lastAssignment.assignedAt}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 text-sm">No recent assignments</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Column - AI Insights & Actions */}
+                  <div className="space-y-6">
+                    {/* AI Insights */}
+                    <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">🤖 AI Insights</h3>
+                      
+                      <div className="space-y-3">
+                        <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3">
+                          <h4 className="font-medium text-purple-900 mb-2">Recommendations</h4>
+                          <p className="text-sm text-gray-700">{selectedStudent.aiNext}</p>
+                        </div>
+                        
+                        <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3">
+                          <h4 className="font-medium text-purple-900 mb-2">Summary</h4>
+                          <p className="text-sm text-gray-700">{selectedStudent.aiSummary}</p>
+                        </div>
+
+                        {selectedStudent.feedback && (
+                          <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3">
+                            <h4 className="font-medium text-purple-900 mb-2">Latest Feedback</h4>
+                            <p className="text-sm text-gray-700">{selectedStudent.feedback}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <button className="p-3 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium transition-colors">
+                          📝 New Assessment
+                        </button>
+                        <button className="p-3 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-sm font-medium transition-colors">
+                          💬 Send Message  
+                        </button>
+                        <button className="p-3 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm font-medium transition-colors">
+                          📊 View Analytics
+                        </button>
+                        <button className="p-3 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg text-sm font-medium transition-colors">
+                          📄 Generate Report
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Teacher Notes */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Teacher Notes</h3>
+                      <textarea 
+                        className="w-full h-24 p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Add private notes about this student..."
+                        defaultValue=""
+                      />
+                      <button className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                        Save Note
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              </motion.div>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

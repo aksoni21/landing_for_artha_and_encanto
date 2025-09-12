@@ -78,103 +78,34 @@ export default function EncantoAILanding() {
   ];
 
 
-  const webFeatures = [
+  const combinedFeatures = [
     {
       icon: '🎯',
-      title: 'Teacher Dashboard & Analytics',
-      description: 'Monitor student progress, assign speaking assessments, and get detailed reports on class performance with AI-powered insights',
-      highlight: 'EDUCATOR TOOLS'
-    },
-    {
-      icon: '📊',
-      title: 'Automated Student Assessment',
-      description: 'Provide instant CEFR and TOEFL scoring for student speaking submissions with detailed component analysis',
-      highlight: 'NEW'
+      title: 'AI-Powered Assessment & Analytics',
+      description: 'Instant CEFR/TOEFL scoring with detailed component analysis and comprehensive progress tracking for teachers and students',
+      highlight: 'NEW',
+      audience: 'Teachers & Students'
     },
     {
       icon: '📚',
-      title: 'Curriculum Integration Tools',
-      description: 'Create personalized vocabulary lessons, track reading comprehension, and integrate with your existing ESL curriculum',
-      highlight: ''
-    },
-    {
-      icon: '👥',
-      title: 'Classroom Management',
-      description: 'Organize virtual speaking sessions, manage student groups, and facilitate AI-guided conversations',
-      highlight: ''
-    },
-    {
-      icon: '📈',
-      title: 'Progress Tracking & Reports',
-      description: 'Generate comprehensive progress reports for students, parents, and administrators with detailed analytics',
-      highlight: ''
-    },
-    {
-      icon: '🎓',
-      title: 'Professional Development',
-      description: 'Access training resources, best practices, and ongoing support to maximize AI integration in your teaching',
-      highlight: ''
-    }
-  ];
-
-  const mobileFeatures = [
-    {
-      icon: '🎧',
-      title: 'Test Prep on the Go',
-      description: 'Record and analyze your speech anywhere with instant CEFR/TOEFL scoring and detailed feedback',
-      highlight: 'NEW'
-    },
-    {
-      icon: '🎙️',
-      title: 'Voice Practice Sessions',
-      description: 'High-quality audio recording with real-time analysis and pronunciation feedback',
-      highlight: ''
+      title: 'Complete Curriculum Integration',
+      description: 'Seamlessly integrate with existing ESL programs, from individual tutoring to large institutional deployments',
+      highlight: 'EDUCATOR TOOLS',
+      audience: 'All Environments'
     },
     {
       icon: '💬',
-      title: 'Live Conversations',
-      description: 'AI-powered speaking practice with natural dialogue flows and adaptive difficulty',
-      highlight: ''
+      title: 'Live Conversation Practice',
+      description: 'AI-powered speaking sessions with real-time feedback, available on web dashboard and mobile app',
+      highlight: '',
+      audience: 'Students'
     },
     {
-      icon: '📱',
-      title: 'Offline Practice',
-      description: 'Download lessons and practice offline, sync progress when connected',
-      highlight: ''
-    },
-    {
-      icon: '🏆',
-      title: 'Gamified Learning',
-      description: 'Earn achievements, complete daily challenges, and track streaks to stay motivated',
-      highlight: ''
-    },
-    {
-      icon: '⚙️',
-      title: 'Personalized Settings',
-      description: 'Customize your learning experience with adaptive difficulty and personal preferences',
-      highlight: ''
-    }
-  ];
-
-
-  const useCases = [
-    {
-      title: 'ESL Classroom Enhancement',
-      description: 'Transform traditional ESL instruction with AI-powered speaking practice and instant assessment',
-      icon: '🏫',
-      features: ['Automated speaking assessments', 'Individual student tracking', 'Curriculum integration', 'Real-time feedback']
-    },
-    {
-      title: 'Test Preparation Programs',
-      description: 'Prepare students for TOEFL and other standardized tests with AI-driven practice and scoring',
-      icon: '🎓',
-      features: ['TOEFL/CEFR scoring', 'Component analysis', 'Progress monitoring', 'Targeted practice plans']
-    },
-    {
-      title: 'Language Schools & Colleges',
-      description: 'Scale personalized instruction across large student populations with AI teaching assistants',
-      icon: '🏛️',
-      features: ['Bulk student management', 'Institutional reporting', 'Custom lesson plans', 'Performance analytics']
+      icon: '📊',
+      title: 'Smart Progress Management',
+      description: 'Automated student tracking, institutional reporting, and personalized learning paths with gamified engagement',
+      highlight: '',
+      audience: 'Teachers & Admins'
     }
   ];
 
@@ -309,7 +240,8 @@ export default function EncantoAILanding() {
           >
             {activeTab === 'web' ? (
               <a 
-                href="https://www.encantospeak.com/dashboard_ai" 
+                // href="https://www.encantospeak.com/dashboard_ai" 
+                href="http://localhost:3000/dashboard_ai"
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="bg-gradient-to-r from-emerald-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-medium hover:from-emerald-700 hover:to-cyan-700 transition-all duration-300 shadow-lg transform hover:scale-105 inline-block text-center"
@@ -372,15 +304,16 @@ export default function EncantoAILanding() {
         </div>
       </section>
 
-      {/* Platform Features Section */}
+      {/* Platform Features & Use Cases Section */}
       <section id="features" className="container mx-auto px-6 py-20">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-white mb-4">Comprehensive Teaching Platform</h2>
           <p className="text-xl text-gray-300">Powerful educator tools and student engagement across web and mobile</p>
         </div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {(activeTab === 'web' ? webFeatures : mobileFeatures).map((feature, index) => (
+        {/* Combined Features */}
+        <div className="grid md:grid-cols-2 gap-8">
+          {combinedFeatures.map((feature, index) => (
             <motion.div 
               key={index} 
               className="bg-black/30 backdrop-blur-sm rounded-xl p-8 text-center hover:bg-black/40 transition-all duration-300 transform hover:scale-105 border border-white/10 hover:border-emerald-500/30"
@@ -395,38 +328,9 @@ export default function EncantoAILanding() {
               )}
               <div className="text-4xl mb-4">{feature.icon}</div>
               <h3 className="text-xl font-semibold text-white mb-4">{feature.title}</h3>
-              <p className="text-gray-300">{feature.description}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Use Cases Section */}
-      <section id="use-cases" className="container mx-auto px-6 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-white mb-4">Perfect for Every Teaching Environment</h2>
-          <p className="text-xl text-gray-300">From individual tutoring to large-scale ESL programs and institutions</p>
-        </div>
-        
-        <div className="grid md:grid-cols-3 gap-8">
-          {useCases.map((useCase, index) => (
-            <motion.div 
-              key={index} 
-              className="bg-black/30 backdrop-blur-sm rounded-xl p-8 text-center hover:bg-black/40 transition-all duration-300 border border-white/10 hover:border-emerald-500/30"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-            >
-              <div className="text-5xl mb-6">{useCase.icon}</div>
-              <h3 className="text-2xl font-semibold text-white mb-4">{useCase.title}</h3>
-              <p className="text-gray-300 mb-6">{useCase.description}</p>
-              <div className="space-y-2">
-                {useCase.features.map((feat, i) => (
-                  <div key={i} className="flex items-center justify-center space-x-2 text-sm text-gray-300">
-                    <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
-                    <span>{feat}</span>
-                  </div>
-                ))}
+              <p className="text-gray-300 mb-4">{feature.description}</p>
+              <div className="text-sm text-emerald-400 font-medium">
+                {feature.audience}
               </div>
             </motion.div>
           ))}
@@ -437,12 +341,12 @@ export default function EncantoAILanding() {
 
       {/* Social Proof Section */}
       <section className="container mx-auto px-6 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-white mb-4">Trusted by ESL Educators Worldwide</h2>
-          <p className="text-xl text-gray-300">Join hundreds of teachers and institutions transforming language education</p>
+        <div className="text-center mb-16" >
+          <h2 className="text-4xl font-bold text-white mb-4">Trusted by ESL Educators</h2>
+          {/* <p className="text-xl text-gray-300">Join hundreds of teachers and institutions transforming language education</p> */}
         </div>
         
-        <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           <motion.div 
             className="bg-white/10 backdrop-blur-sm rounded-xl p-8 text-center"
             initial={{ opacity: 0, y: 20 }}
@@ -450,8 +354,8 @@ export default function EncantoAILanding() {
             transition={{ duration: 0.6 }}
           >
             <div className="text-4xl mb-4">📈</div>
-            <h3 className="text-2xl font-bold text-white mb-2">92%</h3>
-            <p className="text-gray-300">Of teachers report improved student engagement</p>
+            <h3 className="text-2xl font-bold text-white mb-2">85%</h3>
+            <p className="text-gray-300">Of teachers surveyed said this would improve student engagement</p>
           </motion.div>
           <motion.div 
             className="bg-white/10 backdrop-blur-sm rounded-xl p-8 text-center"
@@ -460,8 +364,8 @@ export default function EncantoAILanding() {
             transition={{ duration: 0.6, delay: 0.1 }}
           >
             <div className="text-4xl mb-4">⏱️</div>
-            <h3 className="text-2xl font-bold text-white mb-2">50%</h3>
-            <p className="text-gray-300">Reduction in grading time for teachers</p>
+            <h3 className="text-2xl font-bold text-white mb-2">95%</h3>
+            <p className="text-gray-300">Teachers said this would reduce grading time</p>
           </motion.div>
           <motion.div 
             className="bg-white/10 backdrop-blur-sm rounded-xl p-8 text-center"
@@ -472,16 +376,6 @@ export default function EncantoAILanding() {
             <div className="text-4xl mb-4">🎯</div>
             <h3 className="text-2xl font-bold text-white mb-2">4x</h3>
             <p className="text-gray-300">More detailed student feedback vs traditional methods</p>
-          </motion.div>
-          <motion.div 
-            className="bg-white/10 backdrop-blur-sm rounded-xl p-8 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <div className="text-4xl mb-4">🏆</div>
-            <h3 className="text-2xl font-bold text-white mb-2">200+</h3>
-            <p className="text-gray-300">Schools and institutions using our platform</p>
           </motion.div>
         </div>
       </section>
