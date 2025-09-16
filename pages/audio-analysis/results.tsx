@@ -10,6 +10,7 @@ import TOEFLScoreIndicator from '../../components/analysis/TOEFLScoreIndicator';
 import CEFRLevelIndicator from '../../components/analysis/CEFRLevelIndicator';
 import ComponentScores from '../../components/analysis/ComponentScores';
 import ProgressCharts from '../../components/analysis/ProgressCharts';
+import ErrorAnalysis from '../../components/analysis/ErrorAnalysis';
 import ErrorBoundary from '../../components/ui/ErrorBoundary';
 import ErrorHandler, { AppError, createError } from '../../components/ui/ErrorHandler';
 
@@ -27,6 +28,7 @@ const AudioAnalysisResultsPage: React.FC = () => {
   const [error, setError] = useState<AppError | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id?: string; email?: string; username?: string; name?: string } | null>(null);
   const [scoringSystem, setScoringSystem] = useState<ScoringSystem>('TOEFL'); // Default to TOEFL for North America
+  const [errorAnalysis, setErrorAnalysis] = useState<any>({});
 
   // Check authentication and load data
   useEffect(() => {
@@ -72,10 +74,14 @@ const AudioAnalysisResultsPage: React.FC = () => {
       if (latestResults) {
         setLatestResult(latestResults);
         
-        // Load historical data in parallel (non-blocking)
+        // Load historical data and error analysis in parallel (non-blocking)
         audioAnalysisService.getAnalysisHistory(userId, 13)
           .then(setHistoricalData)
           .catch(err => console.warn('Failed to load history:', err));
+
+        audioAnalysisService.getErrorAnalysis(userId)
+          .then(setErrorAnalysis)
+          .catch(err => console.warn('Failed to load error analysis:', err));
       } else {
         setError(createError('server', 'No analysis results found. Please complete an analysis first.'));
       }
@@ -311,6 +317,9 @@ const AudioAnalysisResultsPage: React.FC = () => {
                 timeframe={timeframe}
                 onTimeframeChange={setTimeframe}
               />
+
+              {/* Error Analysis */}
+              <ErrorAnalysis errors={errorAnalysis} />
 
               {/* Transcription */}
               {latestResult.transcription.text && (

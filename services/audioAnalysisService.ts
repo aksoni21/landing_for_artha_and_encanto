@@ -368,6 +368,97 @@ class AudioAnalysisService {
 
 
   /**
+   * Get error analysis data for the latest session
+   */
+  async getErrorAnalysis(userId: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/error-analysis/${userId}`, {
+        headers: {
+          ...(this.getAuthToken() && { 'Authorization': `Bearer ${this.getAuthToken()}` })
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return this.groupErrorsByType(data);
+      }
+
+      if (response.status === 404) {
+        return {}; // No errors found
+      }
+
+      throw new Error('Failed to fetch error analysis');
+    } catch (error) {
+      console.error('Error fetching error analysis:', error);
+      return {};
+    }
+  }
+
+  /**
+   * Group errors by type for display
+   */
+  private groupErrorsByType(errorData: any) {
+    const grouped = {
+      grammar_errors: [] as any[],
+      pronunciation_errors: [] as any[],
+      fluency_issues: [] as any[],
+      vocabulary_issues: [] as any[]
+    };
+
+    if (errorData.grammar_analysis?.grammar_errors) {
+      grouped.grammar_errors = errorData.grammar_analysis.grammar_errors;
+    }
+
+    if (errorData.pronunciation_analysis) {
+      const issues = [];
+      if (errorData.pronunciation_analysis.problematic_sounds) {
+        issues.push(...errorData.pronunciation_analysis.problematic_sounds.map((sound: any) => ({
+          type: 'problematic_sound',
+          details: sound
+        })));
+      }
+      if (errorData.pronunciation_analysis.l1_interference_patterns) {
+        issues.push(...errorData.pronunciation_analysis.l1_interference_patterns.map((pattern: any) => ({
+          type: 'l1_interference',
+          details: pattern
+        })));
+      }
+      grouped.pronunciation_errors = issues;
+    }
+
+    if (errorData.fluency_analysis) {
+      const issues = [];
+      if (errorData.fluency_analysis.repetitions_count > 0) {
+        issues.push({
+          type: 'repetitions',
+          count: errorData.fluency_analysis.repetitions_count
+        });
+      }
+      if (errorData.fluency_analysis.self_corrections_count > 0) {
+        issues.push({
+          type: 'self_corrections',
+          count: errorData.fluency_analysis.self_corrections_count
+        });
+      }
+      if (errorData.fluency_analysis.false_starts_count > 0) {
+        issues.push({
+          type: 'false_starts',
+          count: errorData.fluency_analysis.false_starts_count
+        });
+      }
+      if (errorData.fluency_analysis.filler_words && Object.keys(errorData.fluency_analysis.filler_words).length > 0) {
+        issues.push({
+          type: 'filler_words',
+          details: errorData.fluency_analysis.filler_words
+        });
+      }
+      grouped.fluency_issues = issues;
+    }
+
+    return grouped;
+  }
+
+  /**
    * Check service health
    */
   async getServiceHealth(): Promise<any> {
