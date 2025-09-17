@@ -305,7 +305,7 @@ export default function TeacherStoriesDashboard() {
     } finally {
       setDataLoading(false);
     }
-  }, []);
+  }, [stories.length]);
 
   // Load real data from APIs
   useEffect(() => {

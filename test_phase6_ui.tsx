@@ -19,34 +19,34 @@ const mockAnalysisData = {
         word_examples: ['think', 'three', 'through'],
         acoustic_issue: 'Substituted with /s/ or /t/ sound - common Spanish L1 interference',
         improvement_tip: 'Place tongue between teeth, exhale air for /θ/ sound. Practice with "think-sink" contrast.',
-        severity: 'high'
+        severity: 'high' as const
       },
       {
         phoneme: '/v/',
         word_examples: ['very', 'have', 'love'],
         acoustic_issue: 'Insufficient lip-teeth contact, sounds like /b/',
         improvement_tip: 'Lower lip touches upper teeth, voice on. Practice "very-berry" distinction.',
-        severity: 'medium'
+        severity: 'medium' as const
       },
       {
         phoneme: '/ɪ/',
         word_examples: ['bit', 'sit', 'ship'],
         acoustic_issue: 'Too close to /i:/ sound, vowel space not accurate',
         improvement_tip: 'Relax tongue position, shorter duration. Practice "bit-beat" minimal pairs.',
-        severity: 'low'
+        severity: 'low' as const
       }
     ],
     l1_interference_patterns: [
       {
         pattern: 'Spanish /b/ → English /v/',
         examples: ['very', 'voice', 'move'],
-        frequency: 'high',
+        frequency: 'high' as const,
         acoustic_evidence: 'Complete closure instead of fricative, lacking voicing distinction in F2 transitions'
       },
       {
         pattern: 'Spanish vowel system → English vowel reduction',
         examples: ['about', 'problem', 'listen'],
-        frequency: 'medium',
+        frequency: 'medium' as const,
         acoustic_evidence: 'Full vowel articulation in unstressed syllables, missing schwa reductions'
       }
     ],
@@ -64,6 +64,8 @@ const mockAnalysisData = {
         impact: 'natural rhythm'
       }
     ],
+    segmental_accuracy: 76.2,
+    suprasegmental_accuracy: 80.8,
     improvement_priorities: [
       'Focus on /θ/ sound production in frequent words like "think", "this", "through"',
       'Practice /v/ sound with proper lip-teeth contact in common words',
@@ -86,19 +88,19 @@ const mockAnalysisData = {
     false_starts_count: 1,
     pause_categories: [
       {
-        type: 'lexical_retrieval',
+        type: 'lexical_retrieval' as const,
         count: 4,
         avg_duration_ms: 1200,
         examples: ['before "sophisticated"', 'before "implement"', 'before "analysis"']
       },
       {
-        type: 'planning_pause',
+        type: 'planning_pause' as const,
         count: 3,
         avg_duration_ms: 950,
         examples: ['before relative clauses', 'before complex explanations']
       },
       {
-        type: 'filled_pause',
+        type: 'filled_pause' as const,
         count: 5,
         avg_duration_ms: 400,
         examples: ['um', 'uh', 'er']
@@ -114,13 +116,13 @@ const mockAnalysisData = {
       {
         cause: 'lexical_retrieval_difficulty',
         evidence: 'Longer pauses (1200ms avg) before low-frequency academic words',
-        frequency: 'high',
+        frequency: 'high' as const,
         recommendation: 'Build automaticity with academic vocabulary through spaced repetition'
       },
       {
         cause: 'complex_syntax_processing',
         evidence: 'Planning pauses before embedded clauses and complex structures',
-        frequency: 'medium',
+        frequency: 'medium' as const,
         recommendation: 'Practice clause combining and complex sentence structures fluently'
       }
     ],
@@ -147,7 +149,7 @@ const mockAnalysisData = {
         original: 'The data shows that students has improved',
         corrected: 'The data shows that students have improved',
         explanation: 'Plural subject "students" requires plural verb "have". This is a common error when the verb is separated from its subject by intervening words.',
-        severity: 'high',
+        severity: 'high' as const,
         cefr_level: 'A2',
         practice_suggestion: 'Practice identifying the true subject in complex sentences. Focus on subject-verb agreement with intervening phrases.'
       },
@@ -156,7 +158,7 @@ const mockAnalysisData = {
         original: 'I want to study the computer science',
         corrected: 'I want to study computer science',
         explanation: 'Academic subjects like "computer science" typically do not require the definite article "the" when used in general contexts.',
-        severity: 'medium',
+        severity: 'medium' as const,
         cefr_level: 'B1',
         practice_suggestion: 'Learn which academic subjects and fields of study use articles and which do not. Practice with common academic terms.'
       },
@@ -165,7 +167,7 @@ const mockAnalysisData = {
         original: 'I am interested about this topic',
         corrected: 'I am interested in this topic',
         explanation: 'The adjective "interested" is followed by the preposition "in", not "about". This is a fixed prepositional pattern.',
-        severity: 'low',
+        severity: 'low' as const,
         cefr_level: 'B1',
         practice_suggestion: 'Memorize common adjective + preposition combinations. Practice with "interested in", "good at", "afraid of", etc.'
       }

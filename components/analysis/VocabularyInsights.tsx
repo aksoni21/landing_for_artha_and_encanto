@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  AcademicCapIcon,
   StarIcon,
   BookmarkIcon
 } from '@heroicons/react/24/outline';
@@ -48,7 +47,7 @@ const VocabularyInsights: React.FC<VocabularyInsightsProps> = ({
 }) => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['overview']));
   const [selectedWord, setSelectedWord] = useState<AcademicWord | null>(null);
-  const [showWordDetails, setShowWordDetails] = useState(false);
+  // Removed unused state variable
 
   const toggleSection = (section: string) => {
     const newExpanded = new Set(expandedSections);
@@ -176,7 +175,7 @@ const VocabularyInsights: React.FC<VocabularyInsightsProps> = ({
           <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6">
             <h4 className="font-bold text-lg mb-4 text-center">🎓 CEFR Level Progression</h4>
             <div className="flex items-center justify-center space-x-4">
-              {['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((level, index) => (
+              {['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((level) => (
                 <div key={level} className="flex flex-col items-center">
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${
@@ -275,7 +274,6 @@ const VocabularyInsights: React.FC<VocabularyInsightsProps> = ({
                   className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => {
                     setSelectedWord(selectedWord === word ? null : word);
-                    setShowWordDetails(true);
                   }}
                 >
                   <div className="flex items-start justify-between">
@@ -296,7 +294,7 @@ const VocabularyInsights: React.FC<VocabularyInsightsProps> = ({
 
                       <div className="bg-white/60 rounded p-2">
                         <span className="text-xs font-semibold text-indigo-600">Example usage:</span>
-                        <p className="text-sm text-indigo-800 italic mt-1">"{word.example_usage}"</p>
+                        <p className="text-sm text-indigo-800 italic mt-1">&ldquo;{word.example_usage}&rdquo;</p>
                       </div>
                     </div>
 

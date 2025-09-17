@@ -4,8 +4,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   LightBulbIcon,
-  BookOpenIcon,
-  ExclamationTriangleIcon
+  BookOpenIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 
@@ -265,7 +264,7 @@ const GrammarExplanations: React.FC<GrammarExplanationsProps> = ({
                             <div>
                               <span className="text-sm font-semibold text-red-700">Original:</span>
                               <p className="text-sm bg-red-50 p-2 rounded mt-1 font-mono">
-                                "{error.original}"
+                                &ldquo;{error.original}&rdquo;
                               </p>
                             </div>
                           </div>
@@ -274,7 +273,7 @@ const GrammarExplanations: React.FC<GrammarExplanationsProps> = ({
                             <div>
                               <span className="text-sm font-semibold text-green-700">Corrected:</span>
                               <p className="text-sm bg-green-50 p-2 rounded mt-1 font-mono">
-                                "{error.corrected}"
+                                &ldquo;{error.corrected}&rdquo;
                               </p>
                             </div>
                           </div>
@@ -431,7 +430,12 @@ const GrammarExplanations: React.FC<GrammarExplanationsProps> = ({
                         {word}
                       </span>
                     );
-                  }).reduce((prev, curr, index) => [prev, ' ', curr])}
+                  }).map((element, index) => (
+                    <React.Fragment key={index}>
+                      {index > 0 && ' '}
+                      {element}
+                    </React.Fragment>
+                  ))}
                 </div>
               </div>
             </div>

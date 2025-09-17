@@ -28,7 +28,17 @@ const AudioAnalysisResultsPage: React.FC = () => {
   const [error, setError] = useState<AppError | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id?: string; email?: string; username?: string; name?: string } | null>(null);
   const [scoringSystem, setScoringSystem] = useState<ScoringSystem>('TOEFL'); // Default to TOEFL for North America
-  const [errorAnalysis, setErrorAnalysis] = useState<any>({});
+  const [errorAnalysis, setErrorAnalysis] = useState<{
+    grammar_errors: (string | Record<string, unknown>)[];
+    pronunciation_errors: Array<{ type: 'problematic_sound' | 'l1_interference'; details: string | Record<string, unknown> }>;
+    fluency_issues: Array<{ type: string; count?: number; details: string | Record<string, unknown> }>;
+    vocabulary_issues: (string | Record<string, unknown>)[];
+  }>({
+    grammar_errors: [],
+    pronunciation_errors: [],
+    fluency_issues: [],
+    vocabulary_issues: []
+  });
 
   // Check authentication and load data
   useEffect(() => {

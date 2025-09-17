@@ -135,34 +135,35 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
       toast.success('Recording started');
     } catch (error) {
       console.error('Error starting recording:', error);
-      console.error('Error name:', (error as any).name);
-      console.error('Error message:', (error as any).message);
+      const errorObj = error as Error & { name?: string; constraint?: string };
+      console.error('Error name:', errorObj.name);
+      console.error('Error message:', errorObj.message);
       console.error('Error details:', {
-        name: (error as any).name,
-        message: (error as any).message,
-        constraint: (error as any).constraint,
-        stack: (error as any).stack
+        name: errorObj.name,
+        message: errorObj.message,
+        constraint: errorObj.constraint,
+        stack: errorObj.stack
       });
 
       // Show detailed error info on screen for mobile debugging
-      const errorDetails = `Error: ${(error as any).name || 'Unknown'} - ${(error as any).message || 'No message'}`;
+      const errorDetails = `Error: ${errorObj.name || 'Unknown'} - ${errorObj.message || 'No message'}`;
       toast.error(errorDetails, { duration: 10000 });
 
-      if ((error as any).name === 'NotAllowedError') {
+      if (errorObj.name === 'NotAllowedError') {
         setPermissionStatus('denied');
         toast.error('Microphone permission denied', { duration: 8000 });
-      } else if ((error as any).name === 'NotReadableError') {
+      } else if (errorObj.name === 'NotReadableError') {
         setPermissionStatus('denied');
         toast.error('Microphone is busy or unavailable', { duration: 8000 });
-      } else if ((error as any).name === 'NotFoundError') {
+      } else if (errorObj.name === 'NotFoundError') {
         setPermissionStatus('denied');
         toast.error('No microphone device found', { duration: 8000 });
-      } else if ((error as any).name === 'OverconstrainedError') {
+      } else if (errorObj.name === 'OverconstrainedError') {
         setPermissionStatus('denied');
         toast.error('Microphone constraints not supported', { duration: 8000 });
       } else {
         setPermissionStatus('denied');
-        toast.error(`Microphone error: ${(error as any).message || 'Unknown error'}`, { duration: 8000 });
+        toast.error(`Microphone error: ${errorObj.message || 'Unknown error'}`, { duration: 8000 });
       }
     }
   };

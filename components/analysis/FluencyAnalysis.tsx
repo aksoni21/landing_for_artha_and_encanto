@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { ClockIcon, PauseIcon, SpeakerWaveIcon } from '@heroicons/react/24/solid';
+// Removed unused imports
 
 interface PauseCategory {
   type: 'lexical_retrieval' | 'planning_pause' | 'filled_pause' | 'hesitation';
@@ -468,7 +468,7 @@ const FluencyAnalysis: React.FC<FluencyAnalysisProps> = ({
                 .sort(([, a], [, b]) => b - a)
                 .map(([word, count]) => (
                   <div key={word} className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
-                    <div className="text-lg font-bold text-yellow-600">"{word}"</div>
+                    <div className="text-lg font-bold text-yellow-600">&ldquo;{word}&rdquo;</div>
                     <div className="text-sm text-yellow-700">{count} times</div>
                   </div>
                 ))}

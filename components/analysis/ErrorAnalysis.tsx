@@ -1,11 +1,22 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+interface PronunciationError {
+  type: 'problematic_sound' | 'l1_interference';
+  details: string | Record<string, unknown>;
+}
+
+interface FluencyError {
+  type: string;
+  count?: number;
+  details: string | Record<string, unknown>;
+}
+
 interface ErrorGroup {
-  grammar_errors: any[];
-  pronunciation_errors: any[];
-  fluency_issues: any[];
-  vocabulary_issues: any[];
+  grammar_errors: (string | Record<string, unknown>)[];
+  pronunciation_errors: PronunciationError[];
+  fluency_issues: FluencyError[];
+  vocabulary_issues: (string | Record<string, unknown>)[];
 }
 
 interface ErrorAnalysisProps {
@@ -71,16 +82,19 @@ const ErrorAnalysis: React.FC<ErrorAnalysisProps> = ({ errors, className = '' })
             icon="🗣️"
             color="orange"
             errors={errors.pronunciation_errors}
-            renderError={(error, index) => (
-              <div key={index} className="text-sm text-gray-700 bg-orange-50 p-2 rounded">
-                <div className="font-medium text-orange-800">
-                  {error.type === 'problematic_sound' ? 'Problematic Sound' : 'L1 Interference'}
+            renderError={(error, index) => {
+              const pronunciationError = error as PronunciationError;
+              return (
+                <div key={index} className="text-sm text-gray-700 bg-orange-50 p-2 rounded">
+                  <div className="font-medium text-orange-800">
+                    {pronunciationError.type === 'problematic_sound' ? 'Problematic Sound' : 'L1 Interference'}
+                  </div>
+                  <div className="text-orange-700">
+                    {typeof pronunciationError.details === 'string' ? pronunciationError.details : JSON.stringify(pronunciationError.details)}
+                  </div>
                 </div>
-                <div className="text-orange-700">
-                  {typeof error.details === 'string' ? error.details : JSON.stringify(error.details)}
-                </div>
-              </div>
-            )}
+              );
+            }}
           />
         )}
 
@@ -91,19 +105,22 @@ const ErrorAnalysis: React.FC<ErrorAnalysisProps> = ({ errors, className = '' })
             icon="⚡"
             color="yellow"
             errors={errors.fluency_issues}
-            renderError={(error, index) => (
-              <div key={index} className="text-sm text-gray-700 bg-yellow-50 p-2 rounded">
-                <div className="font-medium text-yellow-800">
-                  {error.type.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+            renderError={(error, index) => {
+              const fluencyError = error as FluencyError;
+              return (
+                <div key={index} className="text-sm text-gray-700 bg-yellow-50 p-2 rounded">
+                  <div className="font-medium text-yellow-800">
+                    {fluencyError.type.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                  </div>
+                  <div className="text-yellow-700">
+                    {fluencyError.count ? `Count: ${fluencyError.count}` :
+                     typeof fluencyError.details === 'object' ?
+                       Object.entries(fluencyError.details).map(([word, count]) => `${word}: ${count}`).join(', ') :
+                       fluencyError.details}
+                  </div>
                 </div>
-                <div className="text-yellow-700">
-                  {error.count ? `Count: ${error.count}` :
-                   typeof error.details === 'object' ?
-                     Object.entries(error.details).map(([word, count]) => `${word}: ${count}`).join(', ') :
-                     error.details}
-                </div>
-              </div>
-            )}
+              );
+            }}
           />
         )}
 
@@ -130,8 +147,8 @@ interface ErrorSectionProps {
   title: string;
   icon: string;
   color: 'red' | 'orange' | 'yellow' | 'blue';
-  errors: any[];
-  renderError: (error: any, index: number) => React.ReactNode;
+  errors: (string | Record<string, unknown> | PronunciationError | FluencyError)[];
+  renderError: (error: string | Record<string, unknown> | PronunciationError | FluencyError, index: number) => React.ReactNode;
 }
 
 const ErrorSection: React.FC<ErrorSectionProps> = ({

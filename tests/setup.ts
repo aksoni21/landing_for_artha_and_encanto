@@ -3,6 +3,7 @@
  * Configures global test environment for the Ultimate Quality Audio Analysis UI components
  */
 
+import React from 'react';
 import '@testing-library/jest-dom';
 
 // Mock ResizeObserver (used by some charting libraries)
@@ -72,8 +73,10 @@ const localStorageMock = {
   setItem: jest.fn(),
   removeItem: jest.fn(),
   clear: jest.fn(),
+  length: 0,
+  key: jest.fn(),
 };
-global.localStorage = localStorageMock;
+global.localStorage = localStorageMock as any;
 
 // Mock sessionStorage
 const sessionStorageMock = {
@@ -81,14 +84,16 @@ const sessionStorageMock = {
   setItem: jest.fn(),
   removeItem: jest.fn(),
   clear: jest.fn(),
+  length: 0,
+  key: jest.fn(),
 };
-global.sessionStorage = sessionStorageMock;
+global.sessionStorage = sessionStorageMock as any;
 
 // Increase timeout for integration tests
 jest.setTimeout(10000);
 
 // Global test helpers
-global.createMockAudioContext = () => ({
+(global as any).createMockAudioContext = () => ({
   createAnalyser: jest.fn(() => ({
     connect: jest.fn(),
     disconnect: jest.fn(),
@@ -119,13 +124,13 @@ global.createMockAudioContext = () => ({
 });
 
 // Mock Web Audio API
-global.AudioContext = jest.fn().mockImplementation(() => global.createMockAudioContext());
-global.webkitAudioContext = jest.fn().mockImplementation(() => global.createMockAudioContext());
+(global as any).AudioContext = jest.fn().mockImplementation(() => (global as any).createMockAudioContext());
+(global as any).webkitAudioContext = jest.fn().mockImplementation(() => (global as any).createMockAudioContext());
 
 // Mock File API
-global.File = jest.fn().mockImplementation((chunks, filename, options) => ({
+(global as any).File = jest.fn().mockImplementation((chunks: any[], filename: string, options?: any) => ({
   name: filename,
-  size: chunks.reduce((acc, chunk) => acc + chunk.length, 0),
+  size: chunks.reduce((acc: number, chunk: any) => acc + chunk.length, 0),
   type: options?.type || 'application/octet-stream',
   lastModified: Date.now(),
   arrayBuffer: jest.fn(),
@@ -134,7 +139,7 @@ global.File = jest.fn().mockImplementation((chunks, filename, options) => ({
   text: jest.fn(),
 }));
 
-global.FileReader = jest.fn().mockImplementation(() => ({
+(global as any).FileReader = jest.fn().mockImplementation(() => ({
   readAsDataURL: jest.fn(),
   readAsText: jest.fn(),
   readAsArrayBuffer: jest.fn(),
@@ -146,8 +151,8 @@ global.FileReader = jest.fn().mockImplementation(() => ({
 }));
 
 // Mock Blob
-global.Blob = jest.fn().mockImplementation((chunks, options) => ({
-  size: chunks.reduce((acc, chunk) => acc + chunk.length, 0),
+(global as any).Blob = jest.fn().mockImplementation((chunks: any[], options?: any) => ({
+  size: chunks.reduce((acc: number, chunk: any) => acc + chunk.length, 0),
   type: options?.type || '',
   arrayBuffer: jest.fn(),
   slice: jest.fn(),
@@ -169,12 +174,12 @@ console.warn = (...args) => {
 };
 
 // Error boundary for test debugging
-global.TestErrorBoundary = ({ children }: { children: React.ReactNode }) => {
+(global as any).TestErrorBoundary = ({ children }: { children: React.ReactNode }) => {
   try {
     return children;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Test Error Boundary caught:', error);
-    return <div data-testid="error-boundary">Test Error: {error.message}</div>;
+    return React.createElement('div', { 'data-testid': 'error-boundary' }, `Test Error: ${error.message}`);
   }
 };
 

@@ -5,8 +5,7 @@ import {
   AcademicCapIcon,
   SpeakerWaveIcon,
   DocumentTextIcon,
-  ArrowTrendingUpIcon,
-  StarIcon
+  ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline';
 import { TrophyIcon, SparklesIcon } from '@heroicons/react/24/solid';
 
@@ -16,11 +15,136 @@ import FluencyAnalysis from './FluencyAnalysis';
 import GrammarExplanations from './GrammarExplanations';
 import VocabularyInsights from './VocabularyInsights';
 
+interface PronunciationData {
+  overall_accuracy: number;
+  stress_pattern_accuracy: number;
+  rhythm_score: number;
+  intonation_score: number;
+  problematic_sounds: Array<{
+    phoneme: string;
+    word_examples: string[];
+    acoustic_issue: string;
+    improvement_tip: string;
+    severity: 'high' | 'medium' | 'low';
+  }>;
+  l1_interference_patterns: Array<{
+    pattern: string;
+    examples: string[];
+    frequency: 'high' | 'medium' | 'low';
+    acoustic_evidence: string;
+  }>;
+  stress_errors: Array<{
+    word: string;
+    incorrect_stress: string;
+    correct_stress: string;
+    impact: string;
+  }>;
+  segmental_accuracy: number;
+  suprasegmental_accuracy: number;
+  improvement_priorities: string[];
+  acoustic_evidence: boolean;
+}
+
+interface PauseCategory {
+  type: 'lexical_retrieval' | 'planning_pause' | 'filled_pause' | 'hesitation';
+  count: number;
+  avg_duration_ms: number;
+  examples: string[];
+}
+
+interface ProsodicFeatures {
+  rhythm_consistency: number;
+  stress_timing_accuracy: number;
+  intonation_appropriateness: number;
+  connected_speech_quality: number;
+}
+
+interface FluencyBreakdownCause {
+  cause: string;
+  evidence: string;
+  frequency: 'high' | 'medium' | 'low';
+  recommendation: string;
+}
+
+interface FluencyData {
+  words_per_minute: number;
+  fluency_score: number;
+  confidence_level: number;
+  total_pauses: number;
+  pause_frequency_per_minute: number;
+  avg_pause_duration_ms: number;
+  long_pauses_count: number;
+  filled_pauses_count: number;
+  self_corrections_count: number;
+  false_starts_count: number;
+  pause_categories: PauseCategory[];
+  prosodic_features: ProsodicFeatures;
+  fluency_breakdown_causes: FluencyBreakdownCause[];
+  improvement_priorities: string[];
+  filler_words: { [key: string]: number };
+  speech_rate_consistency: number;
+  connected_speech_quality: number;
+}
+
+interface GrammarError {
+  error_type: string;
+  original: string;
+  corrected: string;
+  explanation: string;
+  severity: 'high' | 'medium' | 'low';
+  cefr_level: string;
+  practice_suggestion: string;
+  position?: {
+    start: number;
+    end: number;
+  };
+}
+
+interface GrammarData {
+  errors: GrammarError[];
+  total_errors: number;
+  complexity_score: number;
+  avg_sentence_length: number;
+  subordination_index: number;
+  passive_voice_percentage: number;
+  modal_verb_usage: number;
+  conditional_structures: number;
+  overall_grammar_score: number;
+}
+
+interface WordFrequencyLevel {
+  level: string;
+  words: string[];
+  count: number;
+  percentage: number;
+}
+
+interface AcademicWord {
+  word: string;
+  definition: string;
+  frequency: number;
+  academic_list: string;
+  example_usage: string;
+}
+
+interface VocabularyData {
+  total_words: number;
+  unique_words: number;
+  type_token_ratio: number;
+  word_frequency_levels: WordFrequencyLevel[];
+  academic_words: AcademicWord[];
+  cefr_level: string;
+  lexical_diversity: number;
+  advanced_vocabulary_percentage: number;
+  rare_words: string[];
+  suggestions: string[];
+}
+
 interface AnalysisData {
-  pronunciation: any;
-  fluency: any;
-  grammar: any;
-  vocabulary: any;
+  pronunciation: PronunciationData;
+  fluency: FluencyData;
+  grammar: GrammarData;
+  vocabulary: VocabularyData;
   overall_scores: {
     overall_score: number;
     pronunciation_score: number;
@@ -49,7 +173,7 @@ const UltimateAnalysisDashboard: React.FC<UltimateAnalysisDashboardProps> = ({
   className = ''
 }) => {
   const [activeTab, setActiveTab] = useState<AnalysisTab>('overview');
-  const [showInsights, setShowInsights] = useState(true);
+  // Removed unused state variables
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: ChartBarIcon, color: 'blue' },
@@ -71,11 +195,7 @@ const UltimateAnalysisDashboard: React.FC<UltimateAnalysisDashboardProps> = ({
     }
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 85) return 'text-green-600';
-    if (score >= 70) return 'text-yellow-600';
-    return 'text-red-600';
-  };
+  // Removed unused function
 
   const achievements = useMemo(() => {
     const achievements = [];
