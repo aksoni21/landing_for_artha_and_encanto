@@ -36,6 +36,15 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
   );
 
   useEffect(() => {
+    // Add visual error handler for mobile debugging
+    const handleError = (e: ErrorEvent) => {
+      const errorMsg = `Global Error: ${e.error?.name || 'Unknown'} - ${e.error?.message || e.message}`;
+      console.error('Global error caught:', errorMsg);
+      toast.error(errorMsg, { duration: 8000 });
+    };
+
+    window.addEventListener('error', handleError);
+
     // Check if browser supports required APIs
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       toast.error('Audio recording not supported in this browser');
@@ -45,13 +54,14 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
     // Check microphone permission status
     navigator.permissions?.query({ name: 'microphone' as PermissionName }).then((result) => {
       setPermissionStatus(result.state === 'granted' ? 'granted' : 'pending');
-      
+
       result.onchange = () => {
         setPermissionStatus(result.state === 'granted' ? 'granted' : 'denied');
       };
     });
 
     return () => {
+      window.removeEventListener('error', handleError);
       cleanup();
     };
   }, []);
@@ -125,8 +135,35 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
       toast.success('Recording started');
     } catch (error) {
       console.error('Error starting recording:', error);
-      setPermissionStatus('denied');
-      toast.error('Could not access microphone. Please check permissions.');
+      console.error('Error name:', (error as any).name);
+      console.error('Error message:', (error as any).message);
+      console.error('Error details:', {
+        name: (error as any).name,
+        message: (error as any).message,
+        constraint: (error as any).constraint,
+        stack: (error as any).stack
+      });
+
+      // Show detailed error info on screen for mobile debugging
+      const errorDetails = `Error: ${(error as any).name || 'Unknown'} - ${(error as any).message || 'No message'}`;
+      toast.error(errorDetails, { duration: 10000 });
+
+      if ((error as any).name === 'NotAllowedError') {
+        setPermissionStatus('denied');
+        toast.error('Microphone permission denied', { duration: 8000 });
+      } else if ((error as any).name === 'NotReadableError') {
+        setPermissionStatus('denied');
+        toast.error('Microphone is busy or unavailable', { duration: 8000 });
+      } else if ((error as any).name === 'NotFoundError') {
+        setPermissionStatus('denied');
+        toast.error('No microphone device found', { duration: 8000 });
+      } else if ((error as any).name === 'OverconstrainedError') {
+        setPermissionStatus('denied');
+        toast.error('Microphone constraints not supported', { duration: 8000 });
+      } else {
+        setPermissionStatus('denied');
+        toast.error(`Microphone error: ${(error as any).message || 'Unknown error'}`, { duration: 8000 });
+      }
     }
   };
 
