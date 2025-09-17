@@ -189,8 +189,18 @@ const AudioAnalysisPage: React.FC = () => {
 
   const handleRecordingComplete = (audioBlob: Blob, duration: number) => {
     try {
-      const file = new File([audioBlob], `recording-${Date.now()}.webm`, {
-        type: 'audio/webm'
+      // Use appropriate file extension based on MIME type
+      const getFileExtension = (mimeType: string) => {
+        if (mimeType.includes('webm')) return 'webm';
+        if (mimeType.includes('mp4')) return 'm4a';
+        if (mimeType.includes('mpeg')) return 'mp3';
+        if (mimeType.includes('wav')) return 'wav';
+        return 'webm'; // fallback
+      };
+
+      const extension = getFileExtension(audioBlob.type);
+      const file = new File([audioBlob], `recording-${Date.now()}.${extension}`, {
+        type: audioBlob.type
       });
       
       const url = URL.createObjectURL(audioBlob);

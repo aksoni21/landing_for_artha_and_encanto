@@ -97,10 +97,28 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
       setPermissionStatus('granted');
       console.log('✅ Audio stream setup complete');
 
-      // Set up MediaRecorder
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm',
-      });
+      // Set up MediaRecorder with MIME type fallback
+      let mimeType = 'audio/webm';
+      if (!MediaRecorder.isTypeSupported('audio/webm')) {
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          mimeType = 'audio/webm;codecs=opus';
+        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          mimeType = 'audio/mp4';
+        } else if (MediaRecorder.isTypeSupported('audio/mp4;codecs=mp4a.40.2')) {
+          mimeType = 'audio/mp4;codecs=mp4a.40.2';
+        } else if (MediaRecorder.isTypeSupported('audio/mpeg')) {
+          mimeType = 'audio/mpeg';
+        } else if (MediaRecorder.isTypeSupported('audio/wav')) {
+          mimeType = 'audio/wav';
+        } else {
+          // Use default without specifying MIME type
+          mimeType = '';
+        }
+      }
+
+      console.log('Using MIME type:', mimeType);
+
+      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
@@ -111,7 +129,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(chunksRef.current, { type: mimeType || 'audio/webm' });
         onRecordingComplete(audioBlob, duration);
       };
 
