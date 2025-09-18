@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mic, Square, Upload, Play, CheckCircle } from 'lucide-react';
+import { Mic, Upload } from 'lucide-react';
 
 interface ThemeConfig {
   name: string;
@@ -30,7 +30,7 @@ const themes: ThemeConfig[] = [
   },
   {
     name: "Option 2: Modern Tropical",
-    description: "Fresh, energetic, bright with tropical flair representing Panama's natural beauty",
+    description: "Fresh, energetic, bright with tropical flair representing Panama&apos;s natural beauty",
     primary_color: "#004E89",
     secondary_color: "#007F5F",
     accent_color: "#FF6F61",
@@ -66,7 +66,7 @@ const themes: ThemeConfig[] = [
   },
   {
     name: "Option 5: Caribbean Sunset",
-    description: "Energetic, tropical, inviting - capturing Panama's vibrant sunset colors",
+    description: "Energetic, tropical, inviting - capturing Panama&apos;s vibrant sunset colors",
     primary_color: "#FF7F50",
     secondary_color: "#006994",
     accent_color: "#32CD32",
@@ -210,7 +210,7 @@ export const ThemeMockups: React.FC = () => {
             Casco Antiguo Assessment - UI Theme Options
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Choose the visual theme that best represents your school's brand and creates
+            Choose the visual theme that best represents your school&apos;s brand and creates
             the ideal experience for your Spanish language assessment platform.
           </p>
         </div>
@@ -224,7 +224,7 @@ export const ThemeMockups: React.FC = () => {
         <div className="text-center mt-8 p-6 bg-white rounded-lg shadow">
           <h3 className="text-xl font-bold mb-2">Next Steps</h3>
           <p className="text-gray-600 mb-4">
-            Once you select your preferred theme, we'll implement it across the entire assessment platform.
+            Once you select your preferred theme, we&apos;ll implement it across the entire assessment platform.
           </p>
           <div className="text-sm text-gray-500">
             All themes are fully responsive and optimized for desktop, tablet, and mobile devices.

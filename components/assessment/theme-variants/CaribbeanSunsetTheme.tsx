@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Square, Upload, Play, Pause, CheckCircle, Sun, Waves, Palmtree } from 'lucide-react';
-import toast, { Toaster } from 'react-hot-toast';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Mic, Square, Upload, Play, Pause, Sun, Waves, Palmtree } from 'lucide-react';
+import { Toaster } from 'react-hot-toast';
 
 interface ThemeConfig {
   partner_id: string;
@@ -33,9 +33,9 @@ interface ThemeConfig {
 
 export const CaribbeanSunsetTheme: React.FC<{ config: ThemeConfig }> = ({ config }) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+  const [recordedBlob] = useState<Blob | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
+  const [recordingTime] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (

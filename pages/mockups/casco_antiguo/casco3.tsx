@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { motion } from 'framer-motion';
 import AssessmentPartnerLayout from '../../../components/assessment/AssessmentPartnerLayout';
 import CascoAntiguoAssessment from '../../../components/assessment/CascoAntiguoAssessment';
 

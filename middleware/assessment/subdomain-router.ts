@@ -23,8 +23,8 @@ export function handleAssessmentSubdomain(request: NextRequest): NextResponse | 
   if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
     // Check for subdomain simulation via header or query param
     const testSubdomain = request.nextUrl.searchParams.get('subdomain');
-    if (testSubdomain && ASSESSMENT_SUBDOMAINS[testSubdomain]) {
-      url.pathname = `/assessment/${ASSESSMENT_SUBDOMAINS[testSubdomain]}`;
+    if (testSubdomain && testSubdomain in ASSESSMENT_SUBDOMAINS) {
+      url.pathname = `/assessment/${ASSESSMENT_SUBDOMAINS[testSubdomain as keyof typeof ASSESSMENT_SUBDOMAINS]}`;
       url.searchParams.delete('subdomain');
       return NextResponse.rewrite(url);
     }

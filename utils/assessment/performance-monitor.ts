@@ -3,6 +3,8 @@
  * Track and optimize assessment workflow performance
  */
 
+import React from 'react';
+
 interface PerformanceMetric {
   name: string;
   startTime: number;
@@ -101,8 +103,8 @@ class AssessmentPerformanceMonitor {
    */
   private reportSlowMetric(name: string, duration: number, threshold: number): void {
     // Could integrate with analytics service
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'performance_warning', {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'performance_warning', {
         metric_name: name,
         duration_ms: Math.round(duration),
         threshold_ms: threshold,
@@ -244,16 +246,16 @@ export async function trackApiCall<T>(
 export function trackWebVitals() {
   if (typeof window === 'undefined') return;
 
-  // Track Core Web Vitals
-  import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-    getCLS(console.log);
-    getFID(console.log);
-    getFCP(console.log);
-    getLCP(console.log);
-    getTTFB(console.log);
-  }).catch(() => {
-    // web-vitals not available, continue without it
-  });
+  // Track Core Web Vitals (commented out - requires web-vitals package)
+  // import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+  //   getCLS(console.log);
+  //   getFID(console.log);
+  //   getFCP(console.log);
+  //   getLCP(console.log);
+  //   getTTFB(console.log);
+  // }).catch(() => {
+  //   // web-vitals not available, continue without it
+  // });
 }
 
 export default performanceMonitor;

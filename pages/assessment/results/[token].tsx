@@ -245,7 +245,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
 
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-600">
-                      High-quality audio recording of the student's Spanish speech sample.
+                      High-quality audio recording of the student&apos;s Spanish speech sample.
                     </p>
                   </div>
                 </div>

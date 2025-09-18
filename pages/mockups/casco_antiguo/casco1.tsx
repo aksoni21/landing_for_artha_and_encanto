@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { motion } from 'framer-motion';
 import { VibrantHistoricTheme } from '../../../components/assessment/theme-variants/VibrantHistoricTheme';
 
 const theme1Config = {

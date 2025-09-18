@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Square, Upload, Play, Pause, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { Mic, Square, Upload, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 interface CascoAntiguoConfig {
@@ -52,6 +52,13 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
 
   const { ui_text, recording_duration, branding } = config;
 
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  }, [isRecording]);
+
   // Timer effect for recording
   useEffect(() => {
     if (isRecording) {
@@ -88,7 +95,7 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
         clearInterval(timerRef.current);
       }
     };
-  }, [isRecording, recording_duration, ui_text]);
+  }, [isRecording, recording_duration, ui_text, stopRecording]);
 
   const startRecording = async () => {
     try {
@@ -122,13 +129,6 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
     } catch (error) {
       console.error('Error accessing microphone:', error);
       toast.error('Error al acceder al micrófono. Por favor, permite el acceso.');
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
     }
   };
 

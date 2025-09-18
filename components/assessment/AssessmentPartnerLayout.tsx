@@ -37,7 +37,7 @@ interface AssessmentPartnerLayoutProps {
 }
 
 const AssessmentPartnerLayout: React.FC<AssessmentPartnerLayoutProps> = ({ config, children }) => {
-  const { branding, ui_text } = config;
+  const { branding } = config;
 
   return (
     <div

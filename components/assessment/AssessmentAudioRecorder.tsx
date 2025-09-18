@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Square, Play, Pause, RotateCcw, Upload, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -20,7 +20,7 @@ const AssessmentAudioRecorder: React.FC<AssessmentAudioRecorderProps> = ({
   warningAt,
   onRecordingComplete,
   onError,
-  language = 'en',
+  language = 'en', // eslint-disable-line @typescript-eslint/no-unused-vars
   disabled = false
 }) => {
   const [state, setState] = useState<RecorderState>('idle');
@@ -49,6 +49,12 @@ const AssessmentAudioRecorder: React.FC<AssessmentAudioRecorderProps> = ({
       }
     };
   }, [audioUrl]);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+  }, [state]);
 
   // Timer effect
   useEffect(() => {
@@ -83,7 +89,7 @@ const AssessmentAudioRecorder: React.FC<AssessmentAudioRecorderProps> = ({
         clearInterval(timerRef.current);
       }
     };
-  }, [state, maxDuration, warningAt, hasWarned]);
+  }, [state, maxDuration, warningAt, hasWarned, stopRecording]);
 
   const startRecording = async () => {
     try {
@@ -142,25 +148,19 @@ const AssessmentAudioRecorder: React.FC<AssessmentAudioRecorderProps> = ({
     }
   };
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && state === 'recording') {
-      mediaRecorderRef.current.stop();
-    }
-  };
+  // const pauseRecording = () => {
+  //   if (mediaRecorderRef.current && state === 'recording') {
+  //     mediaRecorderRef.current.pause();
+  //     setState('paused');
+  //   }
+  // };
 
-  const pauseRecording = () => {
-    if (mediaRecorderRef.current && state === 'recording') {
-      mediaRecorderRef.current.pause();
-      setState('paused');
-    }
-  };
-
-  const resumeRecording = () => {
-    if (mediaRecorderRef.current && state === 'paused') {
-      mediaRecorderRef.current.resume();
-      setState('recording');
-    }
-  };
+  // const resumeRecording = () => {
+  //   if (mediaRecorderRef.current && state === 'paused') {
+  //     mediaRecorderRef.current.resume();
+  //     setState('recording');
+  //   }
+  // };
 
   const reset = () => {
     if (timerRef.current) {
