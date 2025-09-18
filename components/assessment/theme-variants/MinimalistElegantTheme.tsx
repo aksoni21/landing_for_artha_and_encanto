@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, Square, Upload, Play, Pause } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
+import { AssessmentFooter } from '../AssessmentFooter';
 
 interface ThemeConfig {
   partner_id: string;
@@ -194,6 +195,8 @@ export const MinimalistElegantTheme: React.FC<{ config: ThemeConfig }> = ({ conf
           </motion.div>
         </div>
       </div>
+
+      <AssessmentFooter variant="light" />
     </div>
   );
 };

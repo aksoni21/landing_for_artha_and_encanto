@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, Square, Upload, Play, Pause, BookOpen, Award } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
+import { AssessmentFooter } from '../AssessmentFooter';
 
 interface ThemeConfig {
   partner_id: string;
@@ -39,15 +40,15 @@ export const AcademicHeritageTheme: React.FC<{ config: ThemeConfig }> = ({ confi
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
-    <div className="min-h-screen" style={{
+    <div className="h-screen overflow-hidden flex flex-col" style={{
       background: 'linear-gradient(135deg, #F7F3E9 0%, #E6D7B7 100%)',
       fontFamily: 'Open Sans, sans-serif'
     }}>
       <Toaster position="top-center" />
 
       {/* Academic Header with Crest */}
-      <div className="relative bg-white shadow-lg border-b-4" style={{ borderColor: config.branding.secondary_color }}>
-        <div className="container mx-auto px-4 py-8">
+      <div className="flex-shrink-0 relative bg-white shadow-lg border-b-4" style={{ borderColor: config.branding.secondary_color }}>
+        <div className="container mx-auto px-4 py-4">
           <div className="text-center">
             {/* University-style Layout */}
             <motion.div
@@ -57,7 +58,7 @@ export const AcademicHeritageTheme: React.FC<{ config: ThemeConfig }> = ({ confi
             >
               {/* Crest/Logo with academic styling */}
               <div
-                className="w-24 h-24 rounded-full flex items-center justify-center mb-4 shadow-xl border-4 bg-white"
+                className="w-16 h-16 rounded-full flex items-center justify-center mb-3 shadow-xl border-4 bg-white"
                 style={{
                   borderColor: config.branding.secondary_color
                 }}
@@ -65,13 +66,13 @@ export const AcademicHeritageTheme: React.FC<{ config: ThemeConfig }> = ({ confi
                 <img
                   src={config.branding.logo_url}
                   alt="Logo"
-                  className="h-16 w-auto"
+                  className="h-12 w-auto"
                 />
               </div>
 
               {/* Academic Title */}
               <h1
-                className="text-4xl font-bold mb-2"
+                className="text-2xl font-bold mb-2"
                 style={{
                   fontFamily: 'Crimson Text, serif',
                   color: config.branding.primary_color
@@ -80,17 +81,17 @@ export const AcademicHeritageTheme: React.FC<{ config: ThemeConfig }> = ({ confi
                 {config.ui_text.welcome_title}
               </h1>
 
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-px" style={{ backgroundColor: config.branding.secondary_color }}></div>
-                <BookOpen size={20} style={{ color: config.branding.secondary_color }} />
-                <div className="w-12 h-px" style={{ backgroundColor: config.branding.secondary_color }}></div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-px" style={{ backgroundColor: config.branding.secondary_color }}></div>
+                <BookOpen size={16} style={{ color: config.branding.secondary_color }} />
+                <div className="w-8 h-px" style={{ backgroundColor: config.branding.secondary_color }}></div>
               </div>
 
-              <p className="text-xl text-gray-700 font-medium">
+              <p className="text-lg text-gray-700 font-medium">
                 {config.ui_text.welcome_subtitle}
               </p>
 
-              <p className="text-sm text-gray-600 mt-2 italic">
+              <p className="text-xs text-gray-600 mt-1 italic">
                 Department of Language Assessment
               </p>
             </motion.div>
@@ -99,8 +100,8 @@ export const AcademicHeritageTheme: React.FC<{ config: ThemeConfig }> = ({ confi
       </div>
 
       {/* Academic Layout with Sidebar */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      <div className="flex-1 container mx-auto px-4 py-6 min-h-0">
+        <div className="grid lg:grid-cols-3 gap-6 max-w-6xl mx-auto h-full">
 
           {/* Academic Sidebar */}
           <motion.div
@@ -293,6 +294,8 @@ export const AcademicHeritageTheme: React.FC<{ config: ThemeConfig }> = ({ confi
           </motion.div>
         </div>
       </div>
+
+      <AssessmentFooter variant="light" />
     </div>
   );
 };

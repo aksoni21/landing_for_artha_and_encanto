@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, Square, Upload, Play, Pause, Sun, Waves, Palmtree } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
+import { AssessmentFooter } from '../AssessmentFooter';
 
 interface ThemeConfig {
   partner_id: string;
@@ -303,6 +304,8 @@ export const CaribbeanSunsetTheme: React.FC<{ config: ThemeConfig }> = ({ config
           </motion.div>
         </div>
       </div>
+
+      <AssessmentFooter variant="transparent" />
     </div>
   );
 };
