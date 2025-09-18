@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getBackendURL } from '../../../../utils/environment';
 
-const BACKEND_URL = process.env.BACKEND_URL;
+const BACKEND_URL = getBackendURL();
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,13 +17,9 @@ export default async function handler(
     return res.status(400).json({ error: 'Username is required' });
   }
 
-  if (!BACKEND_URL) {
-    return res.status(500).json({ error: 'Backend URL not configured' });
-  }
-
   try {
-    console.log(`🔍 Fetching user data for: ${username}`);
-    
+    console.log(`🔍 Fetching user data for: ${username} from ${BACKEND_URL}`);
+
     // Forward request to Python backend
     const response = await fetch(`${BACKEND_URL}/api/auth/user-by-username/${username}`, {
       method: 'GET',
