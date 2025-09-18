@@ -58,32 +58,32 @@ const AssessmentPartnerLayout: React.FC<AssessmentPartnerLayoutProps> = ({ confi
         className="bg-white/10 backdrop-blur-md border-b border-white/20"
       >
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center">
             <div className="flex items-center space-x-4">
               {branding.logo_url && (
                 <img
                   src={branding.logo_url}
                   alt={config.name}
-                  className="h-12 w-auto"
+                  className="h-24 w-auto rounded-md"
                 />
               )}
-              <div>
+              {/* <div>
                 <h1 className="text-white text-2xl font-bold">
                   {ui_text.welcome_title}
                 </h1>
                 <p className="text-white/80 text-sm">
                   {ui_text.welcome_subtitle}
                 </p>
-              </div>
+              </div> */}
             </div>
 
             {/* Language indicator */}
-            <div className="bg-white/20 rounded-full px-3 py-1">
+            {/* <div className="bg-white/20 rounded-full px-3 py-1">
               <span className="text-white text-sm font-medium capitalize">
                 {config.language}
               </span>
-            </div>
-          </div>
+            </div>*/}
+          </div> 
         </div>
       </motion.header>
 

@@ -208,14 +208,14 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
       <div className="space-y-4 mb-8">
         <input
           type="text"
-          placeholder="Tu nombre (opcional)"
+          placeholder="Your name"
           value={studentName}
           onChange={(e) => setStudentName(e.target.value)}
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         <input
           type="email"
-          placeholder="Tu email (opcional)"
+          placeholder="Your email (optional)"
           value={studentEmail}
           onChange={(e) => setStudentEmail(e.target.value)}
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -231,7 +231,7 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
       </button>
 
       <p className="text-sm text-gray-500 mt-4">
-        Duración: {recording_duration.min_seconds}-{recording_duration.max_seconds} segundos
+        Duration: {recording_duration.min_seconds}-{recording_duration.max_seconds} seconds
       </p>
     </motion.div>
   );
