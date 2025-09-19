@@ -48,7 +48,7 @@ export const assessmentPerformanceConfig = {
       '/fonts/inter-var.woff2'
     ],
     images: [
-      '/partners/casco-antiguo/logo.png',
+      '/partners/casco-antiguo/casco_antiguo_logo.png',
       '/partners/casco-antiguo/background.jpg'
     ],
     scripts: [

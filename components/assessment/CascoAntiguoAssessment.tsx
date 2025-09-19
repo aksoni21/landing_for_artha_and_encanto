@@ -289,7 +289,7 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
     >
       {/* Tropical Header */}
       <div className="mb-8">
-        <motion.div
+        {/* <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring" }}
@@ -298,7 +298,7 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
         >
           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
           Ready to Begin Assessment
-        </motion.div>
+        </motion.div> */}
 
         <h2 className="text-4xl font-bold mb-4" style={{ color: branding.primary_color, fontFamily: 'Poppins, sans-serif' }}>
           {ui_text.welcome_title}
@@ -347,7 +347,7 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
       </div>
 
       {/* Today's Uploads Section */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <button
           onClick={() => {
             if (!showTodaysUploads) {
@@ -384,14 +384,8 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
                       <p className="text-xs text-gray-500">
                         {new Date(upload.created_at).toLocaleTimeString()} - {upload.processing_status}
                       </p>
-                      {/* {upload.error_message && (
-                        <p className="text-xs text-red-500 mt-1">{upload.error_message}</p>
-                      )} */}
                     </div>
                     <div className="flex gap-2">
-                      {/* <audio controls className="w-20 h-8 text-xs">
-                        <source src={upload.file_url} />
-                      </audio> */}
                       <button
                         onClick={() => resubmitUpload(upload.id, upload)}
                         disabled={upload.processing_status === 'processing' || isSubmitting}
@@ -406,7 +400,7 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
             )}
           </motion.div>
         )}
-      </div>
+      </div> */}
 
       {/* Modern Tropical Start Button */}
       <motion.button

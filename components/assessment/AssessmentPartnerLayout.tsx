@@ -62,7 +62,7 @@ const AssessmentPartnerLayout: React.FC<AssessmentPartnerLayoutProps> = ({ confi
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-center bg-white/90 backdrop-blur-md rounded-3xl p-4 shadow-2xl max-w-4xl mx-auto"
+            className="flex items-center justify-center bg-white/90 backdrop-blur-md rounded-3xl p-2 shadow-2xl max-w-4xl mx-auto"
           >
             <div className="flex items-center gap-3">
               {branding.logo_url && (
@@ -70,16 +70,16 @@ const AssessmentPartnerLayout: React.FC<AssessmentPartnerLayoutProps> = ({ confi
                   <img
                     src={branding.logo_url}
                     alt={config.name}
-                    className="h-12 w-auto"
+                    className="h-auto w-auto"
                   />
                 </div>
               )}
-              <div>
+              {/* <div>
                 <h1 className="text-2xl font-bold" style={{ color: branding.primary_color }}>
                   {config.name}
                 </h1>
                 <p className="text-sm text-gray-600">Spanish Language Assessment</p>
-              </div>
+              </div> */}
             </div>
           </motion.div>
         </div>

@@ -192,7 +192,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         name: 'Casco Antiguo Spanish School',
         language: 'spanish',
         branding: {
-          logo_url: '/partners/casco-antiguo/logo.png',
+          logo_url: '/partners/casco-antiguo/casco_antiguo_logo.png',
           primary_color: '#1a365d',
           secondary_color: '#2d5a87',
           accent_color: '#ed8936',

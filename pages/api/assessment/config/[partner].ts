@@ -7,16 +7,16 @@ const assessmentPartnerConfigs = {
     name: 'Casco Antiguo Spanish School',
     language: 'spanish',
     branding: {
-      logo_url: '/partners/casco-antiguo/placeholder.svg',
+      logo_url: '/partners/casco-antiguo/casco_antiguo_logo.png',
       primary_color: '#1a365d',
       secondary_color: '#2d5a87',
       accent_color: '#ed8936'
     },
     ui_text: {
       language: 'english',
-      welcome_title: 'Spanish Language Assessment',
+      welcome_title: 'Speaking Assessment [Optional] ',
       welcome_subtitle: 'Casco Antiguo Spanish School',
-      recording_instructions: 'Please speak in Spanish for 30-60 seconds about any topic you like. You can talk about your hobbies, family, plans, work, or anything that comes to mind.',
+      recording_instructions: 'Record a short voice note in Spanish about yourself, your hobbies, or your daily routine.',
       recording_button: 'Start Recording',
       stop_button: 'Stop Recording',
       submit_button: 'Submit Assessment',
