@@ -156,10 +156,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   try {
     // Fetch partner configuration from Next.js API route
-    const baseUrl = process.env.NODE_ENV === 'production'
-      ? 'https://encantospeak.com'
-      : 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/assessment/config/${partner}`);
+    const host = context.req.headers.host || 'localhost:3000';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const response = await fetch(`${protocol}://${host}/api/assessment/config/${partner}`);
 
     if (!response.ok) {
       if (response.status === 404) {
