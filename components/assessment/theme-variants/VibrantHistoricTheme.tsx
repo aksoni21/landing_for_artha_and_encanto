@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, Square, Upload, Play, Pause } from 'lucide-react';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 import { AssessmentFooter } from '../AssessmentFooter';
+import { useAssessmentRecording } from '../../../hooks/useAssessmentRecording';
 
 interface ThemeConfig {
   partner_id: string;
@@ -33,11 +34,29 @@ interface ThemeConfig {
 }
 
 export const VibrantHistoricTheme: React.FC<{ config: ThemeConfig }> = ({ config }) => {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordedBlob] = useState<Blob | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [recordingTime] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    isRecording,
+    recordingTime,
+    recordedBlob,
+    startRecording,
+    stopRecording,
+    resetRecording,
+    canRecord,
+    isMaxDurationReached,
+    isMinDurationMet
+  } = useAssessmentRecording({
+    maxDuration: config.recording_duration.max_seconds,
+    minDuration: config.recording_duration.min_seconds,
+    onRecordingComplete: (audioBlob: Blob, duration: number) => {
+      toast.success(`¡Evaluación completada! Duración: ${duration} segundos`);
+    },
+    onError: (error: string) => {
+      toast.error(error);
+    }
+  });
 
   return (
     <div className="h-screen overflow-hidden flex flex-col" style={{
@@ -130,7 +149,8 @@ export const VibrantHistoricTheme: React.FC<{ config: ThemeConfig }> = ({ config
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsRecording(!isRecording)}
+                    onClick={isRecording ? stopRecording : startRecording}
+                    disabled={!canRecord && !isRecording}
                     className="relative w-24 h-24 rounded-full shadow-2xl border-4 border-white flex items-center justify-center font-bold text-white transition-all duration-300"
                     style={{
                       backgroundColor: isRecording ? '#e74c3c' : config.branding.primary_color,

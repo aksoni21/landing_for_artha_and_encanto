@@ -45,45 +45,43 @@ const AssessmentPartnerLayout: React.FC<AssessmentPartnerLayoutProps> = ({ confi
       style={{
         background: branding.background_image
           ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${branding.background_image})`
-          : `linear-gradient(135deg, ${branding.primary_color}, ${branding.secondary_color})`,
+          : 'linear-gradient(135deg, #FFF3E2 0%, #1ABC9C 50%, #004E89 100%)',
         backgroundSize: 'cover',
-        backgroundPosition: 'center'
+        backgroundPosition: 'center',
+        fontFamily: 'Poppins, sans-serif'
       }}
     >
-      {/* Header */}
+      {/* Modern Tropical Header */}
       <motion.header
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="bg-white/10 backdrop-blur-md border-b border-white/20"
+        className="pt-4"
       >
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-center">
-            <div className="flex items-center space-x-4">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-center bg-white/90 backdrop-blur-md rounded-3xl p-4 shadow-2xl max-w-4xl mx-auto"
+          >
+            <div className="flex items-center gap-3">
               {branding.logo_url && (
-                <img
-                  src={branding.logo_url}
-                  alt={config.name}
-                  className="h-24 w-auto rounded-md"
-                />
+                <div className="bg-white rounded-2xl p-2 shadow-lg">
+                  <img
+                    src={branding.logo_url}
+                    alt={config.name}
+                    className="h-12 w-auto"
+                  />
+                </div>
               )}
-              {/* <div>
-                <h1 className="text-white text-2xl font-bold">
-                  {ui_text.welcome_title}
+              <div>
+                <h1 className="text-2xl font-bold" style={{ color: branding.primary_color }}>
+                  {config.name}
                 </h1>
-                <p className="text-white/80 text-sm">
-                  {ui_text.welcome_subtitle}
-                </p>
-              </div> */}
+                <p className="text-sm text-gray-600">Spanish Language Assessment</p>
+              </div>
             </div>
-
-            {/* Language indicator */}
-            {/* <div className="bg-white/20 rounded-full px-3 py-1">
-              <span className="text-white text-sm font-medium capitalize">
-                {config.language}
-              </span>
-            </div>*/}
-          </div> 
+          </motion.div>
         </div>
       </motion.header>
 

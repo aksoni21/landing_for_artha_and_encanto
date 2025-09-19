@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, Square, Upload, Play, Pause, Waves } from 'lucide-react';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 import { AssessmentFooter } from '../AssessmentFooter';
+import { useAssessmentRecording } from '../../../hooks/useAssessmentRecording';
 
 interface ThemeConfig {
   partner_id: string;
@@ -33,11 +34,29 @@ interface ThemeConfig {
 }
 
 export const ModernTropicalTheme: React.FC<{ config: ThemeConfig }> = ({ config }) => {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordedBlob] = useState<Blob | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [recordingTime] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    isRecording,
+    recordingTime,
+    recordedBlob,
+    startRecording,
+    stopRecording,
+    resetRecording,
+    canRecord,
+    isMaxDurationReached,
+    isMinDurationMet
+  } = useAssessmentRecording({
+    maxDuration: config.recording_duration.max_seconds,
+    minDuration: config.recording_duration.min_seconds,
+    onRecordingComplete: (audioBlob: Blob, duration: number) => {
+      toast.success(`Recording completed! Duration: ${duration} seconds`);
+    },
+    onError: (error: string) => {
+      toast.error(error);
+    }
+  });
 
   return (
     <div className="h-screen overflow-hidden flex flex-col" style={{
@@ -167,7 +186,8 @@ export const ModernTropicalTheme: React.FC<{ config: ThemeConfig }> = ({ config 
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsRecording(!isRecording)}
+                  onClick={isRecording ? stopRecording : startRecording}
+                  disabled={!canRecord && !isRecording}
                   className="w-20 h-20 rounded-2xl flex items-center justify-center text-white shadow-2xl transition-all duration-300"
                   style={{
                     backgroundColor: isRecording ? '#ff6b6b' : config.branding.primary_color,

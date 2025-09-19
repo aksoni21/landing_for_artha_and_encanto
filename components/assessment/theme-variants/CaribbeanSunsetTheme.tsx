@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, Square, Upload, Play, Pause, Sun, Waves, Palmtree } from 'lucide-react';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 import { AssessmentFooter } from '../AssessmentFooter';
+import { useAssessmentRecording } from '../../../hooks/useAssessmentRecording';
 
 interface ThemeConfig {
   partner_id: string;
@@ -33,11 +34,29 @@ interface ThemeConfig {
 }
 
 export const CaribbeanSunsetTheme: React.FC<{ config: ThemeConfig }> = ({ config }) => {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordedBlob] = useState<Blob | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [recordingTime] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    isRecording,
+    recordingTime,
+    recordedBlob,
+    startRecording,
+    stopRecording,
+    resetRecording,
+    canRecord,
+    isMaxDurationReached,
+    isMinDurationMet
+  } = useAssessmentRecording({
+    maxDuration: config.recording_duration.max_seconds,
+    minDuration: config.recording_duration.min_seconds,
+    onRecordingComplete: (audioBlob: Blob, duration: number) => {
+      toast.success(`¡Grabación completada! Duración: ${duration} segundos`);
+    },
+    onError: (error: string) => {
+      toast.error(error);
+    }
+  });
 
   return (
     <div className="min-h-screen overflow-hidden relative" style={{
@@ -204,7 +223,8 @@ export const CaribbeanSunsetTheme: React.FC<{ config: ThemeConfig }> = ({ config
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={() => setIsRecording(!isRecording)}
+                onClick={isRecording ? stopRecording : startRecording}
+                disabled={!canRecord && !isRecording}
                 className="relative w-32 h-32 rounded-full flex items-center justify-center text-white font-bold shadow-2xl overflow-hidden"
                 style={{
                   background: isRecording

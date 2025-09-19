@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Square, Upload, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mic, Square, Upload, RefreshCw, AlertCircle, CheckCircle, Waves } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+import { detectBestAudioMimeType, createMediaRecorderOptions } from '../../utils/audioMimeType';
 
 interface CascoAntiguoConfig {
   partner_id: string;
@@ -45,6 +46,9 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
   const [studentName, setStudentName] = useState('');
   const [studentEmail, setStudentEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [todaysUploads, setTodaysUploads] = useState<any[]>([]);
+  const [showTodaysUploads, setShowTodaysUploads] = useState(false);
+  const [loadingUploads, setLoadingUploads] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -99,8 +103,19 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 16000,
+        }
+      });
+
+      // Detect best MIME type for this platform
+      const mimeType = detectBestAudioMimeType();
+      console.log('Using MIME type:', mimeType || 'browser default');
+
+      const mediaRecorder = new MediaRecorder(stream, createMediaRecorderOptions());
       mediaRecorderRef.current = mediaRecorder;
 
       const chunks: BlobPart[] = [];
@@ -111,7 +126,8 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/wav' });
+        const mimeType = detectBestAudioMimeType();
+        const blob = new Blob(chunks, { type: mimeType || 'audio/webm' });
         setAudioBlob(blob);
         setAudioUrl(URL.createObjectURL(blob));
         setCurrentStep('preview');
@@ -158,8 +174,12 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
       formData.append('audio_file', audioBlob, 'assessment.wav');
       formData.append('student_name', studentName);
       formData.append('student_email', studentEmail);
+      formData.append('partner_id', config.partner_id);
+      formData.append('partner_name', config.name);
+      formData.append('assessment_type', 'partner_assessment');
+      formData.append('language', 'es'); // Use ISO-639-1 format for Spanish
 
-      const response = await fetch(`/api/partners/${config.partner_id}/analyze`, {
+      const response = await fetch('/api/audio/upload', {
         method: 'POST',
         body: formData,
       });
@@ -169,15 +189,28 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
       }
 
       const result = await response.json();
+      console.log('Upload result:', result);
 
-      if (result.status === 'completed') {
+      if (result.status === 'queued') {
+        // Audio uploaded successfully, now poll for completion
+        console.log('Audio queued for processing, session_id:', result.session_id);
+        setCurrentStep('success'); // For now, treat queued as success for the pilot
+        toast.success('Audio uploaded successfully! Analysis in progress...');
+      } else if (result.status === 'completed') {
         setCurrentStep('success');
         toast.success(ui_text.success_message);
       } else {
-        throw new Error('Error procesando la evaluación');
+        console.error('Unexpected status from upload:', result.status);
+        console.error('Full upload result:', result);
+        throw new Error(`Unexpected status: ${result.status}`);
       }
     } catch (error) {
       console.error('Submission error:', error);
+      console.error('Full error details:', JSON.stringify(error, null, 2));
+      if (error.response) {
+        console.error('API Response:', error.response);
+        console.error('API Response data:', error.response.data);
+      }
       setCurrentStep('error');
       toast.error(ui_text.error_message);
     } finally {
@@ -191,48 +224,199 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const fetchTodaysUploads = async () => {
+    setLoadingUploads(true);
+    try {
+      const response = await fetch('/api/audio/today-uploads');
+      const data = await response.json();
+      setTodaysUploads(data.uploads || []);
+    } catch (error) {
+      console.error('Error fetching today uploads:', error);
+      toast.error('Failed to load today\'s uploads');
+    } finally {
+      setLoadingUploads(false);
+    }
+  };
+
+  const resubmitUpload = async (recordingId: string, uploadData: any) => {
+    try {
+      setIsSubmitting(true);
+      const response = await fetch(`/api/audio/resubmit/${recordingId}`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to resubmit recording');
+      }
+
+      // Use the existing upload data to populate the form
+      setStudentName(uploadData.student_name || '');
+      setStudentEmail(''); // Email not stored in metadata
+
+      setCurrentStep('processing');
+      toast.success('Recording resubmitted for analysis');
+    } catch (error) {
+      console.error('Error resubmitting upload:', error);
+      toast.error('Failed to resubmit recording');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const renderWelcomeStep = () => (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl shadow-2xl p-8 text-center"
+      className="bg-white rounded-3xl shadow-2xl p-8 text-center"
+      style={{
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+        backdropFilter: 'blur(20px)'
+      }}
     >
-      <h2 className="text-3xl font-bold mb-4" style={{ color: branding.primary_color }}>
-        {ui_text.welcome_title}
-      </h2>
-      <p className="text-gray-600 mb-8 text-lg leading-relaxed">
-        {ui_text.recording_instructions}
-      </p>
+      {/* Tropical Header */}
+      <div className="mb-8">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring" }}
+          className="inline-flex items-center gap-2 bg-green-100 px-4 py-2 rounded-full text-sm font-semibold mb-4"
+          style={{ color: '#007F5F' }}
+        >
+          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+          Ready to Begin Assessment
+        </motion.div>
 
-      {/* Optional student info */}
+        <h2 className="text-4xl font-bold mb-4" style={{ color: branding.primary_color, fontFamily: 'Poppins, sans-serif' }}>
+          {ui_text.welcome_title}
+        </h2>
+        <p className="text-gray-700 mb-6 text-lg leading-relaxed max-w-2xl mx-auto">
+          {ui_text.recording_instructions}
+        </p>
+
+        {/* Tropical Instructions */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          {['🎯', '🗣️', '✨'].map((emoji, index) => (
+            <motion.div
+              key={index}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.4 + index * 0.1 }}
+              className="text-center"
+            >
+              <div className="text-3xl mb-2">{emoji}</div>
+              <div className="text-xs font-semibold text-gray-600">
+                {['Click', 'Speak', 'Submit'][index]}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Optional student info with tropical styling */}
       <div className="space-y-4 mb-8">
         <input
           type="text"
           placeholder="Your name"
           value={studentName}
           onChange={(e) => setStudentName(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:border-transparent transition-all text-black"
+          style={{ '--tw-ring-color': branding.secondary_color } as React.CSSProperties}
         />
         <input
           type="email"
           placeholder="Your email (optional)"
           value={studentEmail}
           onChange={(e) => setStudentEmail(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:border-transparent transition-all text-black"
+          style={{ '--tw-ring-color': branding.secondary_color } as React.CSSProperties}
         />
       </div>
 
-      <button
-        onClick={startRecording}
-        className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-full text-xl font-semibold flex items-center space-x-3 mx-auto transition-all transform hover:scale-105"
-      >
-        <Mic size={24} />
-        <span>{ui_text.recording_button}</span>
-      </button>
+      {/* Today's Uploads Section */}
+      <div className="mb-6">
+        <button
+          onClick={() => {
+            if (!showTodaysUploads) {
+              fetchTodaysUploads();
+            }
+            setShowTodaysUploads(!showTodaysUploads);
+          }}
+          className="text-sm text-blue-600 hover:text-blue-800 underline mb-2"
+        >
+          {showTodaysUploads ? 'Hide' : 'Show'} today's recordings ({todaysUploads.length})
+        </button>
 
-      <p className="text-sm text-gray-500 mt-4">
+        {showTodaysUploads && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="bg-gray-50 rounded-lg p-4 text-left"
+          >
+            {loadingUploads ? (
+              <div className="text-center py-4">
+                <RefreshCw className="animate-spin mx-auto mb-2" size={20} />
+                <p className="text-sm text-gray-600">Loading recordings...</p>
+              </div>
+            ) : todaysUploads.length === 0 ? (
+              <p className="text-sm text-gray-600 text-center">No recordings today yet</p>
+            ) : (
+              <div className="space-y-2">
+                {todaysUploads.map((upload) => (
+                  <div key={upload.id} className="flex items-center justify-between bg-white p-3 rounded border">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-800">
+                        {upload.student_name || 'Anonymous'} - {Math.round(upload.duration_seconds)}s
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(upload.created_at).toLocaleTimeString()} - {upload.processing_status}
+                      </p>
+                      {/* {upload.error_message && (
+                        <p className="text-xs text-red-500 mt-1">{upload.error_message}</p>
+                      )} */}
+                    </div>
+                    <div className="flex gap-2">
+                      {/* <audio controls className="w-20 h-8 text-xs">
+                        <source src={upload.file_url} />
+                      </audio> */}
+                      <button
+                        onClick={() => resubmitUpload(upload.id, upload)}
+                        disabled={upload.processing_status === 'processing' || isSubmitting}
+                        className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+                      >
+                        Resubmit
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </div>
+
+      {/* Modern Tropical Start Button */}
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={startRecording}
+        className="w-24 h-24 rounded-2xl flex items-center justify-center text-white shadow-2xl mx-auto mb-4 transition-all duration-300"
+        style={{ backgroundColor: branding.primary_color }}
+      >
+        <Mic size={32} />
+      </motion.button>
+
+      <p className="text-lg font-semibold mb-2" style={{ color: branding.primary_color }}>
+        {ui_text.recording_button}
+      </p>
+
+      <p className="text-sm text-gray-600">
         Duration: {recording_duration.min_seconds}-{recording_duration.max_seconds} seconds
       </p>
+
+      {/* Tropical Wave Decoration */}
+      <div className="flex justify-center mt-6">
+        <Waves size={24} style={{ color: '#1ABC9C', opacity: 0.3 }} />
+      </div>
     </motion.div>
   );
 
@@ -240,43 +424,95 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-white rounded-xl shadow-2xl p-8 text-center"
+      className="bg-white rounded-3xl shadow-2xl p-8 text-center max-w-md mx-auto"
+      style={{
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.95) 100%)',
+        backdropFilter: 'blur(20px)'
+      }}
     >
+      {/* Clean Recording Status */}
       <div className="mb-8">
-        <div className="animate-pulse bg-red-500 w-4 h-4 rounded-full mx-auto mb-4"></div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Grabando...</h2>
-        <p className="text-gray-600">Habla claramente sobre cualquier tema en español</p>
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: '#f87171' }}
+        >
+          <motion.div
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+            className="w-4 h-4 bg-white rounded-full"
+          />
+        </motion.div>
+
+        <h2 className="text-2xl font-semibold mb-2 text-gray-800">
+          Recording...
+        </h2>
+        <p className="text-gray-600 text-sm">Speak clearly in Spanish</p>
       </div>
 
+      {/* Simple Timer */}
       <div className="mb-8">
-        <div className="text-6xl font-mono font-bold text-red-500 mb-4">
+        <div className="text-4xl font-mono font-bold mb-4 text-gray-800">
           {formatTime(recordingTime)}
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div
-            className="bg-red-500 h-2 rounded-full transition-all duration-1000"
-            style={{
-              width: `${(recordingTime / recording_duration.max_seconds) * 100}%`
-            }}
-          ></div>
+
+        {/* Minimal Progress Ring */}
+        <div className="relative w-32 h-32 mx-auto mb-4">
+          <svg className="transform -rotate-90 w-32 h-32">
+            <circle
+              cx="64"
+              cy="64"
+              r="56"
+              stroke="#e5e7eb"
+              strokeWidth="8"
+              fill="transparent"
+            />
+            <circle
+              cx="64"
+              cy="64"
+              r="56"
+              stroke={branding.primary_color}
+              strokeWidth="8"
+              fill="transparent"
+              strokeDasharray={351.86}
+              strokeDashoffset={351.86 - (recordingTime / recording_duration.max_seconds) * 351.86}
+              className="transition-all duration-1000 ease-out"
+              strokeLinecap="round"
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-xs text-gray-500 font-medium">
+              {recording_duration.max_seconds - recordingTime}s left
+            </span>
+          </div>
         </div>
-        <p className="text-sm text-gray-500 mt-2">
-          Máximo: {recording_duration.max_seconds} segundos
-        </p>
       </div>
 
-      <button
+      {/* Clean Stop Button */}
+      <motion.button
+        whileHover={{ scale: recordingTime >= recording_duration.min_seconds ? 1.02 : 1 }}
+        whileTap={{ scale: recordingTime >= recording_duration.min_seconds ? 0.98 : 1 }}
         onClick={stopRecording}
         disabled={recordingTime < recording_duration.min_seconds}
-        className={`px-8 py-4 rounded-full text-xl font-semibold flex items-center space-x-3 mx-auto transition-all ${
+        className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg mx-auto transition-all duration-300 ${
           recordingTime >= recording_duration.min_seconds
-            ? 'bg-gray-600 hover:bg-gray-700 text-white cursor-pointer'
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            ? 'cursor-pointer hover:shadow-xl'
+            : 'cursor-not-allowed opacity-40'
         }`}
+        style={{
+          backgroundColor: recordingTime >= recording_duration.min_seconds ? '#ef4444' : '#9ca3af'
+        }}
       >
-        <Square size={24} />
-        <span>{ui_text.stop_button}</span>
-      </button>
+        <Square size={20} className="fill-current" />
+      </motion.button>
+
+      <p className="text-sm font-medium mt-4 text-gray-700">
+        {recordingTime >= recording_duration.min_seconds
+          ? 'Tap to stop recording'
+          : `Keep speaking (${recording_duration.min_seconds - recordingTime}s minimum)`
+        }
+      </p>
     </motion.div>
   );
 
@@ -284,56 +520,70 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl shadow-2xl p-8"
+      className="bg-white rounded-3xl shadow-2xl p-8 text-center max-w-md mx-auto"
+      style={{
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.95) 100%)',
+        backdropFilter: 'blur(20px)'
+      }}
     >
-      <h2 className="text-2xl font-bold text-center mb-6" style={{ color: branding.primary_color }}>
-        Revisar Grabación
-      </h2>
+      {/* Success Indicator */}
+      <div className="mb-6">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100"
+        >
+          <CheckCircle size={32} className="text-green-600" />
+        </motion.div>
 
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-gray-700 font-medium">
-            Duración: {formatTime(recordingTime)}
-          </span>
-          <span className={`px-3 py-1 rounded-full text-sm ${
-            recordingTime >= recording_duration.min_seconds
-              ? 'bg-green-100 text-green-800'
-              : 'bg-yellow-100 text-yellow-800'
-          }`}>
-            {recordingTime >= recording_duration.min_seconds ? 'Válida' : 'Muy corta'}
-          </span>
-        </div>
+        <h2 className="text-2xl font-semibold mb-2 text-gray-800">
+          Recording Complete
+        </h2>
+        <p className="text-gray-600 text-sm">
+          {formatTime(recordingTime)} seconds {recordingTime >= recording_duration.min_seconds ? '' : '• Too short'}
+        </p>
+      </div>
 
+      {/* Audio Player */}
+      <div className="mb-8">
         {audioUrl && (
-          <audio
-            ref={audioRef}
-            src={audioUrl}
-            controls
-            className="w-full"
-          />
+          // <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+            <audio
+              ref={audioRef}
+              src={audioUrl}
+              controls
+              className="w-full"
+              style={{
+                height: '48px',
+                borderRadius: '12px',
+                outline: 'none',
+                filter: 'sepia(20%) saturate(150%) hue-rotate(200deg)',
+                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)'
+              }}
+            />
+          // </div>
         )}
       </div>
 
-      <div className="flex space-x-4">
-        <button
-          onClick={retryRecording}
-          className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center space-x-2"
-        >
-          <RefreshCw size={20} />
-          <span>Grabar de Nuevo</span>
-        </button>
-
+      {/* Action Buttons */}
+      <div className="space-y-3">
         <button
           onClick={submitAssessment}
           disabled={recordingTime < recording_duration.min_seconds || isSubmitting}
-          className={`flex-1 py-3 rounded-lg font-semibold flex items-center justify-center space-x-2 ${
+          className={`w-full py-4 rounded-2xl font-semibold transition-all duration-300 ${
             recordingTime >= recording_duration.min_seconds && !isSubmitting
-              ? 'bg-blue-500 hover:bg-blue-600 text-white'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >
-          <Upload size={20} />
-          <span>{ui_text.submit_button}</span>
+          {isSubmitting ? 'Submitting...' : 'Submit Recording'}
+        </button>
+
+        <button
+          onClick={retryRecording}
+          className="w-full py-3 text-gray-600 hover:text-gray-800 font-medium transition-colors duration-300"
+        >
+          Record Again
         </button>
       </div>
     </motion.div>

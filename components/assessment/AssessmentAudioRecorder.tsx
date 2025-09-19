@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Square, Play, Pause, RotateCcw, Upload, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mic, Square, Play, Pause, RotateCcw, Upload, AlertCircle, CheckCircle, Waves } from 'lucide-react';
+import { detectBestAudioMimeType, createMediaRecorderOptions } from '../utils/audioMimeType';
 
 interface AssessmentAudioRecorderProps {
   minDuration: number; // in seconds
@@ -104,9 +105,11 @@ const AssessmentAudioRecorder: React.FC<AssessmentAudioRecorderProps> = ({
 
       streamRef.current = stream;
 
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
-      });
+      // Detect best MIME type for this platform
+      const mimeType = detectBestAudioMimeType();
+      console.log('Using MIME type:', mimeType || 'browser default');
+
+      const mediaRecorder = new MediaRecorder(stream, createMediaRecorderOptions());
 
       mediaRecorderRef.current = mediaRecorder;
 
@@ -119,7 +122,8 @@ const AssessmentAudioRecorder: React.FC<AssessmentAudioRecorderProps> = ({
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/webm;codecs=opus' });
+        const mimeType = detectBestAudioMimeType();
+        const blob = new Blob(chunks, { type: mimeType || 'audio/webm' });
         setAudioBlob(blob);
         setAudioUrl(URL.createObjectURL(blob));
         setState('finished');
@@ -377,21 +381,29 @@ const AssessmentAudioRecorder: React.FC<AssessmentAudioRecorderProps> = ({
           )}
         </div>
 
-        {/* Validation message */}
+        {/* Tropical Validation Message */}
         {state === 'finished' && !isValidDuration && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl"
           >
-            <div className="flex items-center space-x-2 text-yellow-800">
-              <AlertCircle size={16} />
-              <span className="text-sm">
-                Recording must be at least {formatTime(minDuration)} long
-              </span>
+            <div className="flex items-center space-x-3 text-amber-800">
+              <AlertCircle size={20} />
+              <div>
+                <div className="font-semibold text-sm">Recording too short</div>
+                <div className="text-xs text-amber-700">
+                  Please record for at least {formatTime(minDuration)} to continue
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
+
+        {/* Tropical Wave Decoration */}
+        <div className="flex justify-center mt-6">
+          <Waves size={24} style={{ color: '#1ABC9C', opacity: 0.3 }} />
+        </div>
       </motion.div>
     </div>
   );

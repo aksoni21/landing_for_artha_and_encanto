@@ -128,26 +128,46 @@ export default async function handler(
     
     // Add language field if provided
     if (fields.language) {
-      console.log('🌐 Language specified:', fields.language);
+      // Extract string value from array if needed
+      const languageValue = Array.isArray(fields.language) ? fields.language[0] : fields.language;
+      console.log('🌐 Language specified:', languageValue);
       formDataParts.push(
         `--${boundary}\r\n` +
         `Content-Disposition: form-data; name="language"\r\n\r\n` +
-        fields.language + '\r\n'
+        languageValue + '\r\n'
       );
     }
-    
+
+    // Add partner fields if provided
+    const partnerFields = ['partner_id', 'partner_name', 'assessment_type', 'student_name', 'student_email'];
+    partnerFields.forEach(field => {
+      if (fields[field]) {
+        // Extract string value from array if needed
+        const fieldValue = Array.isArray(fields[field]) ? fields[field][0] : fields[field];
+        console.log(`🏢 ${field} specified:`, fieldValue);
+        formDataParts.push(
+          `--${boundary}\r\n` +
+          `Content-Disposition: form-data; name="${field}"\r\n\r\n` +
+          fieldValue + '\r\n'
+        );
+      }
+    });
+
     // Close form data
     formDataParts.push(`--${boundary}--\r\n`);
     
     // Combine all parts
-    const formDataBuffer = Buffer.concat([
-      Buffer.from(formDataParts[0]),
-      formDataParts[1] as Buffer,
-      Buffer.from(formDataParts[2]),
-      Buffer.from(formDataParts[3]),
-      ...(fields.language ? [Buffer.from(formDataParts[4])] : []),
-      Buffer.from(formDataParts[fields.language ? 5 : 4])
-    ]);
+    const bufferParts = [];
+    for (let i = 0; i < formDataParts.length; i++) {
+      if (i === 1) {
+        // This is the file buffer
+        bufferParts.push(formDataParts[i] as Buffer);
+      } else {
+        // These are strings
+        bufferParts.push(Buffer.from(formDataParts[i] as string));
+      }
+    }
+    const formDataBuffer = Buffer.concat(bufferParts);
     
     console.log('🚀 Forwarding to Python backend:', `${BACKEND_URL}/api/audio/upload`);
     console.log('📏 Form data size:', formDataBuffer.length);
