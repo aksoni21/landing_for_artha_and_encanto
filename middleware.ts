@@ -1,15 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { handleAssessmentSubdomain } from './middleware/assessment/subdomain-router';
 
 export function middleware(request: NextRequest) {
-  // Handle assessment subdomains first
-  const assessmentResponse = handleAssessmentSubdomain(request);
-  if (assessmentResponse) {
-    return assessmentResponse;
-  }
-
-  // Handle other middleware logic here (existing partner routes, etc.)
+  // Handle other middleware logic here if needed
 
   return NextResponse.next();
 }

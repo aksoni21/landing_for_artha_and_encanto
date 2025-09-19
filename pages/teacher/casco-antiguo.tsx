@@ -371,7 +371,7 @@ const CascoAntiguoTeacherDashboard: React.FC = () => {
                   <span>{t('refresh')}</span>
                 </button>
                 <a
-                  href="http://localhost:3000/?subdomain=casco-antiguo"
+                  href="/casco-antiguo"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
@@ -467,7 +467,7 @@ const CascoAntiguoTeacherDashboard: React.FC = () => {
                 <p className="text-sm text-gray-400 mt-2">
                   {t('assessmentLink')}{' '}
                   <a
-                    href="http://localhost:3000/?subdomain=casco-antiguo"
+                    href="/casco-antiguo"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-500 hover:text-blue-600 underline"
