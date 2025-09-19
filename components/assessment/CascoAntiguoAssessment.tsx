@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Square, Upload, RefreshCw, AlertCircle, CheckCircle, Waves } from 'lucide-react';
+import { Mic, Square, RefreshCw, AlertCircle, CheckCircle, Waves } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import { detectBestAudioMimeType, createMediaRecorderOptions } from '../../utils/audioMimeType';
 
@@ -46,7 +46,15 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
   const [studentName, setStudentName] = useState('');
   const [studentEmail, setStudentEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [todaysUploads, setTodaysUploads] = useState<any[]>([]);
+  const [todaysUploads, setTodaysUploads] = useState<Array<{
+    id: string;
+    student_name?: string;
+    duration_seconds: number;
+    created_at: string;
+    processing_status: string;
+    error_message?: string;
+    file_url?: string;
+  }>>([]);
   const [showTodaysUploads, setShowTodaysUploads] = useState(false);
   const [loadingUploads, setLoadingUploads] = useState(false);
 
@@ -207,9 +215,10 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
     } catch (error) {
       console.error('Submission error:', error);
       console.error('Full error details:', JSON.stringify(error, null, 2));
-      if (error.response) {
-        console.error('API Response:', error.response);
-        console.error('API Response data:', error.response.data);
+      if (error && typeof error === 'object' && 'response' in error) {
+        const errorWithResponse = error as { response?: { data?: unknown } };
+        console.error('API Response:', errorWithResponse.response);
+        console.error('API Response data:', errorWithResponse.response?.data);
       }
       setCurrentStep('error');
       toast.error(ui_text.error_message);
@@ -238,7 +247,12 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
     }
   };
 
-  const resubmitUpload = async (recordingId: string, uploadData: any) => {
+  const resubmitUpload = async (recordingId: string, uploadData: {
+    student_name?: string;
+    duration_seconds: number;
+    created_at: string;
+    processing_status: string;
+  }) => {
     try {
       setIsSubmitting(true);
       const response = await fetch(`/api/audio/resubmit/${recordingId}`, {
@@ -343,7 +357,7 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
           }}
           className="text-sm text-blue-600 hover:text-blue-800 underline mb-2"
         >
-          {showTodaysUploads ? 'Hide' : 'Show'} today's recordings ({todaysUploads.length})
+           {showTodaysUploads ? 'Hide' : 'Show'} today&apos;s recordings ({todaysUploads.length})
         </button>
 
         {showTodaysUploads && (

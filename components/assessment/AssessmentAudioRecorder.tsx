@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Square, Play, Pause, RotateCcw, Upload, AlertCircle, CheckCircle, Waves } from 'lucide-react';
-import { detectBestAudioMimeType, createMediaRecorderOptions } from '../utils/audioMimeType';
+import { detectBestAudioMimeType, createMediaRecorderOptions } from '../../utils/audioMimeType';
 
 interface AssessmentAudioRecorderProps {
   minDuration: number; // in seconds

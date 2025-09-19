@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
-import { Calendar, User, Mail, Play, Pause, Download, BarChart3, Clock, FileText, ExternalLink, Globe, X, Volume2 } from 'lucide-react';
+import { User, Play, Pause, BarChart3, Clock, FileText, ExternalLink, X, Volume2 } from 'lucide-react';
 
 interface AssessmentRecord {
   id: string;

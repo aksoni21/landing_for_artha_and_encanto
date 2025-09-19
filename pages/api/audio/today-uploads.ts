@@ -1,15 +1,15 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-interface TodayUpload {
-  id: string;
-  file_url: string;
-  duration_seconds: number;
-  processing_status: string;
-  partner_name?: string;
-  student_name?: string;
-  created_at: string;
-  error_message?: string;
-}
+// interface TodayUpload {
+//   id: string;
+//   file_url: string;
+//   duration_seconds: number;
+//   processing_status: string;
+//   partner_name?: string;
+//   student_name?: string;
+//   created_at: string;
+//   error_message?: string;
+// }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

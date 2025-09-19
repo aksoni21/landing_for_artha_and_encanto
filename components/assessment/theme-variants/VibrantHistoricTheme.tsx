@@ -43,10 +43,7 @@ export const VibrantHistoricTheme: React.FC<{ config: ThemeConfig }> = ({ config
     recordedBlob,
     startRecording,
     stopRecording,
-    resetRecording,
-    canRecord,
-    isMaxDurationReached,
-    isMinDurationMet
+    canRecord
   } = useAssessmentRecording({
     maxDuration: config.recording_duration.max_seconds,
     minDuration: config.recording_duration.min_seconds,

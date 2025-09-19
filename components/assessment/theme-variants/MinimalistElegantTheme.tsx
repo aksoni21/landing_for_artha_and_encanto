@@ -43,10 +43,7 @@ export const MinimalistElegantTheme: React.FC<{ config: ThemeConfig }> = ({ conf
     recordedBlob,
     startRecording,
     stopRecording,
-    resetRecording,
-    canRecord,
-    isMaxDurationReached,
-    isMinDurationMet
+    canRecord
   } = useAssessmentRecording({
     maxDuration: config.recording_duration.max_seconds,
     minDuration: config.recording_duration.min_seconds,
