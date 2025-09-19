@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Square, AlertCircle, CheckCircle, Waves } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
-import { detectBestAudioMimeType, createMediaRecorderOptions } from '../../utils/audioMimeType';
+import { detectBestAudioMimeType, createMediaRecorderOptions, getAudioFileExtension } from '../../utils/audioMimeType';
 
 interface CascoAntiguoConfig {
   partner_id: string;
@@ -179,7 +179,8 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
 
     try {
       const formData = new FormData();
-      formData.append('audio_file', audioBlob, 'assessment.wav');
+      const fileExtension = getAudioFileExtension();
+      formData.append('audio_file', audioBlob, `assessment.${fileExtension}`);
       formData.append('student_name', studentName);
       formData.append('student_email', studentEmail);
       formData.append('partner_id', config.partner_id);

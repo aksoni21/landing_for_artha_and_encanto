@@ -30,3 +30,24 @@ export const createMediaRecorderOptions = (): MediaRecorderOptions => {
   const mimeType = detectBestAudioMimeType();
   return mimeType ? { mimeType } : {};
 };
+
+/**
+ * Gets the appropriate file extension for the detected MIME type
+ * @returns {string} File extension (e.g., 'webm', 'mp4', 'wav')
+ */
+export const getAudioFileExtension = (): string => {
+  const mimeType = detectBestAudioMimeType();
+
+  if (mimeType.includes('webm')) {
+    return 'webm';
+  } else if (mimeType.includes('mp4')) {
+    return 'mp4';
+  } else if (mimeType.includes('mpeg')) {
+    return 'mp3';
+  } else if (mimeType.includes('wav')) {
+    return 'wav';
+  } else {
+    // Default fallback - most browsers default to webm
+    return 'webm';
+  }
+};
