@@ -559,7 +559,7 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
       </div>
 
       {/* Audio Player */}
-      <div className="mb-8">
+      <div className="mb-6">
         {audioUrl && (
           // <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
             <audio
@@ -577,6 +577,26 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
             />
           // </div>
         )}
+      </div>
+
+      {/* Student Info */}
+      <div className="space-y-4 mb-6">
+        <input
+          type="text"
+          placeholder="Your name (required)"
+          value={studentName}
+          onChange={(e) => setStudentName(e.target.value)}
+          className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:border-transparent transition-all text-black"
+          style={{ '--tw-ring-color': '#3b82f6' } as React.CSSProperties}
+        />
+        <input
+          type="email"
+          placeholder="Your email (optional)"
+          value={studentEmail}
+          onChange={(e) => setStudentEmail(e.target.value)}
+          className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:border-transparent transition-all text-black"
+          style={{ '--tw-ring-color': '#3b82f6' } as React.CSSProperties}
+        />
       </div>
 
       {/* Action Buttons */}
