@@ -174,6 +174,11 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
       return;
     }
 
+    if (!studentName.trim()) {
+      toast.error('Please enter your name before submitting');
+      return;
+    }
+
     setIsSubmitting(true);
     setCurrentStep('processing');
 
