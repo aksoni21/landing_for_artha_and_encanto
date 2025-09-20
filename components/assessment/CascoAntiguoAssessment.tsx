@@ -149,10 +149,10 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
       setRecordingTime(0);
       setCurrentStep('recording');
 
-      toast.success('Grabación iniciada', { duration: 2000 });
+      toast.success('Recording started', { duration: 2000 });
     } catch (error) {
       console.error('Error accessing microphone:', error);
-      toast.error('Error al acceder al micrófono. Por favor, permite el acceso.');
+      toast.error('Error accessing microphone. Please allow access.');
     }
   };
 
@@ -165,12 +165,12 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
 
   const submitAssessment = async () => {
     if (!audioBlob) {
-      toast.error('No hay grabación para enviar');
+      toast.error('No recording to submit');
       return;
     }
 
     if (recordingTime < recording_duration.min_seconds) {
-      toast.error(`La grabación debe ser de al menos ${recording_duration.min_seconds} segundos`);
+      toast.error(`Recording must be at least ${recording_duration.min_seconds} seconds`);
       return;
     }
 
@@ -605,9 +605,9 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
       className="bg-white rounded-xl shadow-2xl p-8 text-center"
     >
       <div className="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-6"></div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Procesando Evaluación</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Processing Assessment</h2>
       <p className="text-gray-600">
-        Estamos analizando tu grabación. La escuela recibirá los resultados por correo electrónico.
+        We are analyzing your recording. The school will receive the results by email.
       </p>
     </motion.div>
   );
@@ -619,13 +619,13 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
       className="bg-white rounded-xl shadow-2xl p-8 text-center"
     >
       <CheckCircle size={64} className="text-green-500 mx-auto mb-6" />
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">¡Evaluación Completada!</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Assessment Completed!</h2>
       <p className="text-gray-600 mb-6">
         {ui_text.success_message}
       </p>
       <div className="bg-green-50 p-4 rounded-lg">
         <p className="text-green-800 text-sm">
-          La escuela recibirá un correo electrónico con tus resultados y podrá escuchar tu grabación.
+          The school will receive an email with your results and will be able to listen to your recording.
         </p>
       </div>
     </motion.div>
@@ -646,7 +646,7 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
         onClick={retryRecording}
         className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold"
       >
-        Intentar de Nuevo
+        Try Again
       </button>
     </motion.div>
   );

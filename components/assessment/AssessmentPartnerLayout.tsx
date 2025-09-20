@@ -62,15 +62,15 @@ const AssessmentPartnerLayout: React.FC<AssessmentPartnerLayoutProps> = ({ confi
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-center bg-white/90 backdrop-blur-md rounded-3xl p-2 shadow-2xl max-w-4xl mx-auto"
+            className="flex items-center justify-center bg-white backdrop-blur-md rounded-3xl p-2 shadow-2xl max-w-2xl mx-auto"
           >
             <div className="flex items-center gap-3">
               {branding.logo_url && (
-                <div className="bg-white rounded-2xl p-2 shadow-lg">
+                <div className="bg-white rounded-2xl ">
                   <img
                     src={branding.logo_url}
                     alt={config.name}
-                    className="h-auto w-auto"
+                    className="h-24 w-auto sm:h-24 lg:h-32"
                   />
                 </div>
               )}
