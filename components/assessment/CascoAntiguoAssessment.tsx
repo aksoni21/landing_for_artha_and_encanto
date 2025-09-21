@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Square, AlertCircle, CheckCircle, Waves } from 'lucide-react';
+import { Mic, Square, AlertCircle, CheckCircle, Waves, RefreshCw } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import { detectBestAudioMimeType, createMediaRecorderOptions, getAudioFileExtension } from '../../utils/audioMimeType';
 
@@ -46,17 +46,17 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
   const [studentName, setStudentName] = useState('');
   const [studentEmail, setStudentEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [todaysUploads, setTodaysUploads] = useState<Array<{
-  //   id: string;
-  //   student_name?: string;
-  //   duration_seconds: number;
-  //   created_at: string;
-  //   processing_status: string;
-  //   error_message?: string;
-  //   file_url?: string;
-  // }>>([]);
-  // const [showTodaysUploads, setShowTodaysUploads] = useState(false);
-  // const [loadingUploads, setLoadingUploads] = useState(false);
+  const [todaysUploads, setTodaysUploads] = useState<Array<{
+    id: string;
+    student_name?: string;
+    duration_seconds: number;
+    created_at: string;
+    processing_status: string;
+    error_message?: string;
+    file_url?: string;
+  }>>([]);
+  const [showTodaysUploads, setShowTodaysUploads] = useState(false);
+  const [loadingUploads, setLoadingUploads] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -239,49 +239,49 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // const fetchTodaysUploads = async () => {
-  //   setLoadingUploads(true);
-  //   try {
-  //     const response = await fetch('/api/audio/today-uploads');
-  //     const data = await response.json();
-  //     setTodaysUploads(data.uploads || []);
-  //   } catch (error) {
-  //     console.error('Error fetching today uploads:', error);
-  //     toast.error('Failed to load today\'s uploads');
-  //   } finally {
-  //     setLoadingUploads(false);
-  //   }
-  // };
+  const fetchTodaysUploads = async () => {
+    setLoadingUploads(true);
+    try {
+      const response = await fetch('/api/audio/today-uploads');
+      const data = await response.json();
+      setTodaysUploads(data.uploads || []);
+    } catch (error) {
+      console.error('Error fetching today uploads:', error);
+      toast.error('Failed to load today\'s uploads');
+    } finally {
+      setLoadingUploads(false);
+    }
+  };
 
-  // const resubmitUpload = async (recordingId: string, uploadData: {
-  //   student_name?: string;
-  //   duration_seconds: number;
-  //   created_at: string;
-  //   processing_status: string;
-  // }) => {
-  //   try {
-  //     setIsSubmitting(true);
-  //     const response = await fetch(`/api/audio/resubmit/${recordingId}`, {
-  //       method: 'POST',
-  //     });
+  const resubmitUpload = async (recordingId: string, uploadData: {
+    student_name?: string;
+    duration_seconds: number;
+    created_at: string;
+    processing_status: string;
+  }) => {
+    try {
+      setIsSubmitting(true);
+      const response = await fetch(`/api/audio/resubmit/${recordingId}`, {
+        method: 'POST',
+      });
 
-  //     if (!response.ok) {
-  //       throw new Error('Failed to resubmit recording');
-  //     }
+      if (!response.ok) {
+        throw new Error('Failed to resubmit recording');
+      }
 
-  //     // Use the existing upload data to populate the form
-  //     setStudentName(uploadData.student_name || '');
-  //     setStudentEmail(''); // Email not stored in metadata
+      // Use the existing upload data to populate the form
+      setStudentName(uploadData.student_name || '');
+      setStudentEmail(''); // Email not stored in metadata
 
-  //     setCurrentStep('processing');
-  //     toast.success('Recording resubmitted for analysis');
-  //   } catch (error) {
-  //     console.error('Error resubmitting upload:', error);
-  //     toast.error('Failed to resubmit recording');
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
+      setCurrentStep('processing');
+      toast.success('Recording resubmitted for analysis');
+    } catch (error) {
+      console.error('Error resubmitting upload:', error);
+      toast.error('Failed to resubmit recording');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const renderWelcomeStep = () => (
     <motion.div
@@ -353,7 +353,7 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
       </div>
 
       {/* Today's Uploads Section */}
-      {/* <div className="mb-6">
+      <div className="mb-6">
         <button
           onClick={() => {
             if (!showTodaysUploads) {
@@ -406,7 +406,7 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
             )}
           </motion.div>
         )}
-      </div> */}
+      </div>
 
       {/* Modern Tropical Start Button */}
       <motion.button

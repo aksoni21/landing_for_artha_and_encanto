@@ -351,15 +351,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { token } = context.params as { token: string };
 
   try {
-    // Extract partner from token if needed, or try to fetch results
-    // For now, we'll try to get the results directly from the token
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    // Use the Next.js API route which will proxy to the backend
+    const baseUrl = process.env.NODE_ENV === 'development'
+      ? 'http://localhost:3000'
+      : 'https://encantospeak.com';
 
-    // We need to determine which partner this token belongs to
-    // This could be done by trying different partners or having a token lookup endpoint
-
-    // For now, assume casco_antiguo
-    const response = await fetch(`${apiUrl}/api/partners/casco_antiguo/results/${token}`);
+    const response = await fetch(`${baseUrl}/api/assessment/results/${token}`);
 
     if (!response.ok) {
       if (response.status === 401) {
