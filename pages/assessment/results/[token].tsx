@@ -321,14 +321,19 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
                 <div className="space-y-3">
                   {(() => {
                     // Handle recommendations that might be a JSON string or array
-                    let recommendations = placement_result.recommendations;
-                    if (typeof recommendations === 'string') {
+                    let recommendations: string[] = [];
+                    const rawRecommendations = placement_result.recommendations;
+
+                    if (typeof rawRecommendations === 'string') {
                       try {
-                        recommendations = JSON.parse(recommendations);
-                      } catch (e) {
-                        recommendations = [recommendations]; // Fallback to single string
+                        recommendations = JSON.parse(rawRecommendations);
+                      } catch {
+                        recommendations = [rawRecommendations]; // Fallback to single string
                       }
+                    } else if (Array.isArray(rawRecommendations)) {
+                      recommendations = rawRecommendations;
                     }
+
                     if (!Array.isArray(recommendations)) {
                       recommendations = [];
                     }
