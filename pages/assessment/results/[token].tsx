@@ -319,12 +319,26 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
                 <h3 className="text-lg font-semibold mb-4">Learning Recommendations</h3>
 
                 <div className="space-y-3">
-                  {placement_result.recommendations.map((recommendation, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <CheckCircle size={16} className="text-green-500 mt-1 flex-shrink-0" />
-                      <p className="text-gray-700">{recommendation}</p>
-                    </div>
-                  ))}
+                  {(() => {
+                    // Handle recommendations that might be a JSON string or array
+                    let recommendations = placement_result.recommendations;
+                    if (typeof recommendations === 'string') {
+                      try {
+                        recommendations = JSON.parse(recommendations);
+                      } catch (e) {
+                        recommendations = [recommendations]; // Fallback to single string
+                      }
+                    }
+                    if (!Array.isArray(recommendations)) {
+                      recommendations = [];
+                    }
+                    return recommendations.map((recommendation, index) => (
+                      <div key={index} className="flex items-start space-x-3">
+                        <CheckCircle size={16} className="text-green-500 mt-1 flex-shrink-0" />
+                        <p className="text-gray-700">{recommendation}</p>
+                      </div>
+                    ));
+                  })()}
                 </div>
               </motion.div>
             </div>
