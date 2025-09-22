@@ -182,7 +182,7 @@ export function setupAssessmentApiMocks(page, options = {}) {
             duration_warning: 'Tienes {seconds} segundos restantes'
           },
           recording_duration: {
-            min_seconds: 30,
+            min_seconds: 15,
             max_seconds: 60,
             warning_at: 50
           }

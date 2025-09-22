@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
-import { User, Mail, AlertCircle } from 'lucide-react';
+import { User, Mail, AlertCircle, Calendar } from 'lucide-react';
 import { AudioPlayer } from '../../../components/assessment/AudioPlayer';
 
 // Import our new teaching-focused components
@@ -257,29 +257,23 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+            <div className="flex flex-col">
+              <div className="flex flex-col items-center">
                 {partner_config.branding.logo_url && (
                   <img
                     src={partner_config.branding.logo_url}
                     alt={partner_config.name}
-                    className="h-12 w-auto"
+                    className="h-24 w-auto"
                   />
                 )}
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-800">
+                  <h1 className="text-lg font-bold text-gray-800">
                     Teaching Report
                   </h1>
-                  <p className="text-gray-600">{partner_config.name}</p>
+                  {/* <p className="text-gray-600">{partner_config.name}</p> */}
                 </div>
               </div>
 
-              <div className="text-right">
-                <p className="text-sm text-gray-600">Assessment Date</p>
-                <p className="font-medium">
-                  {new Date(data.assessment_date).toLocaleDateString()}
-                </p>
-              </div>
             </div>
           </div>
         </header>
@@ -291,7 +285,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-xl shadow-lg p-6 mb-8"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col">
               <div className="flex items-center space-x-6">
                 <div className="flex items-center space-x-3">
                   <User size={20} className="text-gray-400" />
@@ -308,6 +302,13 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
                     </span>
                   </div>
                 )}
+              </div>
+              <div className="flex items-center space-x-3">
+              <Calendar size={20} className="text-gray-400" />
+                <span className="text-gray-600">Date:</span>
+                <span className="font-medium text-gray-800">
+                  {new Date(data.assessment_date).toLocaleDateString()}
+                </span>
               </div>
 
               {/* Audio Player */}

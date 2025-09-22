@@ -17,7 +17,7 @@ const theme2Config = {
     language: 'english',
     welcome_title: 'Spanish Language Assessment',
     welcome_subtitle: 'Casco Antiguo Spanish School',
-    recording_instructions: 'Please speak in Spanish for 30-60 seconds about any topic you like. You can talk about your hobbies, family, plans, work, or anything that comes to mind.',
+    recording_instructions: 'Please speak in Spanish for 15-60 seconds about any topic you like. You can talk about your hobbies, family, plans, work, or anything that comes to mind.',
     recording_button: 'Start Recording',
     stop_button: 'Stop Recording',
     submit_button: 'Submit Assessment',
@@ -26,7 +26,7 @@ const theme2Config = {
     duration_warning: 'You have {seconds} seconds remaining'
   },
   recording_duration: {
-    min_seconds: 30,
+    min_seconds: 15,
     max_seconds: 60,
     warning_at: 50
   }

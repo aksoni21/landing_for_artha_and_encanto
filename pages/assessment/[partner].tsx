@@ -211,7 +211,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           duration_warning: 'You have {seconds} seconds remaining'
         },
         recording_duration: {
-          min_seconds: 30,
+          min_seconds: 15,
           max_seconds: 60,
           warning_at: 50
         }
