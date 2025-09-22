@@ -96,7 +96,7 @@ const AssessmentPartnerLayout: React.FC<AssessmentPartnerLayoutProps> = ({ confi
       <footer className="bg-white/10 backdrop-blur-md border-t border-white/20">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between text-white/60 text-sm">
-            <p>© 2025 EncantoSpeak</p>
+            <p>© 2025 Encanto AI</p>
             <p>Powered by AI Language Assessment</p>
           </div>
         </div>

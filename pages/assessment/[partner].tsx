@@ -54,7 +54,7 @@ const AssessmentPartnerPage: React.FC<AssessmentPartnerPageProps> = ({ partner, 
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center p-4">
         <Head>
-          <title>Partner Not Found - EncantoSpeak</title>
+          <title>Partner Not Found - Encanto AI</title>
         </Head>
 
         <motion.div
@@ -73,7 +73,7 @@ const AssessmentPartnerPage: React.FC<AssessmentPartnerPageProps> = ({ partner, 
             href="https://encantospeak.com"
             className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
-            Go to EncantoSpeak
+            Go to Encanto AI
           </a>
         </motion.div>
       </div>

@@ -186,7 +186,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
             icon: <AlertCircle size={64} className="text-red-500 mx-auto mb-6" />,
             title: 'Access Denied',
             message: error || 'Invalid or expired access token.',
-            buttonText: 'Go to EncantoSpeak',
+            buttonText: 'Go to Encanto AI',
             buttonAction: () => window.location.href = 'https://encantospeak.com',
             bgColor: 'bg-blue-500 hover:bg-blue-600'
           };
@@ -195,7 +195,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
             icon: <AlertCircle size={64} className="text-red-500 mx-auto mb-6" />,
             title: 'Error Loading Results',
             message: error || 'Unable to load assessment results. The link may be invalid or expired.',
-            buttonText: 'Go to EncantoSpeak',
+            buttonText: 'Go to Encanto AI',
             buttonAction: () => window.location.href = 'https://encantospeak.com',
             bgColor: 'bg-blue-500 hover:bg-blue-600'
           };
