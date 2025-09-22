@@ -59,8 +59,25 @@ export default async function handler(
     console.error('💥 Error fetching assessment results:', error);
     console.error('💥 Error type:', typeof error);
     console.error('💥 Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+
+    // Check if this is a connection error (server not running)
+    if (error instanceof Error) {
+      const errorMessage = error.message.toLowerCase();
+      if (errorMessage.includes('econnrefused') ||
+          errorMessage.includes('fetch failed') ||
+          errorMessage.includes('network error') ||
+          errorMessage.includes('connection refused')) {
+        console.log('🔌 Detected connection error - server appears to be down');
+        return res.status(503).json({
+          error: 'Cannot connect to assessment server. Please try again later or contact support.',
+          errorType: 'CONNECTION_ERROR'
+        });
+      }
+    }
+
     return res.status(500).json({
-      error: 'Unable to load assessment results. The link may be invalid or expired.'
+      error: 'Unable to load assessment results. The link may be invalid or expired.',
+      errorType: 'GENERAL_ERROR'
     });
   }
 }
