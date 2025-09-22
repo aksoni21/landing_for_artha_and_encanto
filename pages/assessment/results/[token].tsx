@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
-import { Calendar, User, Mail, Play, Pause, Download, AlertCircle, CheckCircle, TrendingUp } from 'lucide-react';
+import { Calendar, User, Mail, AlertCircle, CheckCircle, TrendingUp } from 'lucide-react';
+import { AudioPlayer } from '../../../components/assessment/AudioPlayer';
 
 interface AssessmentResultData {
   assessment_id: string;
@@ -42,44 +43,18 @@ interface AssessmentResultsPageProps {
 }
 
 const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, error, token }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string>('');
 
   useEffect(() => {
     if (data?.audio_url) {
-      const audio = new Audio(data.audio_url + `?token=${token}`);
-      audio.onended = () => setIsPlaying(false);
-      audio.onerror = () => {
-        console.error('Audio loading failed');
-        setIsPlaying(false);
-      };
-      setAudioElement(audio);
-
-      return () => {
-        audio.pause();
-        audio.src = '';
-      };
+      setAudioUrl(data.audio_url + `?token=${token}`);
     }
   }, [data?.audio_url, token]);
 
-  const toggleAudio = () => {
-    if (!audioElement) return;
-
-    if (isPlaying) {
-      audioElement.pause();
-      setIsPlaying(false);
-    } else {
-      audioElement.play().catch((error) => {
-        console.error('Audio play failed:', error);
-      });
-      setIsPlaying(true);
-    }
-  };
-
   const downloadAudio = () => {
-    if (data?.audio_url) {
+    if (audioUrl && data) {
       const link = document.createElement('a');
-      link.href = data.audio_url + `?token=${token}`;
+      link.href = audioUrl;
       link.download = `assessment_${data.assessment_id}.wav`;
       document.body.appendChild(link);
       link.click();
@@ -149,27 +124,20 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
         <header className="bg-white shadow-sm border-b">
           <div className="max-w-6xl mx-auto px-4 py-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col items-center space-x-4">
                 {partner_config.branding.logo_url && (
                   <img
                     src={partner_config.branding.logo_url}
                     alt={partner_config.name}
-                    className="h-12 w-auto"
+                    className="h-auto w-1/2"
                   />
                 )}
                 <div>
                   <h1 className="text-2xl font-bold text-gray-800">
                     Assessment Results
                   </h1>
-                  <p className="text-gray-600">{partner_config.name}</p>
+                  {/* <p className="text-gray-600">{partner_config.name}</p> */}
                 </div>
-              </div>
-
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Assessment ID</p>
-                <p className="font-mono text-sm text-gray-800">
-                  {data.assessment_id.slice(0, 8)}...
-                </p>
               </div>
             </div>
           </div>
@@ -183,7 +151,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-xl shadow-lg p-6"
+                className="bg-white text-black rounded-xl shadow-lg p-6"
               >
                 <h2 className="text-lg font-semibold mb-4">Student Information</h2>
 
@@ -220,34 +188,19 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
                 animate={{ opacity: 1, y: 0, transition: { delay: 0.1 } }}
                 className="bg-white rounded-xl shadow-lg p-6"
               >
-                <h2 className="text-lg font-semibold mb-4">Audio Recording</h2>
+                <h2 className="text-lg text-black font-semibold mb-4">Audio Recording</h2>
 
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={toggleAudio}
-                      className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full transition-colors"
-                    >
-                      {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-                    </button>
+                {audioUrl && (
+                  <AudioPlayer
+                    audioUrl={audioUrl}
+                    onDownload={downloadAudio}
+                  />
+                )}
 
-                    <button
-                      onClick={downloadAudio}
-                      className="bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-full transition-colors"
-                    >
-                      <Download size={20} />
-                    </button>
-
-                    <span className="text-gray-600 text-sm">
-                      {isPlaying ? 'Playing...' : 'Click to play recording'}
-                    </span>
-                  </div>
-
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600">
-                      High-quality audio recording of the student&apos;s Spanish speech sample.
-                    </p>
-                  </div>
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    High-quality audio recording of the student&apos;s Spanish speech sample.
+                  </p>
                 </div>
               </motion.div>
             </div>
@@ -263,7 +216,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
                 <div className="text-center mb-6">
                   <div className="flex items-center justify-center space-x-2 mb-2">
                     <TrendingUp size={24} style={{ color: partner_config.branding.primary_color }} />
-                    <h2 className="text-2xl font-bold">Assessment Results</h2>
+                    <h2 className="text-2xl text-black font-bold">Assessment Results</h2>
                   </div>
 
                   <div className="flex items-center justify-center space-x-4">
@@ -294,7 +247,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
                 animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
                 className="bg-white rounded-xl shadow-lg p-6"
               >
-                <h3 className="text-lg font-semibold mb-4">Component Scores</h3>
+                <h3 className="text-lg text-black font-semibold mb-4">Component Scores</h3>
 
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   {Object.entries(placement_result.component_scores).map(([component, score]) => (
@@ -316,7 +269,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
                 animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}
                 className="bg-white rounded-xl shadow-lg p-6"
               >
-                <h3 className="text-lg font-semibold mb-4">Learning Recommendations</h3>
+                <h3 className="text-lg text-black font-semibold mb-4">Learning Recommendations</h3>
 
                 <div className="space-y-3">
                   {(() => {
@@ -355,7 +308,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
             animate={{ opacity: 1, transition: { delay: 0.5 } }}
             className="mt-8 text-center text-gray-500 text-sm"
           >
-            <p>Assessment powered by EncantoSpeak AI</p>
+            <p>Assessment powered by Encanto AI</p>
             <p className="mt-1">
               This assessment link will expire and is intended for authorized school staff only.
             </p>
