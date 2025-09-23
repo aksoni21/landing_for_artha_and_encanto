@@ -105,12 +105,12 @@ const TeachingPriorities: React.FC<TeachingPrioritiesProps> = ({
         ))}
       </div>
 
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      {/* <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
         <p className="text-blue-800 text-sm">
           💡 <strong>Teaching Tip:</strong> Focus on one priority at a time during lessons.
           Students learn better with concentrated practice than trying to fix everything at once.
         </p>
-      </div>
+      </div> */}
     </motion.div>
   );
 };

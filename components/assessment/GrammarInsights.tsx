@@ -180,12 +180,12 @@ const GrammarInsights: React.FC<GrammarInsightsProps> = ({
       </div>
 
       {/* Teaching Tip */}
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      {/* <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
         <p className="text-blue-800 text-sm">
           📝 <strong>Teaching Focus:</strong> Start with the most frequent errors first.
           Practice makes perfect - have them repeat correct versions multiple times.
         </p>
-      </div>
+      </div> */}
     </motion.div>
   );
 };

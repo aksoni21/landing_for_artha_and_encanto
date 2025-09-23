@@ -14,6 +14,7 @@ import VocabularyInsights from '../../../components/assessment/VocabularyInsight
 import AudioHighlights from '../../../components/assessment/AudioHighlights';
 
 interface DetailedAnalysis {
+  word_timestamps?: string | Array<{ word: string; start: number; end: number }>;
   grammar_analysis?: {
     grammar_errors: string | Array<{ type: string; text: string; suggestion?: string }>;
     cefr_grammar_level?: string;
@@ -117,8 +118,8 @@ const transformToTeachingData = (scoreData: AssessmentResultData) => {
 
     if (grammarErrors.length > 0) {
       // Group errors by type and create specific priorities
-      const errorTypes = grammarErrors.reduce((acc: Record<string, Array<any>>, error: any) => {
-        const type = error.error_type || error.type;
+      const errorTypes = grammarErrors.reduce((acc: Record<string, Array<{ error_type?: string; type?: string; original?: string; text?: string; corrected?: string; suggestion?: string }>>, error: { error_type?: string; type?: string; original?: string; text?: string; corrected?: string; suggestion?: string }) => {
+        const type = error.error_type || error.type || 'unknown';
         if (!acc[type]) {
           acc[type] = [];
         }
@@ -128,7 +129,7 @@ const transformToTeachingData = (scoreData: AssessmentResultData) => {
 
       // Create priority for each error type
       Object.entries(errorTypes).forEach(([errorType, errors]) => {
-        const errorArray = errors as Array<any>;
+        const errorArray = errors as Array<{ error_type?: string; type?: string; original?: string; text?: string; corrected?: string; suggestion?: string }>;
         let title, description, examples;
 
         switch (errorType) {
@@ -234,7 +235,7 @@ const transformToTeachingData = (scoreData: AssessmentResultData) => {
       }
     ],
     grammar_analysis: detailedAnalysis?.grammar_analysis ? {
-      grammar_errors: safeJsonParse(detailedAnalysis.grammar_analysis.grammar_errors, []).map((error: any) => ({
+      grammar_errors: safeJsonParse(detailedAnalysis.grammar_analysis.grammar_errors, []).map((error: { error_type?: string; type?: string; original?: string; text?: string; corrected?: string; suggestion?: string }) => ({
         type: error.error_type || error.type,
         example: error.original || error.text || 'No example available',
         correction: error.corrected || error.suggestion || 'Needs correction',
@@ -283,10 +284,7 @@ const transformToTeachingData = (scoreData: AssessmentResultData) => {
       rare_words: Array.isArray(detailedAnalysis.vocabulary_analysis.rare_words_list)
         ? detailedAnalysis.vocabulary_analysis.rare_words_list
         : safeJsonParse(detailedAnalysis.vocabulary_analysis.rare_words_list, []),
-      repetitive_words: [
-        { word: 'español', count: 2 },
-        { word: 'me', count: 2 }
-      ],
+      repetitive_words: [],
       vocabulary_level: detailedAnalysis.vocabulary_analysis.cefr_vocabulary_level?.toLowerCase() || vocabularyScore.toLowerCase()
     } : {
       total_words: 16, // Based on actual transcript
@@ -294,28 +292,20 @@ const transformToTeachingData = (scoreData: AssessmentResultData) => {
       type_token_ratio: 0.94,
       academic_words: [],
       rare_words: [],
-      repetitive_words: [
-        { word: 'español', count: 2 },
-        { word: 'me', count: 2 }
-      ],
+      repetitive_words: [],
       vocabulary_level: vocabularyScore.toLowerCase()
     },
-    audio_highlights: [
-      {
-        timestamp: 0,
-        type: 'strength' as const,
-        description: 'Clear pronunciation of greeting',
-        text: 'Hola, ¿cómo estás?',
-        category: 'Pronunciation'
-      },
-      {
-        timestamp: 6,
-        type: 'strength' as const,
-        description: 'Good use of present tense',
-        text: 'Me gusta hablar con mis amigos',
-        category: 'Grammar'
-      }
-    ],
+    audio_highlights: detailedAnalysis?.word_timestamps
+      ? JSON.parse(typeof detailedAnalysis.word_timestamps === 'string' ? detailedAnalysis.word_timestamps : '[]')
+          .slice(0, 3)
+            .map((item: { word: string; start: number; end: number }) => ({
+            timestamp: Math.floor(item.start || 0),
+            type: 'strength' as const,
+            description: `Word: "${item.word}"`,
+            text: item.word,
+            category: 'Pronunciation'
+          }))
+      : [],
     confidence_level: pronunciationScore > 75 ? 'confident' : pronunciationScore > 50 ? 'moderate' : 'developing'
   };
 };
@@ -512,9 +502,6 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
                   <div className="text-gray-700 leading-relaxed italic">
                     &quot;{data.transcript}&quot;
                   </div>
-                  <div className="mt-3 text-xs text-gray-500">
-                    💡 Teachers can reference specific phrases from this transcript in their lessons
-                  </div>
                 </div>
               ) : (
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -598,43 +585,6 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
               />
             </div>
           </div>
-
-          {/* Footer with Teaching Tips */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: { delay: 0.5 } }}
-            className="mt-12 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200"
-          >
-            <h3 className="text-lg font-bold text-gray-800 mb-4">
-              🎯 Next Steps for This Student
-            </h3>
-            <div className="grid md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <h4 className="font-semibold text-blue-800 mb-2">This Week:</h4>
-                <ul className="text-blue-700 space-y-1">
-                  <li>• Focus on top priority area</li>
-                  <li>• Celebrate their strengths</li>
-                  <li>• Practice specific examples</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-purple-800 mb-2">This Month:</h4>
-                <ul className="text-purple-700 space-y-1">
-                  <li>• Build on identified strengths</li>
-                  <li>• Address grammar patterns</li>
-                  <li>• Expand vocabulary systematically</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-green-800 mb-2">Ongoing:</h4>
-                <ul className="text-green-700 space-y-1">
-                  <li>• Regular speaking practice</li>
-                  <li>• Confidence building activities</li>
-                  <li>• Track progress over time</li>
-                </ul>
-              </div>
-            </div>
-          </motion.div>
 
           {/* Assessment Info */}
           <div className="mt-8 text-center text-gray-500 text-sm">
