@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Volume2, Play, Pause, Star, AlertTriangle, BookOpen } from 'lucide-react';
+import { Volume2, Star, AlertTriangle, BookOpen } from 'lucide-react';
 
 interface AudioHighlight {
   timestamp: number;
@@ -19,16 +19,8 @@ interface AudioHighlightsProps {
 
 const AudioHighlights: React.FC<AudioHighlightsProps> = ({
   highlights,
-  primaryColor = '#1a365d',
-  onTimestampClick
+  primaryColor = '#1a365d'
 }) => {
-  const [playingTimestamp, setPlayingTimestamp] = useState<number | null>(null);
-
-  const formatTimestamp = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const getHighlightIcon = (type: string) => {
     switch (type) {
@@ -69,12 +61,6 @@ const AudioHighlights: React.FC<AudioHighlightsProps> = ({
     }
   };
 
-  const handleTimestampClick = (timestamp: number) => {
-    setPlayingTimestamp(timestamp);
-    if (onTimestampClick) {
-      onTimestampClick(timestamp);
-    }
-  };
 
   const groupedHighlights = highlights.reduce((groups, highlight) => {
     const type = highlight.type;
