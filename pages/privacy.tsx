@@ -52,9 +52,9 @@ const PrivacyPolicy = () => (
         </section>
 
         <section style={{ marginBottom: '32px' }}>
-          <h2 style={{ 
-            fontSize: '1.5rem', 
-            fontWeight: '600', 
+          <h2 style={{
+            fontSize: '1.5rem',
+            fontWeight: '600',
             color: '#1e293b',
             marginBottom: '16px',
             paddingBottom: '8px',
@@ -71,6 +71,9 @@ const PrivacyPolicy = () => (
             </li>
             <li style={{ marginBottom: '12px' }}>
               <strong style={{ color: '#1e293b' }}>Learning Data:</strong> Conversation transcripts, progress tracking (XP, achievements, streaks), and session information for personalized language learning.
+            </li>
+            <li style={{ marginBottom: '12px' }}>
+              <strong style={{ color: '#1e293b' }}>Assessment Data:</strong> For our educational partner services, we collect Spanish language assessment results, audio recordings, proficiency scores, and student information provided by partner educational institutions.
             </li>
           </ul>
         </section>
