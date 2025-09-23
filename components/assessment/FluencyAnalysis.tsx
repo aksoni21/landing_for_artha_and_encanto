@@ -75,7 +75,7 @@ const FluencyAnalysis: React.FC<FluencyAnalysisProps> = ({
             {paceAssessment.level}
           </div>
           <div className="text-sm text-gray-600 mb-2">
-            {wordsPerMinute} words/minute
+            {Math.round(wordsPerMinute)} words/minute
           </div>
           <div className="text-xs text-gray-700">
             {paceAssessment.advice}

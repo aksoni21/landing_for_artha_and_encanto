@@ -133,7 +133,7 @@ const AudioHighlights: React.FC<AudioHighlightsProps> = ({
                       )}
                     </div>
 
-                    <button
+                    {/* <button
                       onClick={() => handleTimestampClick(highlight.timestamp)}
                       className="flex items-center space-x-2 bg-white border border-gray-300 hover:border-gray-400 px-3 py-1 rounded-lg text-sm font-medium transition-colors"
                     >
@@ -143,7 +143,7 @@ const AudioHighlights: React.FC<AudioHighlightsProps> = ({
                         <Play size={14} />
                       )}
                       <span>{formatTimestamp(highlight.timestamp)}</span>
-                    </button>
+                    </button> */}
                   </div>
 
                   <p className="text-gray-800 mb-2 font-medium">

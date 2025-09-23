@@ -440,7 +440,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
           </div>
         </header>
 
-        <main className="max-w-7xl mx-auto px-4 py-8">
+        <main className="max-w-7xl mx-auto px-12 py-8">
           {/* Student Info Bar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
