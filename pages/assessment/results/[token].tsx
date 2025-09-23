@@ -114,12 +114,11 @@ const transformToTeachingData = (scoreData: AssessmentResultData) => {
   // Add grammar-specific priorities based on actual errors
   if (detailedAnalysis?.grammar_analysis) {
     const grammarErrors = safeJsonParse(detailedAnalysis.grammar_analysis.grammar_errors, []);
-    console.log('Grammar errors found:', grammarErrors);
 
     if (grammarErrors.length > 0) {
       // Group errors by type and create specific priorities
-      const errorTypes = grammarErrors.reduce((acc: Record<string, Array<{ type: string; text: string; suggestion?: string }>>, error: { type: string; text: string; suggestion?: string }) => {
-        const type = error.type;
+      const errorTypes = grammarErrors.reduce((acc: Record<string, Array<any>>, error: any) => {
+        const type = error.error_type || error.type;
         if (!acc[type]) {
           acc[type] = [];
         }
@@ -129,30 +128,40 @@ const transformToTeachingData = (scoreData: AssessmentResultData) => {
 
       // Create priority for each error type
       Object.entries(errorTypes).forEach(([errorType, errors]) => {
-        const errorArray = errors as Array<{ type: string; text: string; suggestion?: string }>;
+        const errorArray = errors as Array<any>;
         let title, description, examples;
 
         switch (errorType) {
           case 'subject_verb_agreement':
             title = 'Practice Subject-Verb Agreement';
             description = 'Focus on matching subjects with correct verb forms';
-            examples = errorArray.map(e => `"${e.text}" → Fix agreement`).slice(0, 2);
+            examples = errorArray.map(e => `"${e.original || e.text}" → "${e.corrected || e.suggestion}"`).slice(0, 2);
+            break;
+          case 'gerund_instead_of_present_tense':
+            title = 'Practice Present Tense vs Gerund';
+            description = 'Learn when to use present tense instead of gerund forms';
+            examples = errorArray.map(e => `"${e.original || e.text}" → "${e.corrected || e.suggestion}"`).slice(0, 2);
+            break;
+          case 'incorrect_preposition_and_article':
+            title = 'Practice Prepositions and Articles';
+            description = 'Focus on correct preposition and article usage';
+            examples = errorArray.map(e => `"${e.original || e.text}" → "${e.corrected || e.suggestion}"`).slice(0, 2);
             break;
           case 'past_tense':
           case 'past_tense_conjugation':
             title = 'Practice Past Tense';
             description = 'Work on past tense conjugations and usage';
-            examples = errorArray.map(e => e.suggestion || `"${e.text}" → Correct form`).slice(0, 2);
+            examples = errorArray.map(e => `"${e.original || e.text}" → "${e.corrected || e.suggestion}"`).slice(0, 2);
             break;
           case 'verb_conjugation':
             title = 'Practice Verb Conjugations';
             description = 'Focus on correct verb forms and conjugations';
-            examples = errorArray.map(e => e.suggestion || `"${e.text}" → Correct form`).slice(0, 2);
+            examples = errorArray.map(e => `"${e.original || e.text}" → "${e.corrected || e.suggestion}"`).slice(0, 2);
             break;
           default:
             title = `Practice ${errorType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
             description = `Focus on improving ${errorType.replace(/_/g, ' ')} patterns`;
-            examples = errorArray.map(e => e.suggestion || `"${e.text}" → Needs correction`).slice(0, 2);
+            examples = errorArray.map(e => `"${e.original || e.text}" → "${e.corrected || e.suggestion || 'Needs correction'}"`).slice(0, 2);
         }
 
         priorityAreas.push({
@@ -210,8 +219,6 @@ const transformToTeachingData = (scoreData: AssessmentResultData) => {
     });
   }
 
-  console.log('Final priority areas:', priorityAreas);
-
   return {
     priority_areas: priorityAreas.slice(0, 3), // Limit to 3 priorities
     strengths: [
@@ -227,10 +234,10 @@ const transformToTeachingData = (scoreData: AssessmentResultData) => {
       }
     ],
     grammar_analysis: detailedAnalysis?.grammar_analysis ? {
-      grammar_errors: safeJsonParse(detailedAnalysis.grammar_analysis.grammar_errors, []).map((error: { type: string; text: string; suggestion?: string }) => ({
-        type: error.type,
-        example: error.text || 'No example available',
-        correction: error.suggestion || 'Needs correction',
+      grammar_errors: safeJsonParse(detailedAnalysis.grammar_analysis.grammar_errors, []).map((error: any) => ({
+        type: error.error_type || error.type,
+        example: error.original || error.text || 'No example available',
+        correction: error.corrected || error.suggestion || 'Needs correction',
         count: 1
       })),
       grammar_strengths: [`Shows ${detailedAnalysis.grammar_analysis.cefr_grammar_level || grammarScore} level grammar understanding`],

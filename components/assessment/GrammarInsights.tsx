@@ -26,6 +26,23 @@ const GrammarInsights: React.FC<GrammarInsightsProps> = ({
   averageSentenceLength,
   primaryColor = '#1a365d'
 }) => {
+  // Function to convert error types to user-friendly names
+  const formatErrorType = (errorType: string) => {
+    const errorTypeMap: Record<string, string> = {
+      'gerund_instead_of_present_tense': 'Present Tense Usage',
+      'incorrect_preposition_and_article': 'Prepositions & Articles',
+      'subject_verb_agreement': 'Subject-Verb Agreement',
+      'past_tense': 'Past Tense',
+      'past_tense_conjugation': 'Past Tense Conjugation',
+      'verb_conjugation': 'Verb Conjugation',
+      'article_usage': 'Article Usage',
+      'gender_agreement': 'Gender Agreement',
+      'plural_formation': 'Plural Formation'
+    };
+
+    return errorTypeMap[errorType] || errorType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
   const formatTenseUsage = () => {
     return Object.entries(tenseUsage)
       .sort(([,a], [,b]) => b - a)
@@ -90,7 +107,7 @@ const GrammarInsights: React.FC<GrammarInsightsProps> = ({
                 className="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-300"
               >
                 <div className="flex justify-between items-start mb-2">
-                  <span className="font-medium text-orange-800">{error.type}</span>
+                  <span className="font-medium text-orange-800">{formatErrorType(error.type)}</span>
                   <span className="text-xs bg-orange-200 text-orange-800 px-2 py-1 rounded-full">
                     {error.count}x
                   </span>
