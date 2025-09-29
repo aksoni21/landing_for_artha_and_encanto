@@ -86,12 +86,12 @@ const transformToTeachingData = (scoreData: AssessmentResultData) => {
   // Extract real scores
   const grammarScore: string = typeof scoreData.placement_result.component_scores.grammar === 'string'
     ? scoreData.placement_result.component_scores.grammar
-    : 'A1';
-  const fluencyScore = scoreData.placement_result.component_scores.fluency || 75;
+    : '';
+  const fluencyScore = scoreData.placement_result.component_scores.fluency || '';
   const vocabularyScore: string = typeof scoreData.placement_result.component_scores.vocabulary === 'string'
     ? scoreData.placement_result.component_scores.vocabulary
-    : 'B1';
-  const pronunciationScore = scoreData.placement_result.component_scores.pronunciation || 75;
+    : '';
+  const pronunciationScore = scoreData.placement_result.component_scores.pronunciation || '';
 
   // Use detailed analysis data if available, otherwise provide basic analysis based on scores
   const detailedAnalysis = scoreData.detailed_analysis;
@@ -310,6 +310,350 @@ const transformToTeachingData = (scoreData: AssessmentResultData) => {
   };
 };
 
+// Helper function to render mistakes section
+const renderMistakes = (data: AssessmentResultData, primaryColor: string) => {
+  const detailedAnalysis = data.detailed_analysis;
+  const allMistakes: Array<{
+    type: string;
+    category: string;
+    original: string;
+    correction: string;
+    description?: string;
+  }> = [];
+
+  // Helper function to safely parse JSON strings from backend
+  const safeJsonParse = (str: string | object | Array<any>, fallback: unknown = []) => {
+    if (Array.isArray(str)) return str;
+    if (typeof str === 'object') return str;
+    if (typeof str === 'string') {
+      try {
+        return JSON.parse(str);
+      } catch {
+        return fallback;
+      }
+    }
+    return fallback;
+  };
+
+  // Extract grammar mistakes
+  if (detailedAnalysis?.grammar_analysis?.grammar_errors) {
+    const grammarErrors = safeJsonParse(detailedAnalysis.grammar_analysis.grammar_errors, []);
+    grammarErrors.forEach((error: any) => {
+      allMistakes.push({
+        type: error.error_type || error.type || 'Grammar Error',
+        category: 'Grammar',
+        original: error.original || error.text || 'N/A',
+        correction: error.corrected || error.suggestion || 'Needs correction',
+        description: error.description
+      });
+    });
+  }
+
+  // Extract fluency issues (filler words, repetitions)
+  if (detailedAnalysis?.fluency_analysis) {
+    const fluencyAnalysis = detailedAnalysis.fluency_analysis;
+
+    // Filler words
+    if (fluencyAnalysis.filler_words) {
+      const fillerWords = safeJsonParse(fluencyAnalysis.filler_words, {});
+      Object.entries(fillerWords).forEach(([word, count]) => {
+        if ((count as number) > 2) { // Only show if used frequently
+          allMistakes.push({
+            type: 'Filler Words',
+            category: 'Fluency',
+            original: `"${word}" used ${count} times`,
+            correction: 'Try to pause silently instead of using filler words',
+            description: 'Using too many filler words can interrupt the flow of speech'
+          });
+        }
+      });
+    }
+
+    // Excessive repetitions
+    if (fluencyAnalysis.repetitions_count && fluencyAnalysis.repetitions_count > 2) {
+      allMistakes.push({
+        type: 'Word Repetitions',
+        category: 'Fluency',
+        original: `${fluencyAnalysis.repetitions_count} repetitions detected`,
+        correction: 'Take your time to think before speaking to reduce repetitions',
+        description: 'Frequent repetitions can indicate uncertainty or lack of vocabulary'
+      });
+    }
+  }
+
+  // Extract vocabulary issues
+  if (detailedAnalysis?.vocabulary_analysis) {
+    const vocabAnalysis = detailedAnalysis.vocabulary_analysis;
+
+    // Low vocabulary diversity
+    if (vocabAnalysis.type_token_ratio && vocabAnalysis.type_token_ratio < 0.7) {
+      allMistakes.push({
+        type: 'Limited Vocabulary Variety',
+        category: 'Vocabulary',
+        original: `Repeated similar words frequently`,
+        correction: 'Try using synonyms and varied expressions',
+        description: 'Using more diverse vocabulary will make your speech more engaging'
+      });
+    }
+  }
+
+  // If no specific mistakes found, provide general feedback
+  if (allMistakes.length === 0) {
+    const overallScore = data.placement_result.overall_score;
+    if (overallScore < 70) {
+      allMistakes.push({
+        type: 'General Improvement Areas',
+        category: 'Overall',
+        original: 'Several areas need attention',
+        correction: 'Focus on basic grammar patterns and vocabulary building',
+        description: 'Continue practicing to build confidence and fluency'
+      });
+    }
+  }
+
+  if (allMistakes.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-green-600 mb-4">
+          <span className="text-4xl">🎉</span>
+        </div>
+        <p className="text-lg font-medium text-gray-700 mb-2">Excellent work!</p>
+        <p className="text-gray-600">No significant mistakes were detected in your Spanish speech. Keep up the great work!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {allMistakes.map((mistake, index) => (
+        <div
+          key={index}
+          className="border border-red-200 rounded-lg p-4 bg-red-50"
+        >
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                {mistake.category}
+              </span>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-medium text-gray-900 mb-2">{mistake.type}</h4>
+
+              <div className="space-y-2">
+                <div>
+                  <span className="text-sm font-medium text-red-700">What you said: </span>
+                  <span className="text-sm text-red-600 font-mono bg-red-100 px-2 py-1 rounded">
+                    {mistake.original}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-sm font-medium text-green-700">Better way: </span>
+                  <span className="text-sm text-green-600 font-mono bg-green-100 px-2 py-1 rounded">
+                    {mistake.correction}
+                  </span>
+                </div>
+
+                {mistake.description && (
+                  <p className="text-sm text-gray-600 italic">{mistake.description}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Helper function to render strengths section
+const renderStrengths = (data: AssessmentResultData, primaryColor: string) => {
+  const detailedAnalysis = data.detailed_analysis;
+  const componentScores = data.placement_result.component_scores;
+  const overallScore = data.placement_result.overall_score;
+  const transcript = data.transcript || '';
+
+  const strengths: Array<{
+    area: string;
+    description: string;
+    example: string;
+    level: 'good' | 'excellent' | 'outstanding';
+  }> = [];
+
+  // Helper function to safely parse JSON strings from backend
+  const safeJsonParse = (str: string | object | Array<any>, fallback: unknown = []) => {
+    if (Array.isArray(str)) return str;
+    if (typeof str === 'object') return str;
+    if (typeof str === 'string') {
+      try {
+        return JSON.parse(str);
+      } catch {
+        return fallback;
+      }
+    }
+    return fallback;
+  };
+
+  // Grammar strengths
+  if (componentScores.grammar >= 70) {
+    const level = componentScores.grammar >= 90 ? 'outstanding' : componentScores.grammar >= 80 ? 'excellent' : 'good';
+    strengths.push({
+      area: 'Grammar Understanding',
+      description: 'You demonstrate solid grammatical knowledge in your speech',
+      example: transcript.length > 20
+        ? `Your sentence structure in "${transcript.slice(0, 50)}..." shows good grammar control`
+        : 'You used correct verb forms and sentence structures',
+      level
+    });
+  }
+
+  // Pronunciation strengths
+  if (componentScores.pronunciation >= 70) {
+    const level = componentScores.pronunciation >= 90 ? 'outstanding' : componentScores.pronunciation >= 80 ? 'excellent' : 'good';
+    strengths.push({
+      area: 'Clear Pronunciation',
+      description: 'Your Spanish pronunciation is quite clear and understandable',
+      example: 'Most of your words were pronounced correctly, making you easy to understand',
+      level
+    });
+  }
+
+  // Fluency strengths
+  if (componentScores.fluency >= 70) {
+    const level = componentScores.fluency >= 90 ? 'outstanding' : componentScores.fluency >= 80 ? 'excellent' : 'good';
+    const wordsPerMinute = detailedAnalysis?.fluency_analysis?.words_per_minute || componentScores.fluency;
+    strengths.push({
+      area: 'Speaking Fluency',
+      description: 'You speak at a natural pace without too many hesitations',
+      example: `Your speaking rhythm of approximately ${Math.round(wordsPerMinute)} words per minute is quite natural`,
+      level
+    });
+  }
+
+  // Vocabulary strengths
+  if (componentScores.vocabulary >= 70) {
+    const level = componentScores.vocabulary >= 90 ? 'outstanding' : componentScores.vocabulary >= 80 ? 'excellent' : 'good';
+    const uniqueWords = detailedAnalysis?.vocabulary_analysis?.unique_words || 'several';
+    strengths.push({
+      area: 'Vocabulary Usage',
+      description: 'You used appropriate vocabulary for your level',
+      example: `You demonstrated knowledge of ${uniqueWords} different Spanish words and expressions`,
+      level
+    });
+  }
+
+  // Confidence/effort strengths
+  if (componentScores.confidence >= 60) {
+    const level = componentScores.confidence >= 90 ? 'outstanding' : componentScores.confidence >= 75 ? 'excellent' : 'good';
+    strengths.push({
+      area: 'Communication Confidence',
+      description: 'You showed good confidence in expressing yourself in Spanish',
+      example: 'You completed the full assessment without major hesitation, showing willingness to communicate',
+      level
+    });
+  }
+
+  // Specific vocabulary achievements
+  if (detailedAnalysis?.vocabulary_analysis?.academic_words_list) {
+    const academicWords = safeJsonParse(detailedAnalysis.vocabulary_analysis.academic_words_list, []);
+    if (academicWords.length > 0) {
+      strengths.push({
+        area: 'Advanced Vocabulary',
+        description: 'You used some sophisticated vocabulary words',
+        example: `Words like "${academicWords.slice(0, 3).join('", "')}" show advanced vocabulary knowledge`,
+        level: 'excellent'
+      });
+    }
+  }
+
+  // Grammar achievements
+  if (detailedAnalysis?.grammar_analysis?.tense_usage) {
+    const tenseUsage = safeJsonParse(detailedAnalysis.grammar_analysis.tense_usage, {});
+    const tenseCount = Object.keys(tenseUsage).length;
+    if (tenseCount > 1) {
+      const tenses = Object.keys(tenseUsage).join(', ');
+      strengths.push({
+        area: 'Verb Tense Variety',
+        description: 'You successfully used different verb tenses',
+        example: `You correctly used ${tenses} tenses, showing good grammatical range`,
+        level: 'good'
+      });
+    }
+  }
+
+  // Self-correction ability
+  if (detailedAnalysis?.fluency_analysis?.self_corrections_count && detailedAnalysis.fluency_analysis.self_corrections_count > 0) {
+    strengths.push({
+      area: 'Self-Correction Skills',
+      description: 'You caught and corrected your own mistakes while speaking',
+      example: `You made ${detailedAnalysis.fluency_analysis.self_corrections_count} self-corrections, showing good language awareness`,
+      level: 'excellent'
+    });
+  }
+
+  // Overall achievement
+  if (overallScore >= 80) {
+    strengths.push({
+      area: 'Overall Spanish Proficiency',
+      description: 'Your overall Spanish level is quite impressive',
+      example: `Your overall score of ${overallScore}/100 demonstrates strong Spanish communication skills`,
+      level: 'outstanding'
+    });
+  }
+
+  // If no specific strengths found, provide encouraging general feedback
+  if (strengths.length === 0) {
+    strengths.push({
+      area: 'Courage to Communicate',
+      description: 'You took the initiative to speak in Spanish',
+      example: 'Completing this assessment shows your commitment to learning and improving your Spanish',
+      level: 'good'
+    });
+  }
+
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case 'outstanding': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'excellent': return 'bg-green-100 text-green-800 border-green-200';
+      case 'good': return 'bg-blue-100 text-blue-800 border-blue-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getLevelIcon = (level: string) => {
+    switch (level) {
+      case 'outstanding': return '🌟';
+      case 'excellent': return '✨';
+      case 'good': return '👍';
+      default: return '💪';
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {strengths.map((strength, index) => (
+        <div
+          key={index}
+          className={`border rounded-lg p-4 ${getLevelColor(strength.level)}`}
+        >
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <span className="text-2xl">{getLevelIcon(strength.level)}</span>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold mb-2">{strength.area}</h4>
+              <p className="mb-3 text-sm leading-relaxed">{strength.description}</p>
+              <div className="bg-white/50 rounded-md p-3 border-l-4 border-current">
+                <p className="text-sm italic">"{strength.example}"</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, error, errorType, token }) => {
   const [audioUrl, setAudioUrl] = useState<string>('');
 
@@ -519,24 +863,21 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
             </div>
           </motion.div>
 
-          {/* Teaching Priorities - Most Important */}
+          {/* COMMENTED OUT - DETAILED ANALYSIS SECTIONS */}
+          {/*
           <TeachingPriorities
             priorities={teachingData.priority_areas}
             primaryColor={partner_config.branding.primary_color}
           />
 
-          {/* Strengths Section - Build Confidence */}
           <StrengthsSection
             strengths={teachingData.strengths}
             overallConfidenceLevel={teachingData.confidence_level}
             primaryColor={partner_config.branding.primary_color}
           />
 
-          {/* Two-column layout for detailed analysis */}
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* Left Column */}
             <div className="space-y-8">
-              {/* Grammar Insights */}
               <GrammarInsights
                 grammarErrors={teachingData.grammar_analysis.grammar_errors}
                 grammarStrengths={teachingData.grammar_analysis.grammar_strengths}
@@ -546,7 +887,6 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
                 primaryColor={partner_config.branding.primary_color}
               />
 
-              {/* Vocabulary Insights */}
               <VocabularyInsights
                 totalWords={teachingData.vocabulary_analysis.total_words}
                 uniqueWords={teachingData.vocabulary_analysis.unique_words}
@@ -559,9 +899,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
               />
             </div>
 
-            {/* Right Column */}
             <div className="space-y-8">
-              {/* Fluency Analysis */}
               <FluencyAnalysis
                 wordsPerMinute={teachingData.fluency_analysis.words_per_minute}
                 totalPauses={teachingData.fluency_analysis.total_pauses}
@@ -573,18 +911,47 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
                 primaryColor={partner_config.branding.primary_color}
               />
 
-              {/* Audio Highlights */}
               <AudioHighlights
                 highlights={teachingData.audio_highlights}
                 audioUrl={audioUrl}
                 primaryColor={partner_config.branding.primary_color}
                 onTimestampClick={(timestamp) => {
-                  // Here you would seek the audio player to this timestamp
                   console.log('Seeking to:', timestamp);
                 }}
               />
             </div>
           </div>
+          */}
+
+          {/* NEW SIMPLIFIED SECTIONS */}
+
+          {/* Mistakes Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}
+            className="bg-white rounded-xl shadow-lg p-6 mb-8"
+          >
+            <div className="flex items-center space-x-3 mb-6">
+              <span className="text-2xl">🔍</span>
+              <h2 className="text-xl font-semibold text-gray-800">Areas for Improvement</h2>
+            </div>
+
+            {renderMistakes(data, partner_config.branding.primary_color)}
+          </motion.div>
+
+          {/* Strengths Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
+            className="bg-white rounded-xl shadow-lg p-6 mb-8"
+          >
+            <div className="flex items-center space-x-3 mb-6">
+              <span className="text-2xl">⭐</span>
+              <h2 className="text-xl font-semibold text-gray-800">What You&apos;re Doing Well</h2>
+            </div>
+
+            {renderStrengths(data, partner_config.branding.primary_color)}
+          </motion.div>
 
           {/* Assessment Info */}
           <div className="mt-8 text-center text-gray-500 text-sm">
