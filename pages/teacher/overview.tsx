@@ -214,7 +214,7 @@ export default function TeacherOverview() {
             <div className="p-6">
               {data.top_stories.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">
-                  No story data available yet. Students haven't started reading stories.
+                  No story data available yet. Students haven&apos;t started reading stories.
                 </p>
               ) : (
                 <div className="space-y-4">
@@ -275,9 +275,10 @@ const MetricCard = ({ title, value, subtitle, color, icon }: {
     green: 'text-green-600 bg-green-50 border-green-200',
     red: 'text-red-600 bg-red-50 border-red-200'
   };
+  const selectedClass = colorClasses[color];
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 border-l-4 border-gray-200">
+    <div className={`bg-white rounded-lg shadow p-6 border-l-4 ${selectedClass}`}>
       <div className="flex items-center">
         <div className="flex-shrink-0">
           <span className="text-2xl">{icon}</span>

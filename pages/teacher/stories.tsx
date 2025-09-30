@@ -93,8 +93,8 @@ export default function TeacherStoriesPage() {
   };
 
   const sortedStories = data?.stories.slice().sort((a, b) => {
-    let aValue = a[sortBy];
-    let bValue = b[sortBy];
+    const aValue = a[sortBy];
+    const bValue = b[sortBy];
 
     // Handle string sorting for title
     if (sortBy === 'title') {

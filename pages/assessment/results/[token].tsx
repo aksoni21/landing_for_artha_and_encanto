@@ -5,13 +5,13 @@ import { motion } from 'framer-motion';
 import { User, Mail, AlertCircle, Calendar } from 'lucide-react';
 import { AudioPlayer } from '../../../components/assessment/AudioPlayer';
 
-// Import our new teaching-focused components
-import TeachingPriorities from '../../../components/assessment/TeachingPriorities';
-import StrengthsSection from '../../../components/assessment/StrengthsSection';
-import GrammarInsights from '../../../components/assessment/GrammarInsights';
-import FluencyAnalysis from '../../../components/assessment/FluencyAnalysis';
-import VocabularyInsights from '../../../components/assessment/VocabularyInsights';
-import AudioHighlights from '../../../components/assessment/AudioHighlights';
+// Import our new teaching-focused components (commented out - not currently used)
+// import TeachingPriorities from '../../../components/assessment/TeachingPriorities';
+// import StrengthsSection from '../../../components/assessment/StrengthsSection';
+// import GrammarInsights from '../../../components/assessment/GrammarInsights';
+// import FluencyAnalysis from '../../../components/assessment/FluencyAnalysis';
+// import VocabularyInsights from '../../../components/assessment/VocabularyInsights';
+// import AudioHighlights from '../../../components/assessment/AudioHighlights';
 
 interface DetailedAnalysis {
   word_timestamps?: string | Array<{ word: string; start: number; end: number }>;
@@ -81,8 +81,8 @@ interface AssessmentResultsPageProps {
   token: string;
 }
 
-// Transform score-based data to teaching-focused data
-const transformToTeachingData = (scoreData: AssessmentResultData) => {
+// Transform score-based data to teaching-focused data (commented out - not used)
+/* const transformToTeachingData = (scoreData: AssessmentResultData) => {
   // Extract real scores
   const grammarScore: string = typeof scoreData.placement_result.component_scores.grammar === 'string'
     ? scoreData.placement_result.component_scores.grammar
@@ -308,10 +308,10 @@ const transformToTeachingData = (scoreData: AssessmentResultData) => {
       : [],
     confidence_level: pronunciationScore > 75 ? 'confident' : pronunciationScore > 50 ? 'moderate' : 'developing'
   };
-};
+}; */
 
 // Helper function to render mistakes section
-const renderMistakes = (data: AssessmentResultData, primaryColor: string) => {
+const renderMistakes = (data: AssessmentResultData) => {
   const detailedAnalysis = data.detailed_analysis;
   const allMistakes: Array<{
     type: string;
@@ -322,7 +322,7 @@ const renderMistakes = (data: AssessmentResultData, primaryColor: string) => {
   }> = [];
 
   // Helper function to safely parse JSON strings from backend
-  const safeJsonParse = (str: string | object | Array<any>, fallback: unknown = []) => {
+  const safeJsonParse = (str: string | object | Array<unknown>, fallback: unknown = []) => {
     if (Array.isArray(str)) return str;
     if (typeof str === 'object') return str;
     if (typeof str === 'string') {
@@ -338,7 +338,7 @@ const renderMistakes = (data: AssessmentResultData, primaryColor: string) => {
   // Extract grammar mistakes
   if (detailedAnalysis?.grammar_analysis?.grammar_errors) {
     const grammarErrors = safeJsonParse(detailedAnalysis.grammar_analysis.grammar_errors, []);
-    grammarErrors.forEach((error: any) => {
+    (grammarErrors as Array<{error_type?: string; type?: string; original?: string; text?: string; corrected?: string; suggestion?: string; description?: string}>).forEach((error) => {
       allMistakes.push({
         type: error.error_type || error.type || 'Grammar Error',
         category: 'Grammar',
@@ -467,7 +467,7 @@ const renderMistakes = (data: AssessmentResultData, primaryColor: string) => {
 };
 
 // Helper function to render strengths section
-const renderStrengths = (data: AssessmentResultData, primaryColor: string) => {
+const renderStrengths = (data: AssessmentResultData) => {
   const detailedAnalysis = data.detailed_analysis;
   const componentScores = data.placement_result.component_scores;
   const overallScore = data.placement_result.overall_score;
@@ -481,7 +481,7 @@ const renderStrengths = (data: AssessmentResultData, primaryColor: string) => {
   }> = [];
 
   // Helper function to safely parse JSON strings from backend
-  const safeJsonParse = (str: string | object | Array<any>, fallback: unknown = []) => {
+  const safeJsonParse = (str: string | object | Array<unknown>, fallback: unknown = []) => {
     if (Array.isArray(str)) return str;
     if (typeof str === 'object') return str;
     if (typeof str === 'string') {
@@ -644,7 +644,7 @@ const renderStrengths = (data: AssessmentResultData, primaryColor: string) => {
               <h4 className="font-semibold mb-2">{strength.area}</h4>
               <p className="mb-3 text-sm leading-relaxed">{strength.description}</p>
               <div className="bg-white/50 rounded-md p-3 border-l-4 border-current">
-                <p className="text-sm italic">"{strength.example}"</p>
+                <p className="text-sm italic">&quot;{strength.example}&quot;</p>
               </div>
             </div>
           </div>
@@ -748,8 +748,8 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
 
   const { partner_config } = data;
 
-  // Transform the score-based data to teaching-focused format
-  const teachingData = transformToTeachingData(data);
+  // Transform the score-based data to teaching-focused format (commented out - not used)
+  // const teachingData = transformToTeachingData(data);
 
   return (
     <>
@@ -936,7 +936,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
               <h2 className="text-xl font-semibold text-gray-800">Areas for Improvement</h2>
             </div>
 
-            {renderMistakes(data, partner_config.branding.primary_color)}
+            {renderMistakes(data)}
           </motion.div>
 
           {/* Strengths Section */}
@@ -950,7 +950,7 @@ const AssessmentResultsPage: React.FC<AssessmentResultsPageProps> = ({ data, err
               <h2 className="text-xl font-semibold text-gray-800">What You&apos;re Doing Well</h2>
             </div>
 
-            {renderStrengths(data, partner_config.branding.primary_color)}
+            {renderStrengths(data)}
           </motion.div>
 
           {/* Assessment Info */}

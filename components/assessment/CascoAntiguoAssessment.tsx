@@ -147,9 +147,7 @@ const CascoAntiguoAssessment: React.FC<CascoAntiguoAssessmentProps> = ({ config 
 
   const retryRecording = () => {
     // Show confirmation dialog in Spanish (matching the UI language)
-    const confirmMessage = config.ui_text.language === 'spanish'
-      ? '¿Estás seguro? Esto eliminará tu grabación actual y tendrás que volver a grabar.'
-      : 'Are you sure? This will delete your current recording and you will have to record again.';
+    const confirmMessage = 'Are you sure? This will delete your current recording and you will have to record again.';
 
     if (window.confirm(confirmMessage)) {
       setAudioBlob(null);

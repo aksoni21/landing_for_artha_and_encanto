@@ -10,6 +10,14 @@ const nextConfig = {
       {
         source: '/casco-antiguo/results',
         destination: '/teacher/casco-antiguo'
+      },
+      {
+        source: '/nissan-eng',
+        destination: '/mockups/nissan/technical-architect-assessment'
+      },
+      {
+        source: '/nissan-eng/results',
+        destination: '/mockups/nissan/results'
       }
     ];
   }

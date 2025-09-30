@@ -191,7 +191,22 @@ const HeatMap = ({ data, title }: {
   );
 };
 
-const StudentProgressTable = ({ students }: { students: any[] }) => (
+interface Student {
+  id?: string;
+  name: string;
+  level?: string;
+  grade?: number;
+  proficiencyLevel?: string;
+  progress?: number;
+  voiceMinutes?: number;
+  lastActivity?: string;
+  weeklyMinutes?: number;
+  storiesCompleted?: number;
+  strugglingWith?: string;
+  strength?: string;
+}
+
+const StudentProgressTable = ({ students }: { students: Student[] }) => (
   <div className="bg-white rounded-lg shadow">
     <div className="p-6 border-b border-gray-200">
       <h3 className="text-lg font-semibold text-gray-900">Student Progress Tracker</h3>
@@ -234,7 +249,7 @@ const StudentProgressTable = ({ students }: { students: any[] }) => (
                 {student.voiceMinutes} min/week
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {new Date(student.lastActivity).toLocaleDateString()}
+                {student.lastActivity ? new Date(student.lastActivity).toLocaleDateString() : 'N/A'}
               </td>
             </tr>
           ))}
@@ -302,7 +317,7 @@ const MultiLineChart = ({ data, title }: {
   );
 };
 
-const TeacherStudentCards = ({ students }: { students: any[] }) => (
+const TeacherStudentCards = ({ students }: { students: Student[] }) => (
   <div className="bg-white rounded-lg shadow p-6">
     <h3 className="text-lg font-semibold text-gray-900 mb-4">My Students</h3>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -338,7 +353,17 @@ const TeacherStudentCards = ({ students }: { students: any[] }) => (
   </div>
 );
 
-const InterventionAlerts = ({ alerts }: { alerts: any[] }) => (
+interface Alert {
+  id?: string;
+  student: string;
+  issue: string;
+  priority?: 'high' | 'medium' | 'low';
+  timeframe?: string;
+  severity?: string;
+  action?: string;
+}
+
+const InterventionAlerts = ({ alerts }: { alerts: Alert[] }) => (
   <div className="bg-white rounded-lg shadow p-6">
     <h3 className="text-lg font-semibold text-gray-900 mb-4">🚨 Intervention Alerts</h3>
     <div className="space-y-3">
@@ -355,7 +380,7 @@ const InterventionAlerts = ({ alerts }: { alerts: any[] }) => (
             <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
               alert.severity === 'high' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
             }`}>
-              {alert.severity.toUpperCase()}
+              {alert.severity?.toUpperCase() || 'UNKNOWN'}
             </span>
           </div>
         </div>
@@ -487,7 +512,7 @@ export default function Title3Dashboard() {
     }
   };
 
-  const MetricCard = ({ title, value, subtitle, trend, color = 'blue' }: {
+  const MetricCard = ({ title, value, subtitle, trend }: {
     title: string;
     value: string | number;
     subtitle: string;
@@ -663,7 +688,7 @@ export default function Title3Dashboard() {
             ].map(view => (
               <button
                 key={view.key}
-                onClick={() => setSelectedView(view.key as any)}
+                onClick={() => setSelectedView(view.key.replace('-overview', '').replace('-comparison', '').replace('-dashboard', '') as 'district' | 'school' | 'teacher')}
                 className={`px-4 py-2 rounded-md text-sm font-medium ${
                   selectedView === view.key
                     ? 'bg-blue-600 text-white'
@@ -861,7 +886,7 @@ export default function Title3Dashboard() {
               <div className="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full mt-2"></div>
               <div className="ml-3">
                 <p className="text-sm text-gray-900">
-                  <strong>Success Story:</strong> Roosevelt Elementary's voice AI pilot shows exceptional results - consider district-wide expansion.
+                  <strong>Success Story:</strong> Roosevelt Elementary&apos;s voice AI pilot shows exceptional results - consider district-wide expansion.
                 </p>
               </div>
             </div>

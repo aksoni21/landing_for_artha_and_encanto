@@ -299,7 +299,7 @@ export default function StudentStoryProgressPage() {
               </p>
             ) : (
               <div className="space-y-4">
-                {data.reading_journey.map((item, index) => (
+                {data.reading_journey.map((item) => (
                   <div
                     key={item.story_id}
                     className="flex items-center p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
