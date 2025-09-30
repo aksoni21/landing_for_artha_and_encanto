@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 
 interface AudioVisualizerProps {
   isRecording: boolean;
@@ -75,7 +74,7 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isRecording, stream }
 const NissanTechnicalArchitectAssessment: React.FC = () => {
   const [recordingState, setRecordingState] = useState<'idle' | 'recording' | 'recorded'>('idle');
   const [timeLeft, setTimeLeft] = useState(60);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string>('');
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const mediaRecorder = useRef<MediaRecorder | null>(null);

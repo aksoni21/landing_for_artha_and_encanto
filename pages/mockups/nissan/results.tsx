@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { User, Mail, Calendar, Download } from 'lucide-react';
@@ -148,13 +148,6 @@ const mockData: MockAssessmentData = {
 };
 
 const NissanResultsPage: React.FC = () => {
-  const [audioUrl, setAudioUrl] = useState<string>('');
-
-  useEffect(() => {
-    // In a real implementation, you'd fetch the actual audio URL
-    setAudioUrl(mockData.audioUrl);
-  }, []);
-
   const downloadAudio = () => {
     // Mock download functionality for demo
     alert('Audio download initiated (demo functionality)');
