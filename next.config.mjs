@@ -18,6 +18,14 @@ const nextConfig = {
       {
         source: '/nissan-eng/results',
         destination: '/mockups/nissan/results'
+      },
+      {
+        source: '/ssg',
+        destination: '/mockups/ssg/assessment'
+      },
+      {
+        source: '/ssg/results',
+        destination: '/mockups/ssg/results'
       }
     ];
   }

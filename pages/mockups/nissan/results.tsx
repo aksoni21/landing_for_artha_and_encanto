@@ -47,6 +47,31 @@ interface MockAssessmentData {
   }>;
 }
 
+// Assessment questions by role
+const assessmentQuestions = [
+  {
+    role: 'Technical Architect',
+    questions: [
+      'In up to 3 minutes, please describe a complex system architecture you have designed. What were the key trade-offs you had to make?',
+      'Follow-up: How did you handle scalability challenges in that architecture? What would you do differently if you were to rebuild it today?'
+    ]
+  },
+  {
+    role: 'Financial Project Manager',
+    questions: [
+      'In up to 3 minutes, please explain how you manage project budgets and communicate financial updates to stakeholders. Provide a specific example.',
+      'Follow-up: Describe a time when a project went over budget. How did you communicate this to stakeholders and what corrective actions did you take?'
+    ]
+  },
+  {
+    role: 'General Professional',
+    questions: [
+      'In up to 3 minutes, please tell us about your professional experience and career goals. What motivates you in your work?',
+      'Follow-up: Describe a challenging situation at work and how you overcame it. What did you learn from that experience?'
+    ]
+  }
+];
+
 // Mock data for demo
 const mockData: MockAssessmentData = {
   candidate: {
@@ -148,9 +173,35 @@ const mockData: MockAssessmentData = {
 };
 
 const NissanResultsPage: React.FC = () => {
-  const downloadAudio = () => {
-    // Mock download functionality for demo
-    alert('Audio download initiated (demo functionality)');
+  const [videoUrl, setVideoUrl] = React.useState<string>('');
+  const [selectedRole] = React.useState(0); // Default to Technical Architect for demo
+  const [expandedQuestion, setExpandedQuestion] = React.useState<number | null>(null); // All questions collapsed by default
+
+  React.useEffect(() => {
+    // Load video from localStorage
+    const savedVideo = localStorage.getItem('nissan_demo_video');
+    if (savedVideo) {
+      setVideoUrl(savedVideo);
+    }
+  }, []);
+
+  const downloadVideo = () => {
+    if (videoUrl) {
+      const link = document.createElement('a');
+      link.href = videoUrl;
+      link.download = 'assessment-video.webm';
+      link.click();
+    } else {
+      alert('Video download initiated (demo functionality)');
+    }
+  };
+
+  const clearDemoData = () => {
+    if (confirm('This will clear all demo video data from localStorage. Continue?')) {
+      localStorage.removeItem('nissan_demo_video');
+      setVideoUrl('');
+      alert('Demo data cleared successfully!');
+    }
   };
 
   const getLevelColor = (level: string) => {
@@ -174,8 +225,8 @@ const NissanResultsPage: React.FC = () => {
   return (
     <>
       <Head>
-        <title>Assessment Results - {mockData.candidate.name} | Nissan North America</title>
-        <meta name="description" content="Technical Architect English Assessment Results" />
+        <title>Screening Interview Results - {mockData.candidate.name} | Nissan North America</title>
+        <meta name="description" content="Language Proficiency Screening Interview Results" />
       </Head>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
@@ -189,12 +240,17 @@ const NissanResultsPage: React.FC = () => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">Nissan North America</h1>
-                  <p className="text-lg text-blue-600 font-medium">Technical Assessment Results</p>
+                  <p className="text-lg text-blue-600 font-medium">Screening Interview Results</p>
                 </div>
               </div>
-              <div className="text-right bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 rounded-lg border border-blue-200">
-                <p className="text-sm font-semibold text-gray-700">Confidential HR Document</p>
-                <p className="text-xs text-gray-500">For Internal Use Only</p>
+              <div className="text-right">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 rounded-lg border border-blue-200 mb-2">
+                  <p className="text-sm font-semibold text-gray-700">Confidential HR Document</p>
+                  <p className="text-xs text-gray-500">For Internal Use Only</p>
+                </div>
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg border border-green-200">
+                  <p className="text-xs font-semibold text-green-800">✓ 2-Question Screening Complete</p>
+                </div>
               </div>
             </div>
           </div>
@@ -263,49 +319,204 @@ const NissanResultsPage: React.FC = () => {
           </motion.div>
 
 
-          {/* Audio & Transcript Section */}
+          {/* Screening Interview Timeline */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0, transition: { delay: 0.1 } }}
-            className="bg-white rounded-xl shadow-xl p-8 mb-8 border border-gray-100"
+            className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-lg p-6 mb-8 border-2 border-blue-200"
           >
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="w-3 h-8 bg-gradient-to-b from-green-500 to-teal-600 rounded-full"></div>
-                <h3 className="text-2xl font-bold text-gray-800">Audio Recording & Transcript</h3>
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-white text-2xl">🎯</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Screening Interview Assessment</h3>
+                  <p className="text-sm text-gray-600">{assessmentQuestions[selectedRole].role} - 2 Questions Completed</p>
+                </div>
               </div>
-              <button
-                onClick={downloadAudio}
-                className="flex items-center text-white space-x-2 px-6 py-3 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 rounded-xl transition-all shadow-lg"
-              >
-                <Download className="w-5 h-5" />
-                <span className="font-semibold">Download Audio</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <div className="bg-green-500 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold shadow-md">✓</div>
+                <div className="text-gray-400">━━</div>
+                <div className="bg-green-500 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold shadow-md">✓</div>
+              </div>
             </div>
+          </motion.div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
-              <div>
-                <h4 className="font-bold text-gray-900 mb-4 text-lg">Audio Response</h4>
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-6 border border-blue-200">
-                  <div className="flex items-center justify-center h-24">
-                    <div className="text-center">
-                      <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-3 shadow-lg">
-                        <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                        </svg>
+          {/* Question Responses */}
+          {assessmentQuestions[selectedRole].questions.map((question, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0, transition: { delay: 0.1 + (index * 0.1) } }}
+              className="bg-white rounded-xl shadow-xl mb-6 border border-gray-100 overflow-hidden"
+            >
+              {/* Question Header - Clickable */}
+              <button
+                onClick={() => setExpandedQuestion(expandedQuestion === index ? null : index)}
+                className="w-full text-left p-6 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4 flex-1">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${
+                      index === 0 ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gradient-to-br from-orange-500 to-red-500'
+                    }`}>
+                      <span className="text-white font-bold text-lg">{index + 1}</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <h3 className="text-lg font-bold text-gray-900">
+                          {index === 0 ? 'Initial Question' : 'Follow-Up Question'}
+                        </h3>
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                          index === 0 ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800'
+                        }`}>
+                          {index === 0 ? 'INITIAL' : 'FOLLOW-UP'}
+                        </span>
                       </div>
-                      <p className="font-semibold text-gray-700">Audio Player</p>
-                      <p className="text-sm text-gray-500">Duration: 0:58</p>
+                      <p className="text-sm text-gray-600 line-clamp-2">{question}</p>
                     </div>
                   </div>
+                  <svg
+                    className={`w-6 h-6 text-gray-400 transition-transform ${expandedQuestion === index ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+
+              {/* Expanded Content */}
+              {expandedQuestion === index && (
+                <div className="border-t border-gray-200 p-6 bg-gray-50">
+                  {/* Full Question */}
+                  <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-4 mb-6 border border-indigo-200">
+                    <p className="text-sm font-medium text-indigo-900 mb-1">Question:</p>
+                    <p className="text-gray-800">{question}</p>
+                  </div>
+
+                  {/* Video Player */}
+                  <div className="mb-6">
+                    {videoUrl ? (
+                      <video
+                        src={videoUrl}
+                        controls
+                        className="w-full rounded-xl shadow-2xl border-2 border-gray-300"
+                      />
+                    ) : (
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-12 border border-blue-200">
+                        <div className="text-center">
+                          <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                            <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                            </svg>
+                          </div>
+                          <p className="font-semibold text-gray-700 text-lg">Sample Video - Question {index + 1}</p>
+                          <p className="text-sm text-gray-500 mt-2">Duration: 0:58</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Transcript for this question */}
+                  <div>
+                    <h4 className="font-bold text-gray-900 mb-3 text-base">Transcript</h4>
+                    <div className="bg-gradient-to-br from-amber-50 to-orange-100 rounded-lg p-4 border border-amber-200">
+                      <p className="text-gray-700 leading-relaxed text-sm italic">
+                        &quot;{mockData.transcript}&quot;
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Download Button */}
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      onClick={downloadVideo}
+                      className="flex items-center text-white space-x-2 px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 rounded-lg transition-all shadow-lg text-sm"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span className="font-semibold">Download Video</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ))}
+
+          {/* TOEIC Competitive Advantage Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
+            className="bg-white rounded-xl shadow-xl p-8 mb-8 border border-gray-100"
+          >
+            <div className="flex items-center space-x-4 mb-6">
+              <div className="w-3 h-8 bg-gradient-to-b from-green-500 to-teal-600 rounded-full"></div>
+              <h3 className="text-2xl font-bold text-gray-800">Assessment Advantages</h3>
+            </div>
+
+            {/* TOEIC-Killer Components */}
+            <div className="grid lg:grid-cols-3 gap-6 mb-8">
+              {/* Verification & Speed Component */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-6 border-2 border-green-300 shadow-lg">
+                <div className="flex items-center mb-4">
+                  <svg className="w-8 h-8 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <h4 className="font-bold text-gray-900 text-lg">Verified & Instant</h4>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl">✅</span>
+                    <span className="font-semibold text-green-800">Identity Verified (Video)</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl">⚡</span>
+                    <span className="font-semibold text-green-800">Results: INSTANT</span>
+                  </div>
+                  <p className="text-xs text-gray-600 italic mt-2">
+                    (vs. 3-week turnaround for standard tests like TOEIC)
+                  </p>
                 </div>
               </div>
 
-              <div>
-                <h4 className="font-bold text-gray-900 mb-4 text-lg">Transcript</h4>
-                <div className="bg-gradient-to-br from-amber-50 to-orange-100 rounded-xl p-6 border border-amber-200 h-36 overflow-y-auto">
-                  <p className="text-gray-700 leading-relaxed font-medium italic">
-                    &quot;{mockData.transcript}&quot;
+              {/* Managerial Insights Component */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-6 border-2 border-blue-300 shadow-lg">
+                <div className="flex items-center mb-4">
+                  <span className="text-2xl mr-3">👁️</span>
+                  <h4 className="font-bold text-gray-900 text-lg">Manager Insights</h4>
+                </div>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start">
+                    <span className="text-green-600 mr-2">•</span>
+                    <span className="text-gray-700">Consistent communication across both questions</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-600 mr-2">•</span>
+                    <span className="text-gray-700">Handles follow-up questions well</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-600 mr-2">•</span>
+                    <span className="text-gray-700">Professional video presence throughout</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* ROI Snapshot Component */}
+              <div className="bg-gradient-to-br from-purple-50 to-pink-100 rounded-xl p-6 border-2 border-purple-300 shadow-lg">
+                <div className="flex items-center mb-4">
+                  <span className="text-2xl mr-3">💰</span>
+                  <h4 className="font-bold text-gray-900 text-lg">Cost Efficiency</h4>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-gray-600">Total Assessment Cost:</p>
+                    <p className="text-2xl font-bold text-purple-700">~$10-15</p>
+                    <p className="text-xs text-gray-500 italic">(2 questions)</p>
+                  </div>
+                  <p className="text-xs text-gray-600 bg-white/50 rounded-lg p-2">
+                    <strong>70-80% savings</strong> vs. $50 TOEIC cost
                   </p>
                 </div>
               </div>
@@ -617,11 +828,23 @@ const NissanResultsPage: React.FC = () => {
                 </div>
                 <span className="text-white font-bold text-xl">Nissan North America</span>
               </div>
-              <div className="text-gray-300 text-sm">
+              <div className="text-gray-300 text-sm mb-4">
                 © {new Date().getFullYear()} Nissan North America, Inc. |
                 <a href="#" className="text-blue-400 hover:text-blue-300 ml-1">Privacy Policy</a>
                 <span className="mx-2">|</span>
                 <span className="text-gray-400">Assessment Results - Confidential</span>
+              </div>
+              {/* Demo Data Cleanup */}
+              <div className="mt-4 pt-4 border-t border-gray-700">
+                <button
+                  onClick={clearDemoData}
+                  className="inline-flex items-center px-4 py-2 text-xs font-medium text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-lg transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Clear Demo Data
+                </button>
               </div>
             </div>
           </div>
