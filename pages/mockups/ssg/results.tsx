@@ -230,18 +230,18 @@ const SSGResultsPage: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-pink-50">
         {/* Header */}
         <header className="bg-white shadow-xl border-b border-gray-200 backdrop-blur-sm bg-white/95">
-          <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="max-w-7xl mx-auto px-4 py-6  ">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-purple-600 via-pink-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-2xl">SSG</span>
                 </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Support Services Group</h1>
+                <div >
+                  <h1 className="hidden sm:block text-2xl font-bold text-gray-900">Support Services Group</h1>
                   <p className="text-lg text-purple-600 font-medium">{t('agentPlatform')}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center ">
                 {/* Language Toggle */}
                 <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
                   <button
@@ -270,9 +270,9 @@ const SSGResultsPage: React.FC = () => {
                     <p className="text-sm font-semibold text-gray-700">{t('confidentialQA')}</p>
                     <p className="text-xs text-gray-500">{t('internalUse')}</p>
                   </div> */}
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg border border-green-200">
+                  {/* <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg border border-green-200">
                     <p className="text-xs font-semibold text-green-800">✓ {t('assessmentComplete')}</p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -285,7 +285,7 @@ const SSGResultsPage: React.FC = () => {
           <div className="mb-6">
             <a
               href="/ssg"
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+              className="  inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -300,7 +300,7 @@ const SSGResultsPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-xl shadow-xl p-8 mb-8 border border-gray-100"
           >
-            <div className="flex items-start justify-between mb-8">
+            <div className="flex flex-col sm:flex-row items-start justify-between mb-8">
               <div>
                 <div className="flex items-center mb-4">
                   <div className="w-3 h-8 bg-gradient-to-b from-purple-500 to-pink-600 rounded-full mr-4"></div>
@@ -310,7 +310,7 @@ const SSGResultsPage: React.FC = () => {
                 </div>
                 <p className="text-xl text-gray-700 mb-2">{mockData.candidate.role}</p>
               </div>
-              <div className="bg-gradient-to-r from-purple-500 to-pink-600 px-6 py-3 rounded-xl shadow-lg">
+              <div className="sm:block hidden bg-gradient-to-r from-purple-500 to-pink-600 px-6 py-3 rounded-xl shadow-lg">
                 <span className="text-white font-bold text-lg">Role-Play Assessment</span>
               </div>
             </div>
@@ -923,6 +923,19 @@ const SSGResultsPage: React.FC = () => {
               </div>
             </div>
           </motion.div>
+          {/* Back Button */}
+          <div className="mb-6">
+            <a
+              href="/ssg"
+              className=" inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              {language === 'en' ? 'Back to Assessment' : 'Volver a Evaluación'}
+            </a>
+          </div>
+
         </main>
 
         {/* Footer */}
@@ -942,7 +955,7 @@ const SSGResultsPage: React.FC = () => {
                 <span className="text-purple-300">Agent Performance Platform - Confidential</span>
               </div>
               {/* Demo Data Cleanup */}
-              <div className="mt-4 pt-4 border-t border-purple-700">
+              <div className="sm:block hidden mt-4 pt-4 border-t border-purple-700">
                 <button
                   onClick={clearDemoData}
                   className="inline-flex items-center px-4 py-2 text-xs font-medium text-purple-200 hover:text-white bg-purple-800 hover:bg-purple-700 border border-purple-600 rounded-lg transition-colors"
