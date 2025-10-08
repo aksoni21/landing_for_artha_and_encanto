@@ -45,6 +45,28 @@ interface MockAssessmentData {
     example: string;
     level: 'good' | 'excellent' | 'outstanding';
   }>;
+  job_competency_analysis?: {
+    scenario_question: string;
+    scenario_transcript: string;
+    competency_scores: {
+      problem_solving: number;
+      domain_knowledge: number;
+      decision_making: number;
+      communication_under_pressure: number;
+      relevant_experience: number;
+    };
+    scenario_strengths: Array<{
+      area: string;
+      description: string;
+      example: string;
+    }>;
+    scenario_concerns: Array<{
+      area: string;
+      description: string;
+      recommendation: string;
+    }>;
+    interview_probes: string[];
+  };
 }
 
 // Assessment questions by role
@@ -83,10 +105,10 @@ const mockData: MockAssessmentData = {
   audioUrl: '#', // In real implementation, this would be an actual audio URL
   transcript: 'I work... I working in the company, eh, for many time. The system... the systems is very... how to say... eh... complicated? I make... I maked some... some things for the computer. Is very difficult because... eh... the data is much and... and the server sometimes no work good. We have problem with... eh... how to say... the people who use the system, they want fast but... eh... is not possible always. I try to... to fix but... eh... the technology is complicated for me.',
   placement_result: {
-    overall_score: 42,
-    placement_level: 'Elementary',
-    cefr_level: 'A2',
-    description: 'Basic English communication with significant room for improvement. Can express simple ideas but struggles with complex grammar and fluency.',
+    overall_score: 58, // Combined score (Q1: 42 language + Q2: 74 competency = 58 average)
+    placement_level: 'Developing',
+    cefr_level: 'A2-B1',
+    description: 'Shows basic technical knowledge with developing communication skills. Candidate demonstrates problem-solving ability but needs language improvement for effective stakeholder communication.',
     component_scores: {
       pronunciation: 58,
       fluency: 35,
@@ -95,10 +117,10 @@ const mockData: MockAssessmentData = {
       confidence: 45
     },
     recommendations: [
-      'Focus on basic grammar patterns and verb conjugations',
-      'Practice speaking without filler words to improve fluency',
-      'Expand core business vocabulary',
-      'Work on sentence structure and word order'
+      'Focus on technical vocabulary and grammar for stakeholder communication',
+      'Practice explaining technical concepts clearly and concisely',
+      'Work on reducing filler words to improve professional presence',
+      'Consider for internal roles with language training support'
     ]
   },
   fluency_analysis: {
@@ -169,7 +191,63 @@ const mockData: MockAssessmentData = {
       example: 'Used phrases like "how to say..." to work through vocabulary gaps while maintaining communication',
       level: 'good'
     }
-  ]
+  ],
+  job_competency_analysis: {
+    scenario_question: 'A production system you designed is experiencing severe performance issues during peak hours. Walk me through how you would diagnose the problem, communicate with the team, and implement a solution under pressure.',
+    scenario_transcript: 'Okay, so if production has problem... I would first, eh, check the logs to see what is happening. Maybe the database is slow or, eh, the server has too much requests. I would call my team and tell them we need to fix it quick. We can, eh, maybe add more servers or optimize the queries. I did this before in my last job when we had similar issue. The important thing is to communicate with the users too, tell them we are working on it.',
+    competency_scores: {
+      problem_solving: 78,
+      domain_knowledge: 72,
+      decision_making: 70,
+      communication_under_pressure: 68,
+      relevant_experience: 80
+    },
+    scenario_strengths: [
+      {
+        area: 'Systematic Diagnostic Approach',
+        description: 'Demonstrates a logical troubleshooting process starting with log analysis',
+        example: '"I would first check the logs to see what is happening. Maybe the database is slow or the server has too much requests"'
+      },
+      {
+        area: 'Technical Problem Identification',
+        description: 'Correctly identifies common performance bottlenecks (database, server load)',
+        example: 'Mentioned database performance and server capacity as potential root causes'
+      },
+      {
+        area: 'Team Collaboration',
+        description: 'Recognizes the importance of team coordination during incidents',
+        example: '"I would call my team and tell them we need to fix it quick"'
+      },
+      {
+        area: 'Stakeholder Communication',
+        description: 'Understands the need for user communication during outages',
+        example: '"The important thing is to communicate with the users too, tell them we are working on it"'
+      },
+      {
+        area: 'Relevant Experience',
+        description: 'References similar past experience solving production issues',
+        example: '"I did this before in my last job when we had similar issue"'
+      }
+    ],
+    scenario_concerns: [
+      {
+        area: 'Solution Depth',
+        description: 'Solutions mentioned were somewhat surface-level (add servers, optimize queries) without detailed investigation',
+        recommendation: 'In interview, probe for more specific technical details about how they would diagnose root cause before jumping to solutions'
+      },
+      {
+        area: 'Communication Clarity',
+        description: 'While approach was sound, explanation lacked professional polish due to language gaps',
+        recommendation: 'Assess whether this candidate can effectively communicate with US stakeholders or if they need language support'
+      }
+    ],
+    interview_probes: [
+      'Walk me through a specific example where you diagnosed a production performance issue. What tools did you use?',
+      'How would you prioritize between immediate mitigation (scaling) vs. root cause analysis?',
+      'Describe your incident communication process. Who do you notify and in what order?',
+      'What monitoring and alerting systems have you implemented to catch issues before they impact users?'
+    ]
+  }
 };
 
 const NissanResultsPage: React.FC = () => {
@@ -540,17 +618,33 @@ const NissanResultsPage: React.FC = () => {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Overall English Proficiency</h3>
+                  <h3 className="text-xl font-bold text-gray-900">Overall Candidate Assessment</h3>
                   <p className="text-gray-600">{mockData.placement_result.description}</p>
+                  <div className="mt-3 flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-500">Communication:</span>
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-semibold">
+                        {mockData.placement_result.cefr_level}
+                      </span>
+                    </div>
+                    {mockData.job_competency_analysis && (
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-500">Job Competency:</span>
+                        <span className="px-2 py-1 bg-indigo-100 text-indigo-800 rounded text-sm font-semibold">
+                          Strong ({Math.round(
+                            Object.values(mockData.job_competency_analysis.competency_scores).reduce((a, b) => a + b, 0) /
+                            Object.values(mockData.job_competency_analysis.competency_scores).length
+                          )}/100)
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="text-right">
                   <div className="text-4xl font-bold text-indigo-600">{mockData.placement_result.overall_score}/100</div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 mt-2">
                     <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-semibold">
                       {mockData.placement_result.placement_level}
-                    </span>
-                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">
-                      {mockData.placement_result.cefr_level}
                     </span>
                   </div>
                 </div>
@@ -566,6 +660,12 @@ const NissanResultsPage: React.FC = () => {
             </div>
 
             {/* Component Scores */}
+            <div className="mb-3 flex items-center space-x-2">
+              <h3 className="text-lg font-bold text-gray-900">Communication Skills Breakdown</h3>
+              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-semibold">
+                Question 1
+              </span>
+            </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
               {Object.entries(mockData.placement_result.component_scores).map(([skill, score]) => {
                 const getSkillColor = (skillName: string) => {
@@ -667,7 +767,10 @@ const NissanResultsPage: React.FC = () => {
             <div className="flex items-center space-x-4 mb-8">
               <div className="w-3 h-8 bg-gradient-to-b from-orange-500 to-red-600 rounded-full"></div>
               <span className="text-3xl">📈</span>
-              <h2 className="text-2xl font-bold text-gray-800">Areas for Development</h2>
+              <h2 className="text-2xl font-bold text-gray-800">Communication Development Areas</h2>
+              <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full text-sm font-bold border border-blue-200">
+                Question 1: Experience
+              </span>
             </div>
 
             <div className="space-y-6">
@@ -721,6 +824,9 @@ const NissanResultsPage: React.FC = () => {
               <div className="w-3 h-8 bg-gradient-to-b from-green-500 to-emerald-600 rounded-full"></div>
               <span className="text-3xl">⭐</span>
               <h2 className="text-2xl font-bold text-gray-800">Communication Strengths</h2>
+              <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full text-sm font-bold border border-blue-200">
+                Question 1: Experience
+              </span>
             </div>
 
             <div className="space-y-6">
@@ -746,8 +852,151 @@ const NissanResultsPage: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* HR Recommendations */}
+          {/* Job Competency Analysis (Question 2 - Scenario) */}
+          {mockData.job_competency_analysis && (
           <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0, transition: { delay: 0.35 } }}
+            className="bg-white rounded-xl shadow-xl p-8 mb-8 border border-gray-100"
+          >
+            <div className="flex items-center space-x-4 mb-8">
+              <div className="w-3 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
+              <span className="text-3xl">🎯</span>
+              <h2 className="text-2xl font-bold text-gray-800">Job Competency Analysis</h2>
+              <span className="px-3 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 rounded-full text-sm font-bold border border-purple-200">
+                Question 2: Scenario
+              </span>
+            </div>
+
+            {/* Competency Scores */}
+            <div className="mb-8">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Competency Scores</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
+                {Object.entries(mockData.job_competency_analysis.competency_scores).map(([skill, score]) => {
+                  const getSkillLabel = (skillName: string) => {
+                    const labels: Record<string, string> = {
+                      problem_solving: 'Problem Solving',
+                      domain_knowledge: 'Domain Knowledge',
+                      decision_making: 'Decision Making',
+                      communication_under_pressure: 'Communication',
+                      relevant_experience: 'Experience'
+                    };
+                    return labels[skillName] || skillName;
+                  };
+
+                  const getSkillIcon = (skillName: string) => {
+                    const icons: Record<string, string> = {
+                      problem_solving: '🧩',
+                      domain_knowledge: '🎓',
+                      decision_making: '⚖️',
+                      communication_under_pressure: '📢',
+                      relevant_experience: '💼'
+                    };
+                    return icons[skillName] || '📊';
+                  };
+
+                  return (
+                    <div key={skill} className="bg-gradient-to-br from-indigo-50 to-purple-100 rounded-xl p-4 border border-indigo-200">
+                      <div className="text-center mb-3">
+                        <div className="text-2xl mb-2">{getSkillIcon(skill)}</div>
+                        <h4 className="font-semibold text-gray-900 text-sm">{getSkillLabel(skill)}</h4>
+                      </div>
+                      <div className="text-center mb-3">
+                        <div className="text-2xl font-bold text-indigo-700">{score}/100</div>
+                      </div>
+                      <div className="w-full bg-indigo-200 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${score}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Scenario Strengths */}
+            <div className="mb-8">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Scenario Performance - Strengths</h3>
+              <div className="space-y-4">
+                {mockData.job_competency_analysis.scenario_strengths.map((strength, index) => (
+                  <div
+                    key={index}
+                    className="border border-green-200 rounded-xl p-6 bg-gradient-to-br from-green-50 to-emerald-50 shadow-md"
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">✓</span>
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 mb-2">{strength.area}</h4>
+                        <p className="mb-3 text-sm text-gray-700 leading-relaxed">{strength.description}</p>
+                        <div className="bg-white/50 rounded-md p-3 border-l-4 border-green-500">
+                          <p className="text-sm italic text-gray-700">&quot;{strength.example}&quot;</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Scenario Concerns */}
+            {mockData.job_competency_analysis.scenario_concerns.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Areas to Probe in Interview</h3>
+              <div className="space-y-4">
+                {mockData.job_competency_analysis.scenario_concerns.map((concern, index) => (
+                  <div
+                    key={index}
+                    className="border border-yellow-200 rounded-xl p-6 bg-gradient-to-br from-yellow-50 to-orange-50 shadow-md"
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">!</span>
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 mb-2">{concern.area}</h4>
+                        <p className="mb-3 text-sm text-gray-700 leading-relaxed">{concern.description}</p>
+                        <div className="bg-blue-50 rounded-md p-3 border-l-4 border-blue-500">
+                          <p className="text-sm font-medium text-blue-900">
+                            <strong>Recommendation:</strong> {concern.recommendation}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            )}
+
+            {/* Interview Probes */}
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Suggested Interview Questions</h3>
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                <div className="space-y-3">
+                  {mockData.job_competency_analysis.interview_probes.map((probe, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-white font-bold text-xs">{index + 1}</span>
+                      </div>
+                      <p className="text-gray-700 leading-relaxed">{probe}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+          )}
+
+          {/* HR Recommendations */}
+          {/* <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}
             className="bg-white rounded-xl shadow-xl p-8 mb-8 border border-gray-100"
@@ -775,26 +1024,29 @@ const NissanResultsPage: React.FC = () => {
 
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Hiring Assessment</h3>
-                <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-xl p-6">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
                   <div className="flex items-center mb-4">
-                    <span className="text-2xl mr-3">⚠️</span>
-                    <span className="font-bold text-orange-800 text-lg">DEVELOPMENT NEEDED</span>
+                    <span className="text-2xl mr-3">🎯</span>
+                    <span className="font-bold text-blue-800 text-lg">CONDITIONAL PROCEED</span>
                   </div>
                   <p className="text-gray-700 mb-4">
-                    Candidate shows technical knowledge but requires significant English language development before being suitable for client-facing technical roles.
+                    <strong>Strengths:</strong> Candidate demonstrates strong technical problem-solving skills and relevant experience (Job Competency: 74/100). Shows systematic diagnostic approach and understanding of incident management.
+                  </p>
+                  <p className="text-gray-700 mb-4">
+                    <strong>Development Need:</strong> English communication requires improvement (CEFR A2-B1) for effective stakeholder communication in US-facing roles.
                   </p>
                   <div className="space-y-2">
                     <p className="text-sm text-gray-600">
-                      <strong>Recommendation:</strong> Consider for internal technical roles with English training program.
+                      <strong>Recommendation:</strong> Strong candidate for internal technical roles or Mexico-based positions with US collaboration. Provide English training support for career advancement to client-facing roles.
                     </p>
                     <p className="text-sm text-gray-600">
-                      <strong>Timeline:</strong> Re-assess after 6-12 months of targeted language training.
+                      <strong>Next Steps:</strong> Technical interview to validate architecture skills. Discuss language support program availability.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-          </motion.div>
+          </motion.div> */}
 
           {/* Hiring Recommendation */}
           {/* <motion.div

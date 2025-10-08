@@ -2,27 +2,55 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 
-// Assessment prompts for different roles with follow-up questions
-const assessmentPrompts = [
+// Unified Assessment Prompts - Each role has 2 questions (language-focused + scenario-focused)
+const unifiedAssessmentPrompts = [
   {
-    role: 'Technical Architect',
+    role: 'Technical Solutions Architect',
     questions: [
-      'In up to 3 minutes, please describe a complex system architecture you have designed. What were the key trade-offs you had to make?',
-      'Follow-up: How did you handle scalability challenges in that architecture? What would you do differently if you were to rebuild it today?'
+      'In up to 3 minutes, please describe a complex system architecture you have designed. What were the key trade-offs you had to make and how did you communicate these decisions to stakeholders?',
+      'Follow-up scenario: A production system you designed is experiencing severe performance issues during peak hours. Walk me through how you would diagnose the problem, communicate with the team, and implement a solution under pressure.'
+    ]
+  },
+  {
+    role: 'Customer Service Representative',
+    questions: [
+      'In up to 3 minutes, tell me about your customer service experience. What strategies do you use to handle difficult conversations and ensure customer satisfaction?',
+      'Follow-up scenario: A customer calls very upset because their Nissan vehicle delivery has been delayed by 2 weeks and they need it for an important trip. They\'re threatening to cancel. Walk me through how you would handle this call.'
+    ]
+  },
+  // {
+  //   role: 'Sales Representative',
+  //   questions: [
+  //     'In up to 3 minutes, describe your sales experience and approach. What techniques do you use to understand customer needs and build trust?',
+  //     'Follow-up scenario: You\'re pitching the Nissan Ariya to a potential customer who is concerned about the higher price compared to gas vehicles and worried about charging infrastructure. Convince them of the value and try to close the sale.'
+  //   ]
+  // },
+  {
+    role: 'Business Analyst',
+    questions: [
+      'In up to 3 minutes, explain how you manage complex projects and communicate with cross-functional teams. Provide a specific example of a challenging project you successfully delivered.',
+      'Follow-up scenario: You need to cut 20% from your project budget, which means reducing headcount or delaying key features. Walk through how you would make this decision, communicate it to your team, and handle pushback from a senior engineer who threatens to quit.'
     ]
   },
   {
     role: 'Financial Project Manager',
     questions: [
-      'In up to 3 minutes, please explain how you manage project budgets and communicate financial updates to stakeholders. Provide a specific example.',
-      'Follow-up: Describe a time when a project went over budget. How did you communicate this to stakeholders and what corrective actions did you take?'
+      'In up to 3 minutes, explain how you manage project budgets and communicate financial updates to stakeholders. What systems do you use to track spending and forecast risks?',
+      'Follow-up scenario: You discover that a project has gone 30% over budget due to scope creep. Your executive sponsor is upset and demanding answers. Walk me through how you would communicate this situation and present your corrective action plan.'
     ]
   },
+  // {
+  //   role: 'Technical Support Engineer',
+  //   questions: [
+  //     'In up to 3 minutes, describe your technical support experience. How do you approach troubleshooting complex issues and communicating technical problems to non-technical stakeholders?',
+  //     'Follow-up scenario: A production system is down at 3 AM and customers can\'t access their accounts. You just got paged. Walk me through your immediate response, how you would diagnose the issue, and how you would communicate with customers and management during the outage.'
+  //   ]
+  // },
   {
-    role: 'General Professional',
+    role: 'Quality Assurance Lead',
     questions: [
-      'In up to 3 minutes, please tell us about your professional experience and career goals. What motivates you in your work?',
-      'Follow-up: Describe a challenging situation at work and how you overcame it. What did you learn from that experience?'
+      'In up to 3 minutes, describe your QA philosophy and approach to ensuring product quality. How do you balance speed of delivery with thorough testing?',
+      'Follow-up scenario: Two days before a major release, you discover a critical bug that could affect customer safety. The executive team is pressuring you to ship on time, but Engineering claims the bug is low priority. How would you advocate for the right decision and who would you escalate to?'
     ]
   }
 ];
@@ -35,6 +63,7 @@ const NissanTechnicalArchitectAssessment: React.FC = () => {
   const [promptRevealed, setPromptRevealed] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Track which question (0 or 1)
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   // Removed unused videoBlob state
   const [videoUrl, setVideoUrl] = useState<string>('');
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
@@ -42,6 +71,7 @@ const NissanTechnicalArchitectAssessment: React.FC = () => {
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<NodeJS.Timeout>();
+  const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Connect video stream to video element when stream is available or state changes
   useEffect(() => {
@@ -106,6 +136,10 @@ const NissanTechnicalArchitectAssessment: React.FC = () => {
 
   const revealPromptAndBegin = async () => {
     try {
+      // Stop any playing audio when starting recording
+      window.speechSynthesis.cancel();
+      setIsPlayingAudio(false);
+
       // Request camera and microphone permissions
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -179,6 +213,10 @@ const NissanTechnicalArchitectAssessment: React.FC = () => {
   };
 
   const reRecord = () => {
+    // Stop any playing audio
+    window.speechSynthesis.cancel();
+    setIsPlayingAudio(false);
+
     setRecordingState('idle');
     setPromptRevealed(false);
     setTimeLeft(180);
@@ -194,13 +232,17 @@ const NissanTechnicalArchitectAssessment: React.FC = () => {
   };
 
   const submitAssessment = () => {
+    // Stop any playing audio
+    window.speechSynthesis.cancel();
+    setIsPlayingAudio(false);
+
     // Save current video to completed videos
     if (videoUrl) {
       setCompletedVideos([...completedVideos, videoUrl]);
     }
 
     // Check if there are more questions
-    const totalQuestions = assessmentPrompts[selectedPrompt].questions.length;
+    const totalQuestions = unifiedAssessmentPrompts[selectedPrompt].questions.length;
     if (currentQuestionIndex < totalQuestions - 1) {
       // Move to next question
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -230,6 +272,47 @@ const NissanTechnicalArchitectAssessment: React.FC = () => {
     return 'text-gray-700';
   };
 
+  const playPromptAudio = () => {
+    // Stop any existing speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(
+      unifiedAssessmentPrompts[selectedPrompt].questions[currentQuestionIndex]
+    );
+
+    // Configure voice settings
+    utterance.rate = 0.9; // Slightly slower for clarity
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onstart = () => {
+      setIsPlayingAudio(true);
+    };
+
+    utterance.onend = () => {
+      setIsPlayingAudio(false);
+    };
+
+    utterance.onerror = () => {
+      setIsPlayingAudio(false);
+    };
+
+    speechSynthesisRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const stopPromptAudio = () => {
+    window.speechSynthesis.cancel();
+    setIsPlayingAudio(false);
+  };
+
+  // Cleanup speech synthesis on unmount
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, []);
+
   return (
     <>
       <Head>
@@ -250,7 +333,7 @@ const NissanTechnicalArchitectAssessment: React.FC = () => {
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">Nissan North America</h1>
                   <div className="flex items-center space-x-3">
-                    <p className="text-lg text-blue-600 font-medium">Language Proficiency Screening</p>
+                    <p className="text-lg text-blue-600 font-medium">Candidate Pre-Screening Assessment</p>
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg">
                       <svg className="w-3 h-3 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -284,17 +367,17 @@ const NissanTechnicalArchitectAssessment: React.FC = () => {
                 <span className="text-white text-3xl">🎯</span>
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Language Proficiency Assessment
+                Candidate Pre-Screening Assessment
               </h2>
               <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto rounded-full"></div>
             </div>
 
             <p className="text-xl text-gray-700 mb-4 text-center leading-relaxed">
-              Welcome to the next step in your application process. This focused assessment evaluates your
-              <span className="font-semibold text-blue-600"> English communication skills</span> for your specific role.
+              Welcome to the next step in your application process. This assessment evaluates your
+              <span className="font-semibold text-blue-600"> communication skills and job-specific competencies</span> through role-tailored questions.
             </p>
             <p className="text-base text-gray-600 mb-8 text-center">
-              You&apos;ll answer <strong>2 questions</strong>: an initial question and a follow-up. Each response can be up to 3 minutes.
+              You&apos;ll answer <strong>2 questions</strong>: an experience-based question and a scenario-based follow-up. Each response can be up to 3 minutes.
             </p>
 
             {/* Instructions */}
@@ -351,24 +434,48 @@ const NissanTechnicalArchitectAssessment: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-indigo-900">
-                      Question {currentQuestionIndex + 1} of {assessmentPrompts[selectedPrompt].questions.length}
+                      Question {currentQuestionIndex + 1} of {unifiedAssessmentPrompts[selectedPrompt].questions.length}
                     </h3>
-                    <p className="text-sm text-indigo-600 font-medium">{assessmentPrompts[selectedPrompt].role}</p>
+                    <p className="text-sm text-indigo-600 font-medium">{unifiedAssessmentPrompts[selectedPrompt].role}</p>
                   </div>
                 </div>
                 <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg font-bold text-sm">
-                  {currentQuestionIndex === 0 ? 'INITIAL' : 'FOLLOW-UP'}
+                  {currentQuestionIndex === 0 ? 'EXPERIENCE' : 'SCENARIO'}
                 </div>
               </div>
               <div className="bg-white border-l-4 border-indigo-500 p-6 rounded-r-xl shadow-md">
-                <p className="text-gray-800 text-xl leading-relaxed font-medium">
-                  {assessmentPrompts[selectedPrompt].questions[currentQuestionIndex]}
+                <p className="text-gray-800 text-xl leading-relaxed font-medium mb-4">
+                  {unifiedAssessmentPrompts[selectedPrompt].questions[currentQuestionIndex]}
                 </p>
-                <div className="mt-4 flex items-center text-sm text-gray-600">
-                  <span className="inline-flex items-center bg-gray-100 rounded-full px-3 py-1">
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm text-gray-600">
                     <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
                     Up to 3 minutes
                   </span>
+                  <button
+                    onClick={isPlayingAudio ? stopPromptAudio : playPromptAudio}
+                    className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                      isPlayingAudio
+                        ? 'bg-red-500 hover:bg-red-600 text-white'
+                        : 'bg-blue-500 hover:bg-blue-600 text-white'
+                    }`}
+                  >
+                    {isPlayingAudio ? (
+                      <>
+                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd" />
+                        </svg>
+                        Stop Audio
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+                        </svg>
+                        Play Question Audio
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
@@ -402,9 +509,9 @@ const NissanTechnicalArchitectAssessment: React.FC = () => {
                   {/* Prompt Selector - Only show on first question */}
                   {currentQuestionIndex === 0 && (
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">Select Assessment Type</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">Select Your Role</h3>
                     <div className="space-y-3">
-                      {assessmentPrompts.map((prompt, index) => (
+                      {unifiedAssessmentPrompts.map((prompt, index) => (
                         <button
                           key={index}
                           onClick={() => setSelectedPrompt(index)}
@@ -564,7 +671,7 @@ const NissanTechnicalArchitectAssessment: React.FC = () => {
                       onClick={submitAssessment}
                       className="px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105"
                     >
-                      {currentQuestionIndex < assessmentPrompts[selectedPrompt].questions.length - 1
+                      {currentQuestionIndex < unifiedAssessmentPrompts[selectedPrompt].questions.length - 1
                         ? 'Continue to Next Question →'
                         : 'Submit Assessment'}
                     </button>
