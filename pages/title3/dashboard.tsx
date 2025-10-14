@@ -431,7 +431,7 @@ export default function Title3Dashboard() {
         { id: '2', name: 'Ahmed Hassan', grade: 4, proficiencyLevel: 'Advanced', progress: 92, voiceMinutes: 52, lastActivity: '2025-03-19' },
         { id: '3', name: 'Lin Zhang', grade: 3, proficiencyLevel: 'Beginner', progress: 34, voiceMinutes: 28, lastActivity: '2025-03-18' },
         { id: '4', name: 'Carlos Rodriguez', grade: 5, proficiencyLevel: 'Proficient', progress: 88, voiceMinutes: 67, lastActivity: '2025-03-20' },
-        { id: '5', name: 'Fatima Al-Ahmad', grade: 4, proficiencyLevel: 'Intermediate', progress: 65, voiceMinutes: 41, lastActivity: '2025-03-19' },
+        // { id: '5', name: 'Fatima Al-Ahmad', grade: 4, proficiencyLevel: 'Intermediate', progress: 65, voiceMinutes: 41, lastActivity: '2025-03-19' },
       ],
       weeklyProgress: [
         { week: 'Week 1', reading: 23, speaking: 18, listening: 25, writing: 15 },

@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 
-// Simple redirect to overview page
+// Simple redirect to unified dashboard
 export default function TeacherIndex() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/teacher/overview');
+    router.replace('/teacher/dashboard');
   }, [router]);
 
   return (

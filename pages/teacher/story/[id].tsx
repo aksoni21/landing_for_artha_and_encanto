@@ -184,10 +184,10 @@ export default function StoryAnalyticsPage() {
         {/* Header */}
         <div className="mb-6">
           <Link
-            href="/teacher/overview"
+            href="/teacher/stories"
             className="text-blue-600 hover:text-blue-800 text-sm font-medium mb-2 inline-block"
           >
-            ← Back to Dashboard
+            ← Back to Stories
           </Link>
           <div className="flex justify-between items-start">
             <div>

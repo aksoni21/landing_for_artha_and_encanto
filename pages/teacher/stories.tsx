@@ -175,7 +175,7 @@ export default function TeacherStoriesPage() {
         {/* Header */}
         <div className="mb-6">
           <Link
-            href="/teacher/overview"
+            href="/teacher/dashboard"
             className="text-blue-600 hover:text-blue-800 text-sm font-medium mb-2 inline-block"
           >
             ← Back to Dashboard
