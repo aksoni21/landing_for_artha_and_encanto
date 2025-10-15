@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import toast, { Toaster } from 'react-hot-toast';
-import { getBackendURL } from '../../utils/environment';
 
 // Types
 interface TodaySnapshot {
@@ -106,9 +105,9 @@ export default function TeacherDashboard() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const backendUrl = getBackendURL();
+      // Use relative URL like audioAnalysisService - works on all devices
       const response = await fetch(
-        `${backendUrl}/api/teacher/dashboard?teacher_id=${teacherId}`
+        `/api/teacher/dashboard?teacher_id=${teacherId}`
       );
 
       if (!response.ok) {

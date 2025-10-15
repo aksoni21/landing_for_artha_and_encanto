@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import EncantoAILanding from '../components/EncantoAILanding';
+import Teacher_landing from '../components/Teacher_landing';
 
 export default function EncantoAI() {
   return (
@@ -23,7 +24,8 @@ export default function EncantoAI() {
         <meta name="twitter:title" content="Encanto AI - Voice-First Language Learning" />
         <meta name="twitter:description" content="Practice Spanish and German with AI tutors in real-time voice conversations." />
       </Head>
-      <EncantoAILanding />
+      {/* <EncantoAILanding /> */}
+      <Teacher_landing />
     </>
   );
 }

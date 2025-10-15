@@ -1,11 +1,10 @@
-import { getBackendURL } from '../utils/environment';
-
 // API service for teacher dashboard data
 class TeacherService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = `${getBackendURL()}/api`;
+    // Use relative URL like audioAnalysisService - works on all devices
+    this.baseUrl = '/api';
   }
 
   private async getAuthToken(): Promise<string | null> {
