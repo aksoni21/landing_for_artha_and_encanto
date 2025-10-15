@@ -9,7 +9,6 @@ export default function TeacherLanding() {
   const [institutionName, setInstitutionName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
-  const [challengeActive, setChallengeActive] = useState(false);
 
   // Handle teacher early access signup
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,9 +78,8 @@ export default function TeacherLanding() {
         }),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
+        await response.json(); // Consume response
         toast.success('Demo request received! Our team will contact you within 24 hours.', {
           duration: 5000,
           style: {
@@ -257,7 +255,7 @@ export default function TeacherLanding() {
                   </div>
                 </div>
                 <blockquote className="italic text-gray-700 border-l-4 border-blue-600 pl-4">
-                  "This is so much more helpful than practicing by myself"
+                  &quot;This is so much more helpful than practicing by myself&quot;
                   <footer className="text-sm text-gray-600 mt-2">— Maria, Panama City</footer>
                 </blockquote>
               </div>
@@ -303,7 +301,6 @@ export default function TeacherLanding() {
               </p>
               <button
                 onClick={() => {
-                  setChallengeActive(true);
                   window.location.href = '/audio-analysis/results-demo';
                 }}
                 className="bg-white text-blue-600 px-10 py-5 rounded-xl font-bold text-lg hover:bg-blue-50 transition-all duration-300 shadow-lg transform hover:scale-105"
@@ -675,7 +672,7 @@ export default function TeacherLanding() {
                   <p className="text-sm text-blue-600 font-medium">{testimonial.institution}</p>
                 </div>
                 <blockquote className="text-gray-700 italic mb-4 border-l-4 border-blue-600 pl-4">
-                  "{testimonial.quote}"
+                  &quot;{testimonial.quote}&quot;
                 </blockquote>
                 <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                   <p className="text-sm font-semibold text-green-800">
@@ -719,19 +716,19 @@ export default function TeacherLanding() {
               <div className="space-y-4">
                 <blockquote className="bg-white rounded-lg p-4 shadow border-l-4 border-blue-600">
                   <p className="text-gray-700 italic mb-2">
-                    "This is so much more helpful than practicing by myself"
+                    &quot;This is so much more helpful than practicing by myself&quot;
                   </p>
                   <footer className="text-sm text-gray-600">— Maria, Panama City</footer>
                 </blockquote>
                 <blockquote className="bg-white rounded-lg p-4 shadow border-l-4 border-purple-600">
                   <p className="text-gray-700 italic mb-2">
-                    "I can see exactly where I need to improve"
+                    &quot;I can see exactly where I need to improve&quot;
                   </p>
                   <footer className="text-sm text-gray-600">— Carlos, Panama City</footer>
                 </blockquote>
                 <blockquote className="bg-white rounded-lg p-4 shadow border-l-4 border-amber-600">
                   <p className="text-gray-700 italic mb-2">
-                    "The feedback is instant and really helpful"
+                    &quot;The feedback is instant and really helpful&quot;
                   </p>
                   <footer className="text-sm text-gray-600">— Ana, Panama City</footer>
                 </blockquote>
@@ -805,7 +802,7 @@ export default function TeacherLanding() {
               <h3 className="text-2xl font-bold mb-6 text-blue-400">The Proof</h3>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-4">
                 <p className="text-sm italic mb-4">
-                  "This is so much more helpful than practicing by myself"
+                  &quot;This is so much more helpful than practicing by myself&quot;
                 </p>
                 <p className="text-xs">— Maria, Panama City</p>
               </div>

@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import EncantoAILanding from '../components/EncantoAILanding';
+// import EncantoAILanding from '../components/EncantoAILanding';
 import Teacher_landing from '../components/Teacher_landing';
 
 export default function EncantoAI() {
