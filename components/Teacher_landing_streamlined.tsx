@@ -8,7 +8,6 @@ export default function TeacherLandingStreamlined() {
   const [institutionalEmail, setInstitutionalEmail] = useState('');
   const [institutionName, setInstitutionName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showQRCode, setShowQRCode] = useState(false);
 
   // Handle teacher early access signup
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,7 +115,7 @@ export default function TeacherLandingStreamlined() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
             >
-              Encanto AI <span className="text-purple-600">for Educators</span>
+              Encanto AI 
             </motion.div>
             <div className="hidden md:flex space-x-8">
               <a href="#features" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">Features</a>
@@ -150,10 +149,8 @@ export default function TeacherLandingStreamlined() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            Reduce Assessment Time by
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-amber-600"> 75%</span>
-            <br />
-            with AI
+            Transform Your Language Teaching
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-amber-600"> with AI</span>
           </motion.h1>
 
           <motion.p
@@ -162,8 +159,9 @@ export default function TeacherLandingStreamlined() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Stop spending <span className="font-bold text-blue-600">10-15 minutes per student</span> on manual speaking assessments.
-            Get instant, detailed feedback in <span className="font-bold text-purple-600">60 seconds</span>.
+            Complete teacher dashboard with <span className="font-bold text-blue-600">real-time student analytics</span>, 
+            <span className="font-bold text-purple-600"> AI-powered stories</span>, and 
+            <span className="font-bold text-amber-600"> instant assessment feedback</span>.
           </motion.p>
 
           <motion.div
@@ -206,7 +204,7 @@ export default function TeacherLandingStreamlined() {
           </motion.div>
 
           {/* Trust Indicators */}
-          <motion.div
+          {/* <motion.div
             className="flex flex-wrap justify-center gap-6 mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -221,7 +219,7 @@ export default function TeacherLandingStreamlined() {
             <div className="bg-white rounded-xl px-6 py-3 shadow-md border border-blue-200">
               <span className="font-semibold text-blue-700">✓ FERPA Compliant</span>
             </div>
-          </motion.div>
+          </motion.div> */}
 
           {/* Conference Proof Section */}
           <motion.div
@@ -253,12 +251,12 @@ export default function TeacherLandingStreamlined() {
                     <p className="text-gray-700 font-medium">Reduction in assessment time</p>
                   </div>
                   <div className="bg-gradient-to-r from-purple-50 to-amber-50 rounded-lg p-4 border border-purple-200">
-                    <div className="text-3xl font-bold text-purple-600 mb-1">Automated</div>
-                    <p className="text-gray-700 font-medium">Title III reporting</p>
+                    <div className="text-3xl font-bold text-purple-600 mb-1">Instant</div>
+                    <p className="text-gray-700 font-medium">Detailed feedback for every student</p>
                   </div>
                   <div className="bg-gradient-to-r from-amber-50 to-blue-50 rounded-lg p-4 border border-amber-200">
-                    <div className="text-3xl font-bold text-amber-600 mb-1">Instant</div>
-                    <p className="text-gray-700 font-medium">Detailed feedback for every student</p>
+                    <div className="text-3xl font-bold text-amber-600 mb-1">Automated</div>
+                    <p className="text-gray-700 font-medium">Title III reporting [coming soon]</p>
                   </div>
                 </div>
               </div>
@@ -323,31 +321,31 @@ export default function TeacherLandingStreamlined() {
         <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {[
             {
-              icon: '📊',
-              title: 'Real-time Analytics',
-              description: 'Live tracking of student activity, progress, and engagement',
-              metrics: '7 active students, 24 stories read, 75 vocabulary words',
+              icon: '📚',
+              title: 'AI-Powered Stories',
+              description: 'Interactive stories that adapt to each student\'s level with real-time engagement tracking',
+              metrics: '24 stories read, personalized difficulty, instant comprehension feedback',
               color: 'from-blue-500 to-cyan-500'
+            },
+            {
+              icon: '📊',
+              title: 'Student Analytics',
+              description: 'Real-time dashboard showing exactly how each student is performing',
+              metrics: '7 active students, progress tracking, engagement metrics',
+              color: 'from-purple-500 to-pink-500'
             },
             {
               icon: '🎯',
               title: 'Priority Alerts',
-              description: 'Smart notifications for at-risk students and declining performance',
-              metrics: '3 at-risk students identified automatically',
-              color: 'from-purple-500 to-pink-500'
-            },
-            {
-              icon: '📈',
-              title: 'Progress Tracking',
-              description: 'Individual student profiles with detailed performance metrics',
-              metrics: 'TOEFL scores, weekly minutes, completion rates',
+              description: 'Smart notifications for students who need extra attention',
+              metrics: '3 at-risk students identified, declining performance alerts',
               color: 'from-amber-500 to-orange-500'
             },
             {
-              icon: '🤖',
-              title: 'AI-Powered Assignments',
-              description: 'Automated assignment creation and feedback system',
-              metrics: 'Instant feedback, personalized recommendations',
+              icon: '🗣️',
+              title: 'Speaking Assessment',
+              description: 'Instant AI feedback on pronunciation, fluency, and speaking skills',
+              metrics: '60-second assessments, detailed feedback, TOEFL scoring',
               color: 'from-green-500 to-emerald-500'
             }
           ].map((feature, index) => (
@@ -387,32 +385,32 @@ export default function TeacherLandingStreamlined() {
         <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {[
             {
-              icon: '⏰',
-              title: '10-15 Minutes Per Student',
-              description: 'Manual speaking assessments take forever',
-              solution: 'AI assessment in 60 seconds',
-              proof: '75% time reduction proven in Panama testing'
+              icon: '👥',
+              title: 'Large Class Sizes',
+              description: "Can't track how each student is doing individually",
+              solution: 'Real-time analytics for every student',
+              proof: 'See exactly how each student is performing with stories, speaking, and vocabulary'
+            },
+            {
+              icon: '📚',
+              title: 'Engagement Tracking',
+              description: 'Hard to know if students are actually learning from stories',
+              solution: 'AI-powered stories with engagement tracking',
+              proof: 'See which stories students read, how long they spent, comprehension scores'
+            },
+            {
+              icon: '🗣️',
+              title: 'Speaking Assessment',
+              description: 'No way to assess speaking skills consistently',
+              solution: 'AI-powered speaking assessments with instant feedback',
+              proof: '60-second assessments with detailed pronunciation and fluency feedback'
             },
             {
               icon: '📊',
-              title: 'Title III Compliance',
-              description: 'Manual reporting for federal requirements',
-              solution: 'Automated compliance reporting',
-              proof: 'Built-in Title III reporting features'
-            },
-            {
-              icon: '👥',
-              title: 'Large Class Sizes',
-              description: "Can't give individual attention to every student",
-              solution: 'Personalized feedback for every student',
-              proof: 'Individual student profiles with AI recommendations'
-            },
-            {
-              icon: '📈',
-              title: 'Progress Tracking',
-              description: 'Difficult to track individual student improvement',
-              solution: 'Detailed analytics and progress reports',
-              proof: 'Real-time progress tracking with visual indicators'
+              title: 'Student Data',
+              description: 'No visibility into student progress and performance',
+              solution: 'Complete dashboard with student analytics',
+              proof: 'Real-time tracking of stories read, vocabulary learned, speaking practice'
             }
           ].map((painPoint, index) => (
             <motion.div
@@ -733,7 +731,7 @@ export default function TeacherLandingStreamlined() {
             <span className="flex items-center gap-2">✓ <span>Full Dashboard Access</span></span>
             <span className="flex items-center gap-2">✓ <span>AI Assessment Tools</span></span>
             <span className="flex items-center gap-2">✓ <span>Priority Support</span></span>
-            <span className="flex items-center gap-2">✓ <span>Free 30-Day Trial</span></span>
+            {/* <span className="flex items-center gap-2">✓ <span>Free 30-Day Trial</span></span> */}
           </motion.div>
         </div>
       </section>

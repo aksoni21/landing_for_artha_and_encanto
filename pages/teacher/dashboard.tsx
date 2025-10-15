@@ -557,12 +557,6 @@ export default function TeacherDashboard() {
               >
                 View All Students
               </Link>
-              <button
-                onClick={fetchDashboardData}
-                className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-md text-sm font-medium"
-              >
-                Refresh
-              </button>
             </div>
           </div>
         </div>

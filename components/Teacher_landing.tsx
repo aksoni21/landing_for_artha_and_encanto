@@ -1348,7 +1348,7 @@ export default function TeacherLanding() {
       <footer className="container mx-auto px-6 py-12 border-t border-gray-300">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 className="text-gray-900 text-lg font-bold mb-4">Encanto AI for Educators</h3>
+            <h3 className="text-gray-900 text-lg font-bold mb-4">Encanto AI</h3>
             <p className="text-gray-600 text-sm">
               Transforming language education with AI-powered assessment and teaching tools.
             </p>

@@ -12,11 +12,11 @@ const nextConfig = {
         destination: '/teacher/casco-antiguo'
       },
       {
-        source: '/nissan-eng',
+        source: '/nissan',
         destination: '/mockups/nissan/technical-architect-assessment'
       },
       {
-        source: '/nissan-eng/results',
+        source: '/nissan/results',
         destination: '/mockups/nissan/results'
       },
       {
@@ -26,7 +26,15 @@ const nextConfig = {
       {
         source: '/ssg/results',
         destination: '/mockups/ssg/results'
-      }
+      },
+      {
+        source: '/title3',
+        destination: '/title3/dashboard'
+      },
+      {
+        source: '/student',
+        destination: '/mockups/student-demo2'
+      },
     ];
   }
 };
