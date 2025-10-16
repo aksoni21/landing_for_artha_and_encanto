@@ -67,8 +67,6 @@ interface ChatMessage {
 export default function TeacherDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [teacherId, setTeacherId] = useState('');
   const router = useRouter();
 
   // New state for enhanced features
@@ -86,46 +84,47 @@ export default function TeacherDashboard() {
   const [snapshotDetailsType, setSnapshotDetailsType] = useState<string>('');
   const chatInputRef = useRef<HTMLInputElement>(null);
 
-  // For demo purposes, use a default teacher ID
+  // DEMO MODE: Using static demo data instead of API calls
   useEffect(() => {
-    const defaultTeacherId = process.env.NEXT_PUBLIC_DEMO_TEACHER_ID || '09ce8f47-0d2e-43c4-8220-560c23e02baa';
-    setTeacherId(defaultTeacherId);
+    // Set demo data immediately
+    setData({
+      snapshot: {
+        active_today: 7,
+        stories_read: 24,
+        speaking_sessions: 15,
+        vocabulary_practiced: 75,
+        at_risk_count: 3,
+        completed_stories: 15,
+        in_progress: 9
+      },
+      priority_alerts: [],
+      activity_feed: []
+    });
+    setLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (teacherId) {
-      fetchDashboardData();
-      // Refresh every 30 seconds for real-time feel
-      const interval = setInterval(fetchDashboardData, 30000);
-      return () => clearInterval(interval);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teacherId]);
-
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      // Use relative URL like audioAnalysisService - works on all devices
-      const response = await fetch(
-        `/api/teacher/dashboard?teacher_id=${teacherId}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setData(data);
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
-      setError('Failed to load dashboard data. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // COMMENTED OUT - API fetch not needed for demo
+  // const fetchDashboardData = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const response = await fetch(
+  //       `/api/teacher/dashboard?teacher_id=${teacherId}`
+  //     );
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+  //     const data = await response.json();
+  //     setData(data);
+  //   } catch (error) {
+  //     console.error('Failed to fetch dashboard data:', error);
+  //     setError('Failed to load dashboard data. Please try again.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const navigateToStudent = (studentId: string) => {
-    router.push(`/teacher/student/${studentId}/stories?teacher_id=${teacherId}`);
+    router.push(`/teacher/student/${studentId}/stories`);
   };
 
   // Demo students fallback data
@@ -139,66 +138,15 @@ export default function TeacherDashboard() {
     { id: 'demo-9', name: 'Yuki Tanaka', email: 'yuki@demo.com', status: 'Active', progress: 18, avgScore: 75, toefl: 62, weeklyMinutes: 42, lastActivity: '2025-03-18', storiesCompleted: 7, strugglingWith: 'Pronunciation', strength: 'Vocabulary breadth' },
   ];
 
-  // Fetch real students data from API
+  // DEMO MODE: Load demo students immediately
   useEffect(() => {
-    if (teacherId) {
-      fetchStudentsData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teacherId]);
-
-  const fetchStudentsData = async () => {
-    // For now, always use demo students
-    // TODO: Uncomment below to fetch from API when ready
-    /*
-    try {
-      const backendUrl = getBackendURL();
-      const response = await fetch(
-        `${backendUrl}/api/teacher/students?teacher_id=${teacherId}`
-      );
-
-      if (!response.ok) {
-        console.warn('Failed to fetch students, using demo data');
-        setStudents(demoStudents);
-        return;
-      }
-
-      const studentsData = await response.json();
-
-      // If no students from API, use demo data
-      if (!studentsData.students || studentsData.students.length === 0) {
-        console.log('No students from API, using demo data');
-        setStudents(demoStudents);
-        return;
-      }
-
-      // Transform API data to match our Student interface
-      const transformedStudents: Student[] = studentsData.students.map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        email: s.email,
-        status: s.status === 'active' ? 'Active' : s.status === 'at_risk' ? 'At Risk' : 'Inactive',
-        progress: s.stories_total > 0 ? Math.round((s.stories_completed / s.stories_total) * 100) : 0,
-        avgScore: Math.round(s.avg_story_score || 0),
-        toefl: s.toefl_score || 0,
-        weeklyMinutes: s.weekly_minutes || 0,
-        lastActivity: s.last_activity || '',
-        storiesCompleted: s.stories_completed || 0,
-        strugglingWith: s.struggling_area || 'Not identified',
-        strength: s.strength_area || 'Not identified'
-      }));
-
-      setStudents(transformedStudents);
-    } catch (error) {
-      console.error('Failed to fetch students:', error);
-      // Use demo data on error
-      setStudents(demoStudents);
-    }
-    */
-
-    // Always use demo data for now
     setStudents(demoStudents);
-  };
+  }, []);
+
+  // COMMENTED OUT - API fetch not needed for demo
+  // const fetchStudentsData = async () => {
+  //   setStudents(demoStudents);
+  // };
 
   // AI Chat handler
   const handleAIChatSend = () => {
@@ -502,32 +450,25 @@ export default function TeacherDashboard() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex">
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Error</h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>{error}</p>
-                </div>
-                <div className="mt-4">
-                  <button
-                    onClick={fetchDashboardData}
-                    className="bg-red-100 px-4 py-2 rounded text-sm font-medium text-red-800 hover:bg-red-200"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // DEMO MODE: No error handling needed
+  // if (error) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 p-6">
+  //       <div className="max-w-7xl mx-auto">
+  //         <div className="bg-red-50 border border-red-200 rounded-md p-4">
+  //           <div className="flex">
+  //             <div className="ml-3">
+  //               <h3 className="text-sm font-medium text-red-800">Error</h3>
+  //               <div className="mt-2 text-sm text-red-700">
+  //                 <p>{error}</p>
+  //               </div>
+  //             </div>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (!data) {
     return <div>No data available</div>;
