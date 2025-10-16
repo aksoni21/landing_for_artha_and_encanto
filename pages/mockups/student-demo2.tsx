@@ -336,10 +336,10 @@ export default function StudentDemo2() {
                               <h4 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Practice This Phrase</h4>
                               <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 mb-6 border border-purple-200">
                                 <p className="text-base md:text-lg font-semibold text-purple-800 mb-2">
-                                  &quot;{practiceStory.firstSentenceSpanish}&quot;
+                                  &quot;{practiceStory.firstSentenceEnglish}&quot;
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                  {practiceStory.firstSentenceEnglish}
+                                  {practiceStory.firstSentenceSpanish}
                                 </p>
                               </div>
 
@@ -481,10 +481,10 @@ export default function StudentDemo2() {
                             <div className="text-4xl">{word.emoji}</div>
                             <div className="flex-1">
                               <div className="flex justify-between items-start mb-1">
-                                <h4 className="text-xl font-bold text-gray-900">{word.word}</h4>
+                                <h4 className="text-xl font-bold text-gray-900">{word.translation}</h4>
                                 <span className="text-lg font-semibold text-purple-600">{word.mastery}%</span>
                               </div>
-                              <p className="text-gray-600">{word.translation}</p>
+                              <p className="text-gray-600">{word.word}</p>
                             </div>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
