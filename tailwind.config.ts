@@ -7,8 +7,10 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   safelist: [
-    'text-7xl',
-    'text-6xl',
+    {
+      pattern: /text-(6xl|7xl)/,
+      variants: ['md', 'lg', 'sm', 'xl'],
+    },
   ],
   theme: {
     extend: {
