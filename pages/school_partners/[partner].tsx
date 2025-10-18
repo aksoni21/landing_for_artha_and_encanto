@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
 import Link from 'next/link';
 
-// Import partner configurations
-import { getPartnerConfig, PartnerConfig, colorMap } from '../../data/partners-config';
+// Import school partner configurations
+import { getPartnerConfig, PartnerConfig, colorMap } from '../../data/school-partners-config';
 
 // Reuse existing components from audio-analysis
 import AudioRecorder from '../../components/audio/AudioRecorder';
