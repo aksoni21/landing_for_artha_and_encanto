@@ -22,37 +22,35 @@ export default async function handler(
   }
 
   try {
-    const { email, type } = req.body;
+    const { email, institutionName, source } = req.body;
 
-    // Basic email validation
+    // Validate required fields
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ message: 'Invalid email address' });
+    }
+
+    if (!institutionName || institutionName.trim().length === 0) {
+      return res.status(400).json({ message: 'Institution name is required' });
     }
 
     // Get client IP and user agent
     const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     const userAgent = req.headers['user-agent'];
 
-    // Insert email into database
+    // Insert demo request into database
     const client = await pool.connect();
     try {
       const result = await client.query(
-        `INSERT INTO early_access_signups (email, ip_address, user_agent, source, signup_type)
-         VALUES ($1, $2, $3, $4, $5)
-         ON CONFLICT (email, signup_type) DO NOTHING
+        `INSERT INTO early_access_signups (email, institution_name, ip_address, user_agent, source, signup_type)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (email, signup_type) DO UPDATE
+         SET institution_name = EXCLUDED.institution_name
          RETURNING id`,
-        [email, ipAddress, userAgent, 'encanto_ai_landing', type || 'teacher']
+        [email, institutionName.trim(), ipAddress, userAgent, source || 'teacher_landing', 'institutional']
       );
 
-      if (result.rows.length === 0) {
-        return res.status(200).json({
-          message: 'Email already registered',
-          alreadyRegistered: true
-        });
-      }
-
       return res.status(200).json({
-        message: 'Successfully registered for early access',
+        message: 'Demo request submitted successfully',
         id: result.rows[0].id
       });
 
@@ -61,7 +59,7 @@ export default async function handler(
     }
 
   } catch (error) {
-    console.error('Error saving early access signup:', error);
+    console.error('Error saving institutional demo request:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
-} 
+}

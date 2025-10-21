@@ -8,6 +8,7 @@ interface AudioPreviewProps {
   onAnalyze?: () => void;
   onRemove?: () => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export const AudioPreview: React.FC<AudioPreviewProps> = ({
@@ -16,6 +17,7 @@ export const AudioPreview: React.FC<AudioPreviewProps> = ({
   onAnalyze,
   onRemove,
   className = '',
+  disabled = false,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -75,6 +77,7 @@ export const AudioPreview: React.FC<AudioPreviewProps> = ({
   }, [audioUrl]);
 
   const togglePlayPause = () => {
+    if (disabled) return;
     const audio = audioRef.current;
     if (!audio || !isLoaded) return;
 
@@ -280,10 +283,14 @@ export const AudioPreview: React.FC<AudioPreviewProps> = ({
             {/* Play/Pause */}
             <motion.button
               onClick={togglePlayPause}
-              className="p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              disabled={!isLoaded}
+              className={`p-4 text-white rounded-full shadow-lg ${
+                disabled
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
+              whileHover={disabled ? {} : { scale: 1.05 }}
+              whileTap={disabled ? {} : { scale: 0.95 }}
+              disabled={!isLoaded || disabled}
             >
               {isPlaying ? (
                 <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">

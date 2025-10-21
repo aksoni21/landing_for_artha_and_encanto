@@ -308,7 +308,7 @@ const AudioAnalysisResultsDemoPage: React.FC = () => {
                 Demo analysis completed on {new Date(demoResult.completed_at).toLocaleDateString()}
               </p>
               <p className="text-sm text-gray-600">
-                Duration: {Math.round(demoResult.transcription.duration_seconds / 60)} minutes • 
+                Duration: {Math.round(demoResult.transcription.duration_seconds / 60)} minutes •
                 Words: {demoResult.transcription.word_count}
               </p>
             </div>
@@ -329,6 +329,8 @@ const AudioAnalysisResultsDemoPage: React.FC = () => {
                   showDetails={true}
                   animated={true}
                   className="w-full max-w-4xl"
+                  audioUrl="/demo-speaking-audio.mp3"
+                  showAudioPreview={true}
                 />
               </div>
             ) : (

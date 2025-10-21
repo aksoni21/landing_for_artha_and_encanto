@@ -492,12 +492,12 @@ export default function TeacherDashboard() {
               >
                 Export CSV
               </button>
-              <Link
+              {/* <Link
                 href="/teacher/students"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
               >
                 View All Students
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>
@@ -1183,24 +1183,32 @@ export default function TeacherDashboard() {
                     </div>
                   </div>
 
-                  <div className="mt-6 flex gap-3">
-                    <button
-                      onClick={() => {
-                        toast.success(`Message sent to ${selectedStudent.name}`);
-                      }}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
+                  <div className="mt-6 space-y-3">
+                    <Link
+                      href="/teacher/student-speaking-demo"
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
                     >
-                      Send Message
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleAssignWork(selectedStudent);
-                        setShowStudentModal(false);
-                      }}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg"
-                    >
-                      Assign Work
-                    </button>
+                      🎤 Go to Audio 
+                    </Link>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          toast.success(`Message sent to ${selectedStudent.name}`);
+                        }}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
+                      >
+                        Send Message
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleAssignWork(selectedStudent);
+                          setShowStudentModal(false);
+                        }}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg"
+                      >
+                        Assign Work
+                      </button>
+                    </div>
                   </div>
                 </div>
               </motion.div>

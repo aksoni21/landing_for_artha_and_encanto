@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { getToeflBand } from '../../utils/toefl';
+// import { AudioPreview } from '../audio/AudioPreview';
 
 interface TOEFLScoreIndicatorProps {
   totalScore: number;
@@ -15,6 +16,8 @@ interface TOEFLScoreIndicatorProps {
   showDetails?: boolean;
   animated?: boolean;
   className?: string;
+  audioUrl?: string;
+  showAudioPreview?: boolean;
 }
 
 export const TOEFLScoreIndicator: React.FC<TOEFLScoreIndicatorProps> = ({
@@ -25,6 +28,8 @@ export const TOEFLScoreIndicator: React.FC<TOEFLScoreIndicatorProps> = ({
   showDetails = true,
   animated = true,
   className = '',
+  audioUrl,
+  showAudioPreview = false,
 }) => {
   const band = getToeflBand(totalScore);
   
@@ -65,7 +70,7 @@ export const TOEFLScoreIndicator: React.FC<TOEFLScoreIndicatorProps> = ({
         <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           TOEFL iBT Score Analysis
         </h3>
-        
+
         {/* Main Score and Sections Grid */}
         <div className="grid md:grid-cols-2 gap-8">
           {/* Left: Main Score */}
@@ -151,6 +156,36 @@ export const TOEFLScoreIndicator: React.FC<TOEFLScoreIndicatorProps> = ({
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Audio Sample - Compact */}
+            {showAudioPreview && audioUrl && (
+              <div className="mt-6 p-4 bg-purple-50 rounded-lg">
+                <h5 className="font-semibold text-purple-900 mb-2 text-sm flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                  </svg>
+                  Audio Sample
+                </h5>
+                <div className="mt-2">
+                  {/* Minimal Audio Player UI */}
+                  <div className="flex items-center gap-2 bg-white rounded-lg p-2">
+                    <button
+                      disabled
+                      className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center cursor-not-allowed"
+                    >
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </button>
+                    <div className="flex-1 h-1 bg-gray-200 rounded-full">
+                      <div className="w-0 h-full bg-purple-400 rounded-full"></div>
+                    </div>
+                    <span className="text-xs text-gray-500">0:10</span>
+                  </div>
+                  <p className="text-xs text-purple-700 mt-1 italic">Demo speaking sample</p>
+                </div>
               </div>
             )}
 

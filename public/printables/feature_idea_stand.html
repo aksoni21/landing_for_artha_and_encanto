@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encanto AI - Share Your Challenges</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+        }
+
+        .printable-card {
+            width: 5in;
+            height: 7in;
+            background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 35px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            text-align: center;
+            border: 1px solid #e9d5ff;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 0;
+            line-height: 1.2;
+        }
+        
+        .header h1 span {
+            background: -webkit-linear-gradient(45deg, #7c3aed, #db2777);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            font-size: 16px;
+            color: #5b21b6;
+            margin-top: 8px;
+        }
+
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .qr-code {
+            width: 2.2in;
+            height: 2.2in;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e9d5ff;
+        }
+
+        .qr-section p {
+            font-weight: 700;
+            color: #475569;
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        
+        .steps {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+            width: 100%;
+        }
+
+        .steps li {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #334155;
+            margin-bottom: 12px;
+        }
+        
+        .steps li:last-child {
+            margin-bottom: 0;
+        }
+        
+        .steps li .number {
+            font-weight: 700;
+            font-size: 14px;
+            color: #fff;
+            background-color: #7c3aed;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .footer-logo {
+            font-weight: 700;
+            color: #6b21a8;
+        }
+
+        @media print {
+            body {
+                background-color: #fff;
+                display: block;
+            }
+            .printable-card {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                border-radius: 0;
+                width: 5in;
+                height: 7in;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="printable-card">
+        <div class="header">
+            <h1>Tell Us Your Biggest<br><span> Challenges</span></h1>
+            <p>We build solutions for real classroom problems.</p>
+        </div>
+
+        <div class="qr-section">
+            <img src="../../docs/qr_codes/encantospeak_contact.png" alt="QR Code to contact Encanto AI" class="qr-code">
+            <p>Scan to Connect With Us</p>
+        </div>
+
+        <ol class="steps">
+            <li><span class="number">1</span> Open your camera and scan the QR code.</li>
+            <li><span class="number">2</span> This will open a contact form to our product team.</li>
+            <li><span class="number">3</span> Describe any challenges you face in your classroom or school.</li>
+        </ol>
+        
+        <div class="footer-logo">
+            Encanto AI
+        </div>
+    </div>
+</body>
+</html>
