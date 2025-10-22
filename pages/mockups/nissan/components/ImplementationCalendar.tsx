@@ -49,8 +49,8 @@ const ImplementationCalendar = () => {
     ]
   };
 
-  // Week 5-6 Monday on Jan 5, 2026
-  const week5Monday = new Date(2026, 0, 5);
+  // Week 5-6 Monday on Dec 1, 2025
+  const week5Monday = new Date(2025, 11, 1);
   milestones[`${week5Monday.getFullYear()}-${week5Monday.getMonth() + 1}-${week5Monday.getDate()}`] = {
     title: 'START: Broader Rollout',
     phase: 'PHASE2',
