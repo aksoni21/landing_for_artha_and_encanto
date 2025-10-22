@@ -1,7 +1,9 @@
 import React from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { User, Mail, Calendar, Download } from 'lucide-react';
+import { User, Mail, Calendar, Download, ArrowRight } from 'lucide-react';
+
 
 interface MockAssessmentData {
   candidate: {
@@ -326,9 +328,13 @@ const NissanResultsPage: React.FC = () => {
                   <p className="text-sm font-semibold text-gray-700">Confidential HR Document</p>
                   <p className="text-xs text-gray-500">For Internal Use Only</p>
                 </div>
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg border border-green-200">
-                  <p className="text-xs font-semibold text-green-800">✓ 2-Question Screening Complete</p>
-                </div>
+                <Link
+                  href="/mockups/nissan/talent-management"
+                  className="inline-flex items-center bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg border border-green-200 hover:from-green-100 hover:to-emerald-100 transition-colors"
+                >
+                  <p className="text-xs font-semibold text-green-800">Talent Management View</p>
+                  <span className="ml-2 text-green-600">→</span>
+                </Link>
               </div>
             </div>
           </div>
@@ -1068,6 +1074,35 @@ const NissanResultsPage: React.FC = () => {
               </p>
             </div>
           </motion.div> */}
+
+          {/* Implementation Timeline Link */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}
+            className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl shadow-xl p-8 mb-8 border-2 border-indigo-200"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-white text-3xl">📅</span>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Implementation Timeline</h2>
+                  <p className="text-gray-600">
+                    View the complete 16-week roadmap from pilot to full deployment
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/mockups/nissan/timeline"
+                className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <span>View Timeline</span>
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </motion.div>
+
         </main>
 
         {/* Footer */}
