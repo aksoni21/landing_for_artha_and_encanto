@@ -35,6 +35,10 @@ const nextConfig = {
         source: '/student',
         destination: '/mockups/student-demo2'
       },
+      {
+        source: '/contact',
+        destination: '/contact/links'
+      }
     ];
   }
 };
