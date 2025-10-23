@@ -74,18 +74,6 @@ export default function ContactLinks() {
       ]
     },
     {
-      type: 'student' as UserType,
-      icon: '🎓',
-      title: 'I\'m a Student',
-      description: 'Tell us what makes learning difficult for you',
-      color: 'green',
-      prompts: [
-        'What makes it hard to practice speaking?',
-        'Do you get enough feedback on your work?',
-        'What would help you learn better?'
-      ]
-    },
-    {
       type: 'coordinator' as UserType,
       icon: '💼',
       title: 'I\'m a District/School Coordinator',
@@ -95,6 +83,17 @@ export default function ContactLinks() {
         'How do you track student progress across classrooms?',
         'What data do you wish you had access to?',
         'What are your biggest concerns about teacher workload?'
+      ]
+    },    {
+      type: 'student' as UserType,
+      icon: '🎓',
+      title: 'I\'m a Student',
+      description: 'Tell us what makes learning difficult for you',
+      color: 'green',
+      prompts: [
+        'What makes it hard to practice speaking?',
+        'Do you get enough feedback on your work?',
+        'What would help you learn better?'
       ]
     }
   ];
@@ -136,7 +135,7 @@ export default function ContactLinks() {
     <>
       <Head>
         <title>Share Your Challenges - Encanto AI</title>
-        <meta name="description" content="Tell us about your challenges with language learning and teaching. We're here to help." />
+        {/* <meta name="description" content="Tell us about your challenges with language learning and teaching. We're here to help." /> */}
         <meta name="keywords" content="Encanto AI, feedback, language learning challenges, teaching problems" />
         <link rel="icon" type="image/svg+xml" href="/encanto-ai-assets/favicon-e.svg" />
         <link rel="icon" type="image/x-icon" href="/encanto-ai-assets/favicon.ico" />
@@ -161,18 +160,18 @@ export default function ContactLinks() {
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               We Want to Hear From You
             </h1>
-            <p className="text-xl text-gray-600 mb-2 max-w-3xl mx-auto">
+            {/* <p className="text-xl text-gray-600 mb-2 max-w-3xl mx-auto">
               Tell us about the challenges you face. Your feedback helps us build better solutions for language learning.
-            </p>
+            </p> */}
           </div>
 
           {!selectedUserType ? (
             <>
               {/* User Type Selection */}
               <div className="mb-16">
-                <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+                {/* <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
                   Who Are You?
-                </h2>
+                </h2> */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   {userTypes.map((user) => {
                     const colors = getColorClasses(user.color);
@@ -191,7 +190,7 @@ export default function ContactLinks() {
                             {user.description}
                           </p>
                           <button className={`w-full ${colors.button} text-white font-semibold py-3 px-6 rounded-lg transition-colors`}>
-                            Share My Challenges →
+                            Contact Form →
                           </button>
                         </div>
                       </div>
@@ -234,7 +233,7 @@ export default function ContactLinks() {
                   </div>
 
                   {/* Thought Starters */}
-                  <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
+                  {/* <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
                     <h3 className="font-semibold text-gray-900 mb-3">Some questions to think about (but feel free to share anything!):</h3>
                     <ul className="space-y-2">
                       {userTypes.find(u => u.type === selectedUserType)?.prompts.map((prompt, idx) => (
@@ -247,7 +246,7 @@ export default function ContactLinks() {
                     <p className="text-sm text-gray-500 mt-3 italic">
                       These are just conversation starters - share whatever challenges matter most to you.
                     </p>
-                  </div>
+                  </div> */}
 
                   <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-xl p-6 shadow-sm text-gray-700">
                     <div>
@@ -304,7 +303,6 @@ export default function ContactLinks() {
                         onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-40 resize-none"
                         placeholder="Share as much detail as you'd like. What's frustrating? What takes too much time? What would make your life easier?"
-                        required
                       />
                     </div>
 

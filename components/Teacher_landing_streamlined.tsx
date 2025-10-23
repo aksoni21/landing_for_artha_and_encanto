@@ -122,6 +122,7 @@ export default function TeacherLandingStreamlined() {
               <a href="#features" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">Features</a>
               <a href="#testimonials" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">Meet Our Teachers</a>
               <Link href="/title3/dashboard" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">District Dashboard</Link>
+              <Link href="/contact/links" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">Contact Us</Link>
               {/* <Link href="/teacher-stories" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all">
                 Teacher Login
               </Link> */}
