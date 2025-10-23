@@ -18,7 +18,7 @@ export default function ContactLinks() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const backendUrl = 'https://spanishaibrains.up.railway.app/'//getBackendURL();
+      const backendUrl = 'https://spanishaibrains.up.railway.app'//getBackendURL();
       // console.log('🔍 Backend URL:', backendUrl);
       const response = await fetch(`${backendUrl}/save_problem_feedback`, {
         method: 'POST',
