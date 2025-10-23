@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import { useState } from 'react';
-import { getBackendURL } from '../../utils/environment';
+// import { getBackendURL } from '../../utils/environment';
 
 type UserType = 'teacher' | 'student' | 'coordinator' | null;
 
@@ -18,8 +18,8 @@ export default function ContactLinks() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const backendUrl = getBackendURL();
-      console.log('🔍 Backend URL:', backendUrl);
+      const backendUrl = 'https://spanishaibrains.up.railway.app/'//getBackendURL();
+      // console.log('🔍 Backend URL:', backendUrl);
       const response = await fetch(`${backendUrl}/save_problem_feedback`, {
         method: 'POST',
         headers: {
