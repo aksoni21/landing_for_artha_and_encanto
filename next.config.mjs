@@ -28,6 +28,19 @@ const nextConfig = {
         destination: '/mockups/ssg/results'
       },
       {
+        source: '/teacher-conf',
+        destination: '/mockups/conferences/teacher'
+      },
+      {
+        source: '/teacher-es-conf',
+        destination: '/mockups/conferences/teacher.es'
+      },
+      {
+        source: '/title3-conf',
+        destination: '/mockups/conferences/compliance-coordinator'
+      },
+      
+      {
         source: '/title3',
         destination: '/title3/dashboard'
       },
