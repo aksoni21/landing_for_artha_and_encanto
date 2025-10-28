@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import toast, { Toaster } from 'react-hot-toast';
-import CreateAssignmentModalES from './components/CreateAssignmentModal.es';
+import CreateAssignmentModalES from '../../../lib/mockups/conferences/components/CreateAssignmentModal.es';
 
 // Types
 interface TodaySnapshot {

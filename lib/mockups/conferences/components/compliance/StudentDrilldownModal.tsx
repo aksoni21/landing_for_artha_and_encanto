@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Student } from '../../data/complianceData';
+import { Student } from '../../../../../lib/mockups/conferences/data/complianceData';
 
 interface StudentDrilldownModalProps {
   isOpen: boolean;
@@ -14,8 +14,8 @@ export default function StudentDrilldownModal({
   isOpen,
   onClose,
   students,
-  title,
-  filterCategory
+  title
+  // filterCategory
 }: StudentDrilldownModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<keyof Student>('name');

@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import ActionCenterCard, { generateMockAlerts } from './components/compliance/ActionCenterCard';
-import PopulationSummary from './components/compliance/PopulationSummary';
-import StudentDrilldownModal from './components/compliance/StudentDrilldownModal';
-import { ComplianceTracker, FundingView } from './components/compliance/ComplianceFundingViews';
-import ParentEngagement from './components/compliance/ParentEngagement';
+import ActionCenterCard, { generateMockAlerts } from '../../../lib/mockups/conferences/components/compliance/ActionCenterCard';
+import PopulationSummary from '../../../lib/mockups/conferences/components/compliance/PopulationSummary';
+import StudentDrilldownModal from '../../../lib/mockups/conferences/components/compliance/StudentDrilldownModal';
+import { ComplianceTracker, FundingView } from '../../../lib/mockups/conferences/components/compliance/ComplianceFundingViews';
+import ParentEngagement from '../../../lib/mockups/conferences/components/compliance/ParentEngagement';
 import {
   mockStudents,
   mockComplianceTasks,
@@ -15,7 +15,7 @@ import {
   schools,
   grades,
   Student
-} from './data/complianceData';
+} from '../../../lib/mockups/conferences/data/complianceData';
 
 export default function ComplianceCoordinatorDashboard() {
   // Filters

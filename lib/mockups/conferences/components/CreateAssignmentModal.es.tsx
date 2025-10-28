@@ -29,6 +29,7 @@ export default function CreateAssignmentModalES({ isOpen, onClose, students }: C
   const [step, setStep] = useState<'select-method' | 'ai-generate' | 'upload' | 'vowel-lesson' | 'grammar-assignment' | 'assign'>('select-method');
   const [generatedStory, setGeneratedStory] = useState<{ title: string; content: string; author: string } | null>(null);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [assignmentType, setAssignmentType] = useState<'story' | 'vowel' | 'grammar'>('story');
   const [recommendedVowel, setRecommendedVowel] = useState<string>('');
   const [recommendedGrammar, setRecommendedGrammar] = useState<string>('');

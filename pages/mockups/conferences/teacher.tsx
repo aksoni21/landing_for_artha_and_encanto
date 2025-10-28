@@ -3,9 +3,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { /* LineChart, Line, */ BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import toast, { Toaster } from 'react-hot-toast';
-import CreateAssignmentModal from './components/CreateAssignmentModal';
+import CreateAssignmentModal from '../../../lib/mockups/conferences/components/CreateAssignmentModal';
 
 // Types
 interface TodaySnapshot {
@@ -84,6 +84,7 @@ export default function TeacherConferenceMockup() {
   const [assignmentForm, setAssignmentForm] = useState({ topic: '', due: '', note: '' });
   const [showSnapshotDetails, setShowSnapshotDetails] = useState(false);
   const [snapshotDetailsType, setSnapshotDetailsType] = useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedAssignment, setSelectedAssignment] = useState<any>(null);
   const [showAssignmentDetail, setShowAssignmentDetail] = useState(false);
   const chatInputRef = useRef<HTMLInputElement>(null);
@@ -1534,6 +1535,7 @@ export default function TeacherConferenceMockup() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {selectedAssignment.students.map((student: any) => (
                         <tr key={student.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -1696,9 +1698,14 @@ export default function TeacherConferenceMockup() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                toast.success(`Opening audio files for ${student.name}...`, {
-                                  icon: '🎤',
-                                  duration: 2000
+                                router.push({
+                                  pathname: '/teacher/student-assignment-audio',
+                                  query: {
+                                    studentId: student.id,
+                                    studentName: student.name,
+                                    assignmentId: selectedAssignment.id,
+                                    assignmentTitle: selectedAssignment.title
+                                  }
                                 });
                               }}
                               className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"

@@ -295,14 +295,14 @@ export default function ContactLinks() {
 
                     <div>
                       <label htmlFor="problem" className="block text-sm font-medium text-gray-700 mb-2">
-                        What challenges are you facing? Tell us your story.
+                        Notes: (optional)
                       </label>
                       <textarea
                         id="problem"
                         value={formData.problem}
                         onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-40 resize-none"
-                        placeholder="Share as much detail as you'd like. What's frustrating? What takes too much time? What would make your life easier?"
+                        placeholder="Share as much detail as you'd like."
                       />
                     </div>
 

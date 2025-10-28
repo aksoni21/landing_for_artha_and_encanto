@@ -17,6 +17,17 @@ export interface Student {
   assessmentStatus: 'Current' | 'Due Soon' | 'Overdue';
   serviceMinutes: number;
   requiredMinutes: number;
+  homeLanguage?: string;
+  immigrantStatus?: boolean;
+  entryDate?: string;
+  proficiencyLevel?: string;
+  speakingScore?: number;
+  listeningScore?: number;
+  readingScore?: number;
+  writingScore?: number;
+  overallELPScore?: number;
+  priorYearScore?: number;
+  progressTowardProficiency?: 'Making Progress' | 'Not Making Progress' | 'Attained Proficiency';
 }
 
 export interface ComplianceTask {
@@ -80,8 +91,8 @@ export const grades = [
 ];
 
 export const mockStudents: Student[] = [
-  { id: 'S001', name: 'Maria Rodriguez', school: 'Lincoln Elementary', grade: 3, program: 'ESL Pullout', yearsInProgram: 2, lastScore: 3.5, hlsStatus: 'Complete', ilpStatus: 'Active', parentNotification: 'Sent', isLTEL: false, isRFEP: false, isNewEL: false, assessmentStatus: 'Current', serviceMinutes: 180, requiredMinutes: 180 },
-  { id: 'S002', name: 'Chen Wei', school: 'Lincoln Elementary', grade: 2, program: 'ESL Pullout', yearsInProgram: 1, lastScore: 2.8, hlsStatus: 'Complete', ilpStatus: 'Active', parentNotification: 'Sent', isLTEL: false, isRFEP: false, isNewEL: true, assessmentStatus: 'Current', serviceMinutes: 200, requiredMinutes: 200 },
+  { id: 'S001', name: 'Maria Rodriguez', school: 'Lincoln Elementary', grade: 3, program: 'ESL Pullout', yearsInProgram: 2, lastScore: 3.5, hlsStatus: 'Complete', ilpStatus: 'Active', parentNotification: 'Sent', isLTEL: false, isRFEP: false, isNewEL: false, assessmentStatus: 'Current', serviceMinutes: 180, requiredMinutes: 180, homeLanguage: 'Spanish', immigrantStatus: false, entryDate: '2023-08-15', proficiencyLevel: 'Intermediate', speakingScore: 3.8, listeningScore: 3.5, readingScore: 3.2, writingScore: 3.6, overallELPScore: 3.5, priorYearScore: 2.8, progressTowardProficiency: 'Making Progress' },
+  { id: 'S002', name: 'Chen Wei', school: 'Lincoln Elementary', grade: 2, program: 'ESL Pullout', yearsInProgram: 1, lastScore: 2.8, hlsStatus: 'Complete', ilpStatus: 'Active', parentNotification: 'Sent', isLTEL: false, isRFEP: false, isNewEL: true, assessmentStatus: 'Current', serviceMinutes: 200, requiredMinutes: 200, homeLanguage: 'Mandarin', immigrantStatus: true, entryDate: '2024-09-01', proficiencyLevel: 'Beginning', speakingScore: 2.5, listeningScore: 3.0, readingScore: 2.8, writingScore: 2.9, overallELPScore: 2.8, priorYearScore: undefined, progressTowardProficiency: 'Making Progress' },
   { id: 'S003', name: 'Ahmed Hassan', school: 'Washington Middle School', grade: 6, program: 'Sheltered Instruction', yearsInProgram: 5, lastScore: 4.2, hlsStatus: 'Complete', ilpStatus: 'Needs Update', parentNotification: 'Pending', isLTEL: true, isRFEP: false, isNewEL: false, assessmentStatus: 'Due Soon', serviceMinutes: 150, requiredMinutes: 180 },
   { id: 'S004', name: 'Fatima Al-Said', school: 'Roosevelt High School', grade: 10, program: 'ESL Integrated', yearsInProgram: 3, lastScore: 4.8, hlsStatus: 'Complete', ilpStatus: 'Active', parentNotification: 'Sent', isLTEL: false, isRFEP: false, isNewEL: false, assessmentStatus: 'Current', serviceMinutes: 120, requiredMinutes: 120 },
   { id: 'S005', name: 'Juan Hernandez', school: 'Lincoln Elementary', grade: 5, program: 'ESL Pullout', yearsInProgram: 6, lastScore: 3.2, hlsStatus: 'Pending', ilpStatus: 'Missing', parentNotification: 'Overdue', isLTEL: true, isRFEP: false, isNewEL: false, assessmentStatus: 'Overdue', serviceMinutes: 100, requiredMinutes: 180 },
@@ -172,3 +183,118 @@ export const mockGrowthData = {
   meetingGrowth: 72,
   notMeetingGrowth: 28
 };
+
+// Seeded random number generator for consistent data generation
+function seededRandom(seed: number) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+// Generate additional students to represent a realistic district size (200+ students)
+function generateDistrictStudents(): Student[] {
+  const baseStudents = [...mockStudents];
+  const additionalCount = 214; // To reach ~234 total students
+  const programs = ['ESL Pullout', 'ESL Integrated', 'Sheltered Instruction'];
+  const proficiencyLevels = ['Beginning', 'Intermediate', 'Advanced', 'Proficient'];
+  const languages = ['Spanish', 'Mandarin', 'Arabic', 'Spanish', 'Russian', 'Korean', 'Tagalog', 'Russian', 'French', 'French'];
+  const progressStatuses: Array<'Making Progress' | 'Not Making Progress' | 'Attained Proficiency'> = ['Making Progress', 'Not Making Progress', 'Attained Proficiency'];
+
+  // Distribution targets for realistic data
+  const proficiencyWeights = [0.25, 0.42, 0.25, 0.08]; // Beginning: 25%, Intermediate: 42%, Advanced: 25%, Proficient: 8%
+  const progressWeights = [0.72, 0.17, 0.11]; // Making Progress: 72%, Not Making: 17%, Attained: 11%
+
+  for (let i = 0; i < additionalCount; i++) {
+    const studentNum = mockStudents.length + i + 1;
+    const schoolIndex = i % (schools.length - 1); // Exclude "All Schools"
+
+    // Use seeded random for consistent generation
+    const gradeNum = Math.floor(seededRandom(i * 1000 + 1) * 13); // K-12
+    const yearsInProgram = Math.floor(seededRandom(i * 1000 + 2) * 8);
+    const isLTEL = yearsInProgram >= 5;
+    const isNewEL = yearsInProgram < 1;
+
+    // Weighted random selection for proficiency
+    const profRandom = seededRandom(i * 1000 + 3);
+    let profLevel = proficiencyLevels[0];
+    let cumWeight = 0;
+    for (let j = 0; j < proficiencyLevels.length; j++) {
+      cumWeight += proficiencyWeights[j];
+      if (profRandom < cumWeight) {
+        profLevel = proficiencyLevels[j];
+        break;
+      }
+    }
+
+    // Weighted random for progress
+    const progRandom = seededRandom(i * 1000 + 4);
+    let progStatus = progressStatuses[0];
+    cumWeight = 0;
+    for (let j = 0; j < progressStatuses.length; j++) {
+      cumWeight += progressWeights[j];
+      if (progRandom < cumWeight) {
+        progStatus = progressStatuses[j];
+        break;
+      }
+    }
+
+    const isRFEP = progStatus === 'Attained Proficiency';
+    const immigrantStatus = seededRandom(i * 1000 + 5) < 0.15; // 15% immigrants
+
+    // Generate realistic scores based on proficiency level
+    const baseScore = profLevel === 'Beginning' ? 2.0 :
+                      profLevel === 'Intermediate' ? 3.2 :
+                      profLevel === 'Advanced' ? 4.0 : 4.7;
+    const variance = seededRandom(i * 1000 + 6) * 0.8 - 0.4; // -0.4 to +0.4
+
+    const speaking = Math.max(1, Math.min(5, baseScore + variance + seededRandom(i * 1000 + 7) * 0.3));
+    const listening = Math.max(1, Math.min(5, baseScore + variance + seededRandom(i * 1000 + 8) * 0.3));
+    const reading = Math.max(1, Math.min(5, baseScore + variance - seededRandom(i * 1000 + 9) * 0.2));
+    const writing = Math.max(1, Math.min(5, baseScore + variance - seededRandom(i * 1000 + 10) * 0.3));
+    const overall = (speaking + listening + reading + writing) / 4;
+    const priorYear = yearsInProgram > 0 ? overall - (0.4 + seededRandom(i * 1000 + 11) * 0.6) : undefined;
+
+    const requiredMins = gradeNum <= 5 ? 180 : gradeNum <= 8 ? 140 : 120;
+    const serviceMins = isRFEP ? 0 : Math.floor(requiredMins * (0.7 + seededRandom(i * 1000 + 12) * 0.4));
+
+    const hlsRand = seededRandom(i * 1000 + 13);
+    const ilpRand = seededRandom(i * 1000 + 14);
+    const parentRand = seededRandom(i * 1000 + 15);
+    const assessRand = seededRandom(i * 1000 + 16);
+    const monthRand = seededRandom(i * 1000 + 17);
+
+    baseStudents.push({
+      id: `S${String(studentNum).padStart(3, '0')}`,
+      name: `Student ${studentNum}`,
+      school: schools[schoolIndex + 1],
+      grade: gradeNum,
+      program: programs[i % programs.length],
+      yearsInProgram,
+      lastScore: parseFloat(overall.toFixed(1)),
+      hlsStatus: hlsRand < 0.9 ? 'Complete' : hlsRand < 0.95 ? 'Pending' : 'Overdue',
+      ilpStatus: isRFEP ? 'Active' : ilpRand < 0.85 ? 'Active' : ilpRand < 0.925 ? 'Needs Update' : 'Missing',
+      parentNotification: parentRand < 0.92 ? 'Sent' : parentRand < 0.96 ? 'Pending' : 'Overdue',
+      isLTEL,
+      isRFEP,
+      isNewEL,
+      assessmentStatus: assessRand < 0.88 ? 'Current' : assessRand < 0.94 ? 'Due Soon' : 'Overdue',
+      serviceMinutes: serviceMins,
+      requiredMinutes: requiredMins,
+      homeLanguage: languages[i % languages.length],
+      immigrantStatus,
+      entryDate: `202${4 - Math.floor(yearsInProgram)}-${String(Math.floor(monthRand * 12) + 1).padStart(2, '0')}-01`,
+      proficiencyLevel: profLevel,
+      speakingScore: parseFloat(speaking.toFixed(1)),
+      listeningScore: parseFloat(listening.toFixed(1)),
+      readingScore: parseFloat(reading.toFixed(1)),
+      writingScore: parseFloat(writing.toFixed(1)),
+      overallELPScore: parseFloat(overall.toFixed(1)),
+      priorYearScore: priorYear ? parseFloat(priorYear.toFixed(1)) : undefined,
+      progressTowardProficiency: progStatus
+    });
+  }
+
+  return baseStudents;
+}
+
+// Export the full district dataset (generated once)
+export const districtStudents = generateDistrictStudents();

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conference Table Sign - Teacher Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @page {
+      size: 8.5in 11in;
+      margin: 0;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sign {
+      width: 8.5in;
+      height: 11in;
+      text-align: center;
+      padding: 0.75in 1in;
+      border: 3px solid #1e40af;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .emoji {
+      font-size: 10rem;
+      margin-bottom: 0rem;
+      display: block;
+    }
+
+    .main-question {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: #1e3a8a;
+      line-height: 1.2;
+      margin-bottom: 0;
+      letter-spacing: -0.02em;
+    }
+
+    .divider {
+      width: 120px;
+      height: 5px;
+      background: linear-gradient(90deg, #3b82f6, #10b981);
+      margin-top: 50px;
+      margin-bottom: 50px;
+      border-radius: 3px;
+    }
+
+    .solution {
+      font-size: 2.75rem;
+      font-weight: 600;
+      color: #059669;
+      margin-bottom: 0;
+      letter-spacing: -0.01em;
+    }
+
+    .cta {
+      font-size: 1.75rem;
+      color: #6b7280;
+      font-weight: 500;
+      font-style: italic;
+      margin-top: 0.5rem;
+    }
+
+    /* Print-specific styles */
+    @media print {
+      body {
+        padding: 0;
+        margin: 0;
+      }
+
+      .sign {
+        width: 8.5in;
+        height: 11in;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sign">
+    <span class="emoji">⏰</span>
+    <h1 class="main-question">Too many students, not enough time?</h1>
+    <div class="divider"></div>
+    <h2 class="solution">We personalize and track speaking practice</h2>
+    <p class="cta">Ask me how</p>
+  </div>
+</body>
+</html>

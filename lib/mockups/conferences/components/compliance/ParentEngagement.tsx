@@ -1,4 +1,4 @@
-import { ParentCommunication } from '../../data/complianceData';
+import { ParentCommunication } from '../../../../../lib/mockups/conferences/data/complianceData';
 
 interface ParentEngagementProps {
   communications: ParentCommunication[];
