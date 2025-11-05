@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import { useState } from 'react';
-import { getBackendURL } from '../../utils/environment';
+// import { getBackendURL } from '../../utils/environment';
 
 type UserType = 'teacher' | 'student' | 'coordinator' | null;
 
@@ -36,12 +36,13 @@ export default function ContactLinks() {
   const [showEmailPopup, setShowEmailPopup] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
-
+  const url = 'https://spanishaibrains.up.railway.app';
+  
   const fetchLeads = async (password: string) => {
     setLoadingLeads(true);
     setLeadsError(null);
     try {
-      const response = await fetch(`${getBackendURL()}/get_problem_feedback`, {
+      const response = await fetch(`${url}/get_problem_feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,7 +86,7 @@ export default function ContactLinks() {
 
     setSendingEmail(true);
     try {
-      const response = await fetch(`${getBackendURL()}/send_intro_email`, {
+      const response = await fetch(`${url}/send_intro_email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +117,7 @@ export default function ContactLinks() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const backendUrl = getBackendURL();
+      const backendUrl = url;
       // console.log('🔍 Backend URL:', backendUrl);
       const response = await fetch(`${backendUrl}/save_problem_feedback`, {
         method: 'POST',
