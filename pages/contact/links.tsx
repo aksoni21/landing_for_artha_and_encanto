@@ -1,9 +1,21 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { useState } from 'react';
-// import { getBackendURL } from '../../utils/environment';
+import { useState, useEffect } from 'react';
+import { getBackendURL } from '../../utils/environment';
 
 type UserType = 'teacher' | 'student' | 'coordinator' | null;
+
+interface Lead {
+  id: number;
+  created_at: string;
+  name: string;
+  email: string;
+  organization: string;
+  problem: string;
+  user_type: string;
+  source: string;
+  event: string;
+}
 
 export default function ContactLinks() {
   const [selectedUserType, setSelectedUserType] = useState<UserType>(null);
@@ -11,14 +23,100 @@ export default function ContactLinks() {
     email: '',
     name: '',
     organization: '',
-    problem: ''
+    problem: '',
+    event: 'TexTESOL'
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showLeads, setShowLeads] = useState(false);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loadingLeads, setLoadingLeads] = useState(false);
+  const [leadsError, setLeadsError] = useState<string | null>(null);
+  const [password, setPassword] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showEmailPopup, setShowEmailPopup] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
+
+  const fetchLeads = async (password: string) => {
+    setLoadingLeads(true);
+    setLeadsError(null);
+    try {
+      const response = await fetch(`${getBackendURL()}/get_problem_feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
+      if (response.status === 401) {
+        setLeadsError('Incorrect password');
+        setIsAuthenticated(false);
+        return;
+      }
+      const result = await response.json();
+      if (result.success) {
+        setLeads(result.data);
+        setIsAuthenticated(true);
+      } else {
+        setLeadsError(result.message || 'Failed to fetch leads');
+        setIsAuthenticated(false);
+      }
+    } catch (e) {
+      setLeadsError('An error occurred while fetching leads.');
+      setIsAuthenticated(false);
+      console.error(e);
+    } finally {
+      setLoadingLeads(false);
+    }
+  };
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchLeads(password);
+  };
+
+  const handleSendIntroEmail = (lead: Lead) => {
+    setSelectedLead(lead);
+    setShowEmailPopup(true);
+  };
+
+  const confirmSendEmail = async () => {
+    if (!selectedLead) return;
+
+    setSendingEmail(true);
+    try {
+      const response = await fetch(`${getBackendURL()}/send_intro_email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: selectedLead.name,
+          email: selectedLead.email,
+          organization: selectedLead.organization,
+          user_type: selectedLead.user_type,
+          event: selectedLead.event
+        }),
+      });
+
+      if (response.ok) {
+        alert('Email sent successfully!');
+        setShowEmailPopup(false);
+      } else {
+        alert('Failed to send email. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      alert('An error occurred while sending the email.');
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const backendUrl = 'https://spanishaibrains.up.railway.app'//getBackendURL();
+      const backendUrl = getBackendURL();
       // console.log('🔍 Backend URL:', backendUrl);
       const response = await fetch(`${backendUrl}/save_problem_feedback`, {
         method: 'POST',
@@ -38,7 +136,7 @@ export default function ContactLinks() {
         setTimeout(() => {
           setSelectedUserType(null);
           setIsSubmitted(false);
-          setFormData({ email: '', name: '', organization: '', problem: '' });
+          setFormData({ email: '', name: '', organization: '', problem: '', event: 'TexTESOL' });
         }, 3000);
       } else {
         console.error('❌ Failed to save feedback');
@@ -46,7 +144,7 @@ export default function ContactLinks() {
         setTimeout(() => {
           setSelectedUserType(null);
           setIsSubmitted(false);
-          setFormData({ email: '', name: '', organization: '', problem: '' });
+          setFormData({ email: '', name: '', organization: '', problem: '', event: 'TexTESOL' });
         }, 3000);
       }
     } catch (error) {
@@ -55,7 +153,7 @@ export default function ContactLinks() {
       setTimeout(() => {
         setSelectedUserType(null);
         setIsSubmitted(false);
-        setFormData({ email: '', name: '', organization: '', problem: '' });
+        setFormData({ email: '', name: '', organization: '', problem: '', event: 'TexTESOL' });
       }, 3000);
     }
   };
@@ -158,14 +256,84 @@ export default function ContactLinks() {
           {/* Hero Section */}
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              We Want to Hear From You
+              {showLeads ? 'Leads' : 'We Want to Hear From You'}
             </h1>
             {/* <p className="text-xl text-gray-600 mb-2 max-w-3xl mx-auto">
               Tell us about the challenges you face. Your feedback helps us build better solutions for language learning.
             </p> */}
           </div>
 
-          {!selectedUserType ? (
+          {showLeads ? (
+            isAuthenticated ? (
+              <div>
+                <button
+                  onClick={() => setShowLeads(false)}
+                  className="mb-6 text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                >
+                  ← Back to form
+                </button>
+                {loadingLeads ? (
+                  <p>Loading leads...</p>
+                ) : leadsError ? (
+                  <p className="text-red-500">{leadsError}</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white border text-black">
+                      <thead>
+                        <tr>
+                          <th className="py-2 px-4 border-b">Date</th>
+                          <th className="py-2 px-4 border-b">Name</th>
+                          <th className="py-2 px-4 border-b">Email</th>
+                          <th className="py-2 px-4 border-b">Event</th>
+                          <th className="py-2 px-4 border-b">Actions</th>
+                          {/* <th className="py-2 px-4 border-b">Organization</th> */}
+                          {/* <th className="py-2 px-4 border-b">User Type</th> */}
+                          {/* <th className="py-2 px-4 border-b">Problem</th> */}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {leads.map((lead) => (
+                          <tr key={lead.id}>
+                            <td className="py-2 px-4 border-b">{new Date(lead.created_at).toLocaleDateString()}</td>
+                            <td className="py-2 px-4 border-b">{lead.name}</td>
+                            <td className="py-2 px-4 border-b">{lead.email}</td>
+                            <td className="py-2 px-4 border-b">{lead.event}</td>
+                            <td className="py-2 px-4 border-b">
+                              <button
+                                onClick={() => handleSendIntroEmail(lead)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                              >
+                                Send Intro Email
+                              </button>
+                            </td>
+                            {/* <td className="py-2 px-4 border-b">{lead.organization}</td> */}
+                            {/* <td className="py-2 px-4 border-b">{lead.user_type}</td> */}
+                            {/* <td className="py-2 px-4 border-b">{lead.problem}</td> */}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <form onSubmit={handlePasswordSubmit}>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                />
+                <button
+                  type="submit"
+                  className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors text-lg"
+                >
+                  View Leads
+                </button>
+              </form>
+            )
+          ) : !selectedUserType ? (
             <>
               {/* User Type Selection */}
               <div className="mb-16">
@@ -294,6 +462,20 @@ export default function ContactLinks() {
                     </div>
 
                     <div>
+                      <label htmlFor="event" className="block text-sm font-medium text-gray-700 mb-2">
+                        Conference/Event (optional)
+                      </label>
+                      <input
+                        type="text"
+                        id="event"
+                        value={formData.event}
+                        onChange={(e) => setFormData({ ...formData, event: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g., ACTFL 2024, NABE Conference"
+                      />
+                    </div>
+
+                    <div>
                       <label htmlFor="problem" className="block text-sm font-medium text-gray-700 mb-2">
                         Notes: (optional)
                       </label>
@@ -364,8 +546,43 @@ export default function ContactLinks() {
             <p className="text-gray-500 text-sm">
               © 2024 Encanto AI. Making language barriers disappear.
             </p>
+            <button
+              onClick={() => setShowLeads(true)}
+              className="mt-4 text-sm text-gray-500 hover:underline"
+            >
+              View Leads
+            </button>
           </div>
         </div>
+
+        {/* Email Popup Modal */}
+        {showEmailPopup && selectedLead && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Send Intro Email</h2>
+              <p className="text-gray-700 mb-6">
+                Send intro email to <span className="font-semibold">{selectedLead.name}</span> at{' '}
+                <span className="font-semibold text-blue-600">{selectedLead.email}</span>?
+              </p>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setShowEmailPopup(false)}
+                  disabled={sendingEmail}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmSendEmail}
+                  disabled={sendingEmail}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded disabled:opacity-50"
+                >
+                  {sendingEmail ? 'Sending...' : 'Confirm'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

@@ -122,7 +122,12 @@ export default function TeacherLandingStreamlined() {
               <a href="#features" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">Features</a>
               <a href="#testimonials" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">Meet Our Teachers</a>
               <Link href="/title3/dashboard" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">District Dashboard</Link>
-              <Link href="/contact/links" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">Contact Us</Link>
+              <button
+                onClick={() => document.getElementById('institutional-form')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              >
+                Schedule Institutional Demo
+              </button>
               {/* <Link href="/teacher-stories" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all">
                 Teacher Login
               </Link> */}
@@ -164,28 +169,28 @@ export default function TeacherLandingStreamlined() {
           </motion.div> */}
 
           <motion.h1
-            className="text-5xl md:text-7xl font-bold text-white mb-6 text-center drop-shadow-lg"
+            className="text-4xl md:text-6xl font-bold text-white mb-6 text-center drop-shadow-lg"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}
           >
-            Transform Your Language Teaching
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-amber-400 drop-shadow-xl"> with AI</span>
+            Students Too Nervous.
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-amber-400 drop-shadow-xl"> Teachers Too Busy.</span>
           </motion.h1>
 
           <motion.p
-            className="text-xl md:text-2xl text-white mb-6 max-w-4xl mx-auto text-center leading-relaxed drop-shadow-md bg-black/20 backdrop-blur-sm rounded-2xl p-6"
+            className="text-lg md:text-xl text-white mb-6 max-w-4xl mx-auto text-center leading-relaxed drop-shadow-md bg-black/50 backdrop-blur-sm rounded-2xl p-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Complete teacher dashboard with <span className="font-bold text-blue-300">real-time student analytics</span>,
-            <span className="font-bold text-purple-300"> AI-powered stories</span>, and
-            <span className="font-bold text-amber-300"> instant assessment feedback</span>.
+            We solved both. Students get <span className="font-bold text-blue-300">unlimited judgment-free speaking practice</span>.
+            Teachers get <span className="font-bold text-purple-300">automated assessments</span> with
+            <span className="font-bold text-amber-300"> detailed speaking data and instant feedback</span>.
           </motion.p>
 
-          <motion.div
+          {/* <motion.div
             className="bg-amber-100/95 backdrop-blur-sm border-l-4 border-amber-600 p-6 max-w-3xl mx-auto mb-8 rounded-r-lg shadow-xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -195,7 +200,7 @@ export default function TeacherLandingStreamlined() {
               <span className="font-bold text-amber-700">69% of schools</span> struggle to fill ESL positions.
               Teachers need tools that <span className="font-bold">save time</span>, not add complexity.
             </p>
-          </motion.div>
+          </motion.div> */}
 
           {/* CTAs */}
           <motion.div
@@ -211,17 +216,24 @@ export default function TeacherLandingStreamlined() {
               Try 5-Minute Teacher Demo
             </Link>
             <Link
+              href="https://apps.apple.com/us/app/encanto-ai/id6747835824"
+              className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-pink-700 hover:to-pink-800 transition-all duration-300 shadow-lg transform hover:scale-105 inline-block text-center text-lg"
+            >
+              📱 Download Student App
+            </Link>
+            <Link
               href="/audio-analysis/results-demo"
               className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-8 py-4 rounded-xl font-semibold hover:from-purple-700 hover:to-purple-800 transition-all duration-300 shadow-lg transform hover:scale-105 inline-block text-center text-lg"
             >
               See Demo Assessment Results
             </Link>
-            <button
+            
+            {/* <button
               onClick={() => document.getElementById('institutional-form')?.scrollIntoView({ behavior: 'smooth' })}
               className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-300 transform hover:scale-105 text-lg"
             >
               Schedule Institutional Demo
-            </button>
+            </button> */}
           </motion.div>
 
           {/* Trust Indicators */}
