@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { getBackendURL } from '../../utils/environment';
 
 type UserType = 'teacher' | 'student' | 'coordinator' | null;
