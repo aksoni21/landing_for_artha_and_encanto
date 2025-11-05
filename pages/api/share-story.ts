@@ -31,46 +31,68 @@ export default async function handler(
   }
 
   try {
-    // TODO: Replace with your actual email sending logic
-    // For now, we'll use a simple approach - you can integrate with SendGrid, AWS SES, etc.
-
-    // Example email content
     const emailSubject = `${senderName} shared a story with you on Encanto Speak AI!`;
-    const emailBody = `
-      Hi there!
 
-      ${senderName} wants to share "${storyTitle}" with you on Encanto Speak AI!
-
-      Encanto Speak AI helps you learn Spanish through interactive stories with AI-powered pronunciation feedback.
-
-      📱 Download the app to read this story:
-
-      iOS: https://apps.apple.com/app/encanto-speak-ai/id YOUR_APP_ID
-      Android: https://play.google.com/store/apps/details?id=com.encanto.speak
-
-      Start practicing Spanish today!
-
-      ---
-      Encanto Speak AI
-      https://www.encantospeak.com
+    // HTML email body
+    const htmlBody = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>📚 You've Been Invited!</h1>
+            </div>
+            <div class="content">
+              <p>Hi there!</p>
+              <p><strong>${senderName}</strong> wants to share <strong>"${storyTitle}"</strong> with you on Encanto Speak AI!</p>
+              <p>Encanto Speak AI helps you learn Spanish through interactive stories with AI-powered pronunciation feedback.</p>
+              <p style="text-align: center;">
+                <a href="https://apps.apple.com/app/encanto-speak-ai/id6738993931" class="button">📱 Download for iOS</a>
+              </p>
+              <p style="text-align: center; margin-top: 10px;">
+                <a href="https://play.google.com/store/apps/details?id=co.encanto.ai" class="button">📱 Download for Android</a>
+              </p>
+              <p>Start practicing Spanish today!</p>
+            </div>
+            <div class="footer">
+              <p>© 2024 Encanto Speak AI | <a href="https://www.encantospeak.com">www.encantospeak.com</a></p>
+            </div>
+          </div>
+        </body>
+      </html>
     `;
 
-    // Log the email for now (replace with actual email service)
-    console.log('=== Share Story Email ===');
-    console.log('To:', recipientEmail);
-    console.log('Subject:', emailSubject);
-    console.log('Body:', emailBody);
-    console.log('========================');
-
-    // TODO: Send email using your preferred service
-    // Example with a generic email service:
-    /*
-    await sendEmail({
-      to: recipientEmail,
-      subject: emailSubject,
-      text: emailBody,
+    // Send email via ZeptoMail through backend
+    const backendUrl = process.env.BACKEND_URL || 'https://spanishaibrains.up.railway.app';
+    const emailResponse = await fetch(`${backendUrl}/send_sharemail`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to_email: recipientEmail,
+        subject: emailSubject,
+        html_content: htmlBody,
+        to_name: recipientEmail.split('@')[0]
+      }),
     });
-    */
+
+    if (!emailResponse.ok) {
+      throw new Error('Failed to send email');
+    }
+
+    console.log('✅ Share story email sent to:', recipientEmail);
 
     return res.status(200).json({
       success: true,
