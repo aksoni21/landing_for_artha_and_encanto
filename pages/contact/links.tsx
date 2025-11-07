@@ -104,7 +104,8 @@ export default function ContactLinks() {
         alert('Email sent successfully!');
         setShowEmailPopup(false);
       } else {
-        alert('Failed to send email. Please try again.');
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+        alert(`Failed to send email: ${errorData.detail || 'Please try again.'}`);
       }
     } catch (error) {
       console.error('Error sending email:', error);
