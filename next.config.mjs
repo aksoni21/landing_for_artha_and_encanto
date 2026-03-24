@@ -36,6 +36,10 @@ const nextConfig = {
         destination: '/mockups/conferences/teacher.es'
       },
       {
+        source: '/teacher-results',
+        destination: '/audio-analysis/results-demo'
+      },
+      {
         source: '/coordinator-conf',
         destination: '/mockups/conferences/compliance-coordinator-v2'
       },

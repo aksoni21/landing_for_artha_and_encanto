@@ -74,7 +74,7 @@ export default async function handler(
     `;
 
     // Send email via ZeptoMail through backend
-    const backendUrl = process.env.BACKEND_URL || 'https://spanishaibrains.up.railway.app';
+    const backendUrl = process.env.BACKEND_URL || 'https://brainssite-production.up.railway.app';
     const emailResponse = await fetch(`${backendUrl}/send_sharemail`, {
       method: 'POST',
       headers: {

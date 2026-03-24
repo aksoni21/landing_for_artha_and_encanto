@@ -24,9 +24,11 @@ export default function ContactLinks() {
     name: '',
     organization: '',
     problem: '',
-    event: 'TexTESOL'
+    event: 'TexTESOL',
+    sendPilotAccess: false
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [pilotAccessSent, setPilotAccessSent] = useState(false);
   const [showLeads, setShowLeads] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loadingLeads, setLoadingLeads] = useState(false);
@@ -36,7 +38,7 @@ export default function ContactLinks() {
   const [showEmailPopup, setShowEmailPopup] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [sendingEmail, setSendingEmail] = useState(false);
-  const url = 'https://spanishaibrains.up.railway.app';
+  const url = 'https://brainssite-production.up.railway.app';
   
   const fetchLeads = async (password: string) => {
     setLoadingLeads(true);
@@ -134,11 +136,41 @@ export default function ContactLinks() {
 
       if (response.ok) {
         console.log('✅ Feedback saved successfully');
+
+        // If user requested pilot access, send intro email
+        if (formData.sendPilotAccess) {
+          try {
+            const emailResponse = await fetch(`${backendUrl}/send_intro_email`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                name: formData.name,
+                email: formData.email,
+                organization: formData.organization,
+                user_type: selectedUserType,
+                event: formData.event
+              }),
+            });
+
+            if (emailResponse.ok) {
+              console.log('✅ Pilot access email sent successfully');
+              setPilotAccessSent(true);
+            } else {
+              console.error('❌ Failed to send pilot access email');
+            }
+          } catch (emailError) {
+            console.error('❌ Error sending pilot access email:', emailError);
+          }
+        }
+
         setIsSubmitted(true);
         setTimeout(() => {
           setSelectedUserType(null);
           setIsSubmitted(false);
-          setFormData({ email: '', name: '', organization: '', problem: '', event: 'TexTESOL' });
+          setPilotAccessSent(false);
+          setFormData({ email: '', name: '', organization: '', problem: '', event: 'TexTESOL', sendPilotAccess: false });
         }, 3000);
       } else {
         console.error('❌ Failed to save feedback');
@@ -146,7 +178,8 @@ export default function ContactLinks() {
         setTimeout(() => {
           setSelectedUserType(null);
           setIsSubmitted(false);
-          setFormData({ email: '', name: '', organization: '', problem: '', event: 'TexTESOL' });
+          setPilotAccessSent(false);
+          setFormData({ email: '', name: '', organization: '', problem: '', event: 'TexTESOL', sendPilotAccess: false });
         }, 3000);
       }
     } catch (error) {
@@ -155,7 +188,8 @@ export default function ContactLinks() {
       setTimeout(() => {
         setSelectedUserType(null);
         setIsSubmitted(false);
-        setFormData({ email: '', name: '', organization: '', problem: '', event: 'TexTESOL' });
+        setPilotAccessSent(false);
+        setFormData({ email: '', name: '', organization: '', problem: '', event: 'TexTESOL', sendPilotAccess: false });
       }, 3000);
     }
   };
@@ -490,6 +524,19 @@ export default function ContactLinks() {
                       />
                     </div>
 
+                    <div className="flex items-start">
+                      <input
+                        type="checkbox"
+                        id="sendPilotAccess"
+                        checked={formData.sendPilotAccess}
+                        onChange={(e) => setFormData({ ...formData, sendPilotAccess: e.target.checked })}
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="sendPilotAccess" className="ml-3 text-sm text-gray-700">
+                        <span className="font-medium">Send me pilot access</span> - Get instant login credentials to try Encanto AI right away
+                      </label>
+                    </div>
+
                     <button
                       type="submit"
                       className={`w-full ${getColorClasses(userTypes.find(u => u.type === selectedUserType)?.color || 'blue').button} text-white font-semibold py-4 px-6 rounded-lg transition-colors text-lg`}
@@ -505,9 +552,23 @@ export default function ContactLinks() {
                   <p className="text-gray-600 text-lg mb-2">
                     We really appreciate you taking the time to share your challenges with us.
                   </p>
-                  <p className="text-gray-600">
-                    We&apos;ll review your feedback and may reach out to learn more.
-                  </p>
+                  {pilotAccessSent ? (
+                    <>
+                      <p className="text-gray-600 mb-4">
+                        We&apos;ll review your feedback and may reach out to learn more.
+                      </p>
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                        <p className="text-blue-800 font-semibold mb-1">📧 Check your email!</p>
+                        <p className="text-blue-700 text-sm">
+                          We&apos;ve sent your pilot access credentials. You can start using Encanto AI right away.
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-gray-600">
+                      We&apos;ll review your feedback and may reach out to learn more.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
